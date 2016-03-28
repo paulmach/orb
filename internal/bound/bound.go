@@ -119,12 +119,12 @@ func (b Bound) Empty() bool {
 	return b.SW.X() >= b.NE.X() || b.SW.Y() >= b.NE.Y()
 }
 
-// Equals returns if two bounds are equal.
+// Equal returns if two bounds are equal.
 func (b Bound) Equal(c Bound) bool {
 	return b.SW == c.SW && b.NE == c.NE
 }
 
-// String returns the string respentation of the bound in WKT format.
+// WKT returns the string respentation of the bound in WKT format.
 // POLYGON(west, south, west, north, east, north, east, south, west, south)
 func (b Bound) WKT() string {
 	return fmt.Sprintf("POLYGON((%g %g, %g %g, %g %g, %g %g, %g %g))", b.SW[0], b.SW[1], b.SW[0], b.NE[1], b.NE[0], b.NE[1], b.NE[0], b.SW[1], b.SW[0], b.SW[1])

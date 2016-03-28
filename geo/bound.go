@@ -266,7 +266,7 @@ func (b Bound) MysqlIntersectsCondition(column string) string {
 	return b.Bound.MysqlIntersectsCondition(column)
 }
 
-// Equals returns if two bounds are equal.
+// Equal returns if two bounds are equal.
 func (b Bound) Equal(c Bound) bool {
 	return b.SW == c.SW && b.NE == c.NE
 }

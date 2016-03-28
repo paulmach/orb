@@ -1,4 +1,4 @@
-package projections
+package project
 
 import (
 	"math"

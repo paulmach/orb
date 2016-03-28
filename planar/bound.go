@@ -114,7 +114,7 @@ func (b Bound) Empty() bool {
 	return b.Bound.Empty()
 }
 
-// Equals returns if two bounds are equal.
+// Equal returns if two bounds are equal.
 func (b Bound) Equal(c Bound) bool {
 	return b.SW == c.SW && b.NE == c.NE
 }

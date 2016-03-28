@@ -2,12 +2,15 @@ package planar
 
 import "math"
 
+// Vector represents a magnitude and a direction
 type Vector [2]float64
 
+// NewVector initializes a new vector.
 func NewVector(x, y float64) Vector {
 	return Vector{x, y}
 }
 
+// Add adds to two vectors.
 func (v Vector) Add(vector Vector) Vector {
 	v[0] += vector[0]
 	v[1] += vector[1]
@@ -49,6 +52,7 @@ func (v Vector) Scale(factor float64) Vector {
 	return v
 }
 
+// Magnitude return the length/magnitude of the vector.
 func (v Vector) Magnitude() float64 {
 	return math.Sqrt(v[0]*v[0] + v[1]*v[1])
 }

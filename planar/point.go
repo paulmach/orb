@@ -22,7 +22,7 @@ func (p Point) DistanceFrom(point Point) float64 {
 	return math.Sqrt(d0*d0 + d1*d1)
 }
 
-// DistanceToSquared returns the squared Euclidean distance between the points.
+// DistanceFromSquared returns the squared Euclidean distance between the points.
 // This avoids a sqrt computation.
 func (p Point) DistanceFromSquared(point Point) float64 {
 	d0 := (point[0] - p[0])

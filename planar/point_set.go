@@ -85,8 +85,8 @@ func (ps PointSet) Bound() Bound {
 	return NewBound(maxX, minX, maxY, minY)
 }
 
-// Equals compares two point sets. Returns true if lengths are the same
-// and all points are Equal
+// Equal compares two point sets. Returns true if lengths are the same
+// and all points are Equal.
 func (ps PointSet) Equal(pointSet PointSet) bool {
 	if len(ps) != len(pointSet) {
 		return false
