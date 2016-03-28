@@ -1,0 +1,15 @@
+PASS
+BenchmarkPointSetCentroid-4    	 5000000	       337 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPointSetGeoCentroid-4 	 3000000	       418 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPointScan-4           	20000000	        67.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPointUnmarshalWKB-4   	50000000	        33.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPointSetScan-4        	 3000000	       599 ns/op	     634 B/op	       1 allocs/op
+BenchmarkPointSetUnmarshalWKB-4	 5000000	       400 ns/op	     601 B/op	       1 allocs/op
+BenchmarkPathEncode-4          	  100000	     12951 ns/op	    3168 B/op	       6 allocs/op
+BenchmarkPathFromEncoding-4    	  300000	      5696 ns/op	   11648 B/op	       3 allocs/op
+BenchmarkPointDistanceFrom-4   	50000000	        40.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPointQuadKey-4        	 5000000	       289 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPointQuadKeyString-4  	 3000000	       503 ns/op	      80 B/op	       2 allocs/op
+BenchmarkPointGeoHash-4        	10000000	       216 ns/op	      16 B/op	       1 allocs/op
+BenchmarkPointGeoHashInt64-4   	10000000	       168 ns/op	       0 B/op	       0 allocs/op
+ok  	github.com/paulmach/orb/geo	24.966s
