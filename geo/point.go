@@ -89,6 +89,28 @@ func (p Point) BearingTo(point Point) float64 {
 	return rad2deg(math.Atan2(y, x))
 }
 
+// Midpoint returns the half-way point along a great circle path between the two points.
+func (p Point) Midpoint(p2 Point) Point {
+	dLng := deg2rad(p2.Lng() - p.Lng())
+
+	aLatRad := deg2rad(p.Lat())
+	bLatRad := deg2rad(p2.Lat())
+
+	x := math.Cos(bLatRad) * math.Cos(dLng)
+	y := math.Cos(bLatRad) * math.Sin(dLng)
+
+	r := Point{
+		deg2rad(p.Lng()) + math.Atan2(y, math.Cos(aLatRad)+x),
+		math.Atan2(math.Sin(aLatRad)+math.Sin(bLatRad), math.Sqrt((math.Cos(aLatRad)+x)*(math.Cos(aLatRad)+x)+y*y)),
+	}
+
+	// convert back to degrees
+	r[0] = rad2deg(r[0])
+	r[1] = rad2deg(r[1])
+
+	return r
+}
+
 // Quadkey returns the quad key for the given point at the provided level.
 // See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
 // about this coordinate system.

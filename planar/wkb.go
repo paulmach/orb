@@ -8,13 +8,13 @@ import "github.com/paulmach/orb/internal/wkb"
 // Will attempt to parse MySQL's SRID+WKB format if the data is of the right size.
 // If the column is empty (not null) an empty point (0, 0) will be returned.
 func (p *Point) Scan(value interface{}) error {
-	data, littleEndian, err := wkb.ValidatePoint(value)
-	if err != nil || data == nil {
+	x, y, isNull, err := wkb.ValidatePoint(value)
+	if err != nil || isNull {
 		return err
 	}
 
-	*p, err = unWKBPoint(data, littleEndian)
-	return err
+	*p = Point{x, y}
+	return nil
 }
 
 func readWKBPoint(data []byte, littleEndian bool) Point {
@@ -24,10 +24,6 @@ func readWKBPoint(data []byte, littleEndian bool) Point {
 	}
 }
 
-func unWKBPoint(data []byte, littleEndian bool) (Point, error) {
-	return readWKBPoint(data, littleEndian), nil
-}
-
 // Scan implements the sql.Scanner interface allowing
 // line structs to be passed into rows.Scan(...interface{})
 // The column must be of type LineString and contain 2 points,
@@ -35,17 +31,16 @@ func unWKBPoint(data []byte, littleEndian bool) (Point, error) {
 // Will attempt to parse MySQL's SRID+WKB format if the data is of the right size.
 // If the column is empty (not null) an empty line [(0, 0), (0, 0)] will be returned.
 func (l *Line) Scan(value interface{}) error {
-
-	data, littleEndian, length, err := wkb.ValidateLine(value)
+	data, littleEndian, err := wkb.ValidateLine(value)
 	if err != nil || data == nil {
 		return err
 	}
 
-	*l, err = unWKBLine(data, littleEndian, length)
+	*l, err = unWKBLine(data, littleEndian)
 	return err
 }
 
-func unWKBLine(data []byte, littleEndian bool, length uint32) (Line, error) {
+func unWKBLine(data []byte, littleEndian bool) (Line, error) {
 	return Line{
 		a: readWKBPoint(data[:16], littleEndian),
 		b: readWKBPoint(data[16:], littleEndian),
@@ -60,7 +55,6 @@ func unWKBLine(data []byte, littleEndian bool, length uint32) (Line, error) {
 // or parsing as WKB fails.
 // If the column is empty (not null) an empty point set will be returned.
 func (ps *PointSet) Scan(value interface{}) error {
-
 	data, littleEndian, length, err := wkb.ValidatePointSet(value)
 	if err != nil || data == nil {
 		return err
@@ -71,10 +65,14 @@ func (ps *PointSet) Scan(value interface{}) error {
 }
 
 func unWKBPointSet(data []byte, littleEndian bool, length int) (PointSet, error) {
-
 	points := make([]Point, length, length)
 	for i := 0; i < length; i++ {
-		points[i] = readWKBPoint(data[i*16:], littleEndian)
+		x, y, err := wkb.ReadPoint(data[21*i:])
+		if err != nil {
+			return nil, err
+		}
+
+		points[i] = Point{x, y}
 	}
 
 	return PointSet(points), nil
@@ -88,12 +86,20 @@ func unWKBPointSet(data []byte, littleEndian bool, length int) (PointSet, error)
 // or parsing as WKB fails.
 // If the column is empty (not null) an empty path will be returned.
 func (p *Path) Scan(value interface{}) error {
-	ps := PointSet{}
-	err := ps.Scan(value)
-	if err != nil {
+	data, littleEndian, length, err := wkb.ValidatePath(value)
+	if err != nil || data == nil {
 		return err
 	}
 
-	*p = Path(ps)
-	return nil
+	*p, err = unWKBPath(data, littleEndian, length)
+	return err
+}
+
+func unWKBPath(data []byte, littleEndian bool, length int) (Path, error) {
+	points := make([]Point, length, length)
+	for i := 0; i < length; i++ {
+		points[i] = readWKBPoint(data[16*i:], littleEndian)
+	}
+
+	return Path(points), nil
 }

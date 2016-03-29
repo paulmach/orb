@@ -6,19 +6,24 @@ import (
 	"github.com/paulmach/orb"
 )
 
-func ValidatePoint(value interface{}) ([]byte, bool, error) {
-	var err error
+const (
+	wkbPoint      = 1
+	wkbLineString = 2
+	wkbMultiPoint = 4
+)
 
+// ValidatePoint checks the wkb input and returns x, y, isnull, err.
+func ValidatePoint(value interface{}) (float64, float64, bool, error) {
 	data, ok := value.([]byte)
 	if !ok {
-		return nil, false, orb.ErrUnsupportedDataType
+		return 0, 0, false, orb.ErrUnsupportedDataType
 	}
 
 	switch len(data) {
 	case 0:
 		// empty data, return empty go struct which in this case
 		// would be [0,0]
-		return nil, false, nil
+		return 0, 0, true, nil
 	case 21:
 		// the length of a point type in WKB
 	case 25:
@@ -27,59 +32,48 @@ func ValidatePoint(value interface{}) ([]byte, bool, error) {
 		// But those would be invalid for parsing a point.
 		data = data[4:]
 	default:
-		return nil, false, orb.ErrIncorrectGeometry
+		return 0, 0, false, orb.ErrIncorrectGeometry
 	}
 
-	littleEndian, typeCode, err := ReadPrefix(data)
-	if err != nil {
-		return nil, false, err
-	}
-
-	if typeCode != 1 {
-		return nil, false, orb.ErrIncorrectGeometry
-	}
-
-	return data[5:], littleEndian, nil
-
+	x, y, err := ReadPoint(data)
+	return x, y, false, err
 }
 
-func ValidateLine(value interface{}) ([]byte, bool, uint32, error) {
-	data, ok := value.([]byte)
-	if !ok {
-		return nil, false, 0, orb.ErrUnsupportedDataType
+// ReadPoint reads the beginning of the data to find the wkb point.
+func ReadPoint(data []byte) (float64, float64, error) {
+	if len(data) < 21 {
+		return 0, 0, orb.ErrIncorrectGeometry
 	}
 
-	switch len(data) {
-	case 0:
-		return nil, false, 0, nil
-	case 41:
-		// the length of a 2 point linestring type in WKB
-	case 45:
-		// Most likely MySQL's SRID+WKB format.
-		// However, could be some encoding of another type.
-		// But those would be invalid for parsing a line.
-		data = data[4:]
-	default:
-		return nil, false, 0, orb.ErrIncorrectGeometry
-	}
-
-	littleEndian, typeCode, err := ReadPrefix(data)
+	littleEndian, typeCode, err := ReadHeader(data)
 	if err != nil {
-		return nil, false, 0, err
+		return 0, 0, err
 	}
 
-	if typeCode != 2 {
-		return nil, false, 0, orb.ErrIncorrectGeometry
+	if typeCode != wkbPoint {
+		return 0, 0, orb.ErrIncorrectGeometry
 	}
 
-	length := ReadUint32(data[5:9], littleEndian)
+	return ReadFloat64(data[5:13], littleEndian),
+		ReadFloat64(data[13:], littleEndian),
+		nil
+}
+
+// ValidateLine checks the wkb input for a two point linestring.
+func ValidateLine(value interface{}) ([]byte, bool, error) {
+	data, littleEndian, length, err := ValidatePath(value)
+	if err != nil {
+		return data, littleEndian, err
+	}
+
 	if length != 2 {
-		return nil, false, 0, orb.ErrIncorrectGeometry
+		return nil, false, orb.ErrIncorrectGeometry
 	}
 
-	return data[9:], littleEndian, length, nil
+	return data, littleEndian, err
 }
 
+// ValidatePointSet checks wkb for a multipoint geometry.
 func ValidatePointSet(value interface{}) ([]byte, bool, int, error) {
 	data, ok := value.([]byte)
 	if !ok {
@@ -94,43 +88,75 @@ func ValidatePointSet(value interface{}) ([]byte, bool, int, error) {
 		return nil, false, 0, orb.ErrNotWKB
 	}
 
-	// first byte of real WKB data indicates endian and should 1 or 0.
-	if data[0] != 0 && data[0] != 1 {
-		data = data[4:] // possibly mysql srid+wkb
-	}
-
-	littleEndian, typeCode, err := ReadPrefix(data)
+	data, littleEndian, err := validateSet(data, wkbMultiPoint)
 	if err != nil {
 		return nil, false, 0, err
 	}
 
-	// must be LineString, Polygon or MultiPoint
-	if typeCode != 2 && typeCode != 3 && typeCode != 4 {
-		return nil, false, 0, orb.ErrIncorrectGeometry
-	}
-
-	if typeCode == 3 {
-		// For polygons there is a ring count.
-		// We only allow one ring here.
-		rings := int(ReadUint32(data[5:9], littleEndian))
-		if rings != 1 {
-			return nil, false, 0, orb.ErrIncorrectGeometry
-		}
-
-		data = data[9:]
-	} else {
-		data = data[5:]
-	}
-
-	length := int(ReadUint32(data[:4], littleEndian))
-	if len(data) != 4+16*length {
+	length := int(ReadUint32(data[5:9], littleEndian))
+	if len(data) != 9+21*length {
 		return nil, false, 0, orb.ErrNotWKB
 	}
 
-	return data[4:], littleEndian, length, nil
+	return data[9:], littleEndian, length, nil
 }
 
-func ReadPrefix(data []byte) (bool, uint32, error) {
+// ValidatePath checks the wkb for a linestring geometry.
+func ValidatePath(value interface{}) ([]byte, bool, int, error) {
+	data, ok := value.([]byte)
+	if !ok {
+		return nil, false, 0, orb.ErrUnsupportedDataType
+	}
+
+	if len(data) == 0 {
+		return nil, false, 0, nil
+	}
+
+	data, littleEndian, err := validateSet(data, wkbLineString)
+	if err != nil {
+		return nil, false, 0, err
+	}
+
+	length := ReadUint32(data[5:9], littleEndian)
+	return data[9:], littleEndian, int(length), nil
+}
+
+func validateSet(data []byte, t uint32) ([]byte, bool, error) {
+	var (
+		littleEndian bool
+		typeCode     uint32
+		err          error
+	)
+
+	if data[0] != 0 && data[0] != 1 {
+		data = data[4:]
+	}
+
+	// To try and detect if this is direct from mysql
+	// we try to see if cropping the first 4 values helps
+	// make a valid WKB.
+	for i := 0; i < 2; i++ {
+		littleEndian, typeCode, err = ReadHeader(data)
+		if err != nil {
+			return nil, false, err
+		}
+
+		if typeCode == t {
+			break
+		}
+
+		data = data[4:]
+	}
+
+	if typeCode != t {
+		return nil, false, orb.ErrIncorrectGeometry
+	}
+
+	return data, littleEndian, nil
+}
+
+// ReadHeader reads the beginning of the data and returns the header.
+func ReadHeader(data []byte) (bool, uint32, error) {
 	if len(data) < 6 {
 		return false, 0, orb.ErrNotWKB
 	}
@@ -146,6 +172,7 @@ func ReadPrefix(data []byte) (bool, uint32, error) {
 	return false, 0, orb.ErrNotWKB
 }
 
+// ReadUint32 reads the data and returns a uint32.
 func ReadUint32(data []byte, littleEndian bool) uint32 {
 	var v uint32
 
@@ -164,6 +191,7 @@ func ReadUint32(data []byte, littleEndian bool) uint32 {
 	return v
 }
 
+// ReadFloat64 reads the data and returns a float64.
 func ReadFloat64(data []byte, littleEndian bool) float64 {
 	var v uint64
 

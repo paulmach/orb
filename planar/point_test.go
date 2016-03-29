@@ -46,6 +46,16 @@ func TestPointSquaredDistanceFrom(t *testing.T) {
 	}
 }
 
+func TestPointMidpoint(t *testing.T) {
+	p1 := NewPoint(0, 0)
+	p2 := NewPoint(10, 20)
+
+	answer := NewPoint(5, 10)
+	if m := p1.Midpoint(p2); !m.Equal(answer) {
+		t.Errorf("point, midpoint expected %v, got %v", answer, m)
+	}
+}
+
 func TestPointAdd(t *testing.T) {
 	p := NewPoint(1, 2)
 	v := NewVector(3, 4)

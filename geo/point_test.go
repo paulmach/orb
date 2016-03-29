@@ -155,6 +155,15 @@ func TestPointBearingTo(t *testing.T) {
 	}
 }
 
+func TestPointMidpoint(t *testing.T) {
+	answer := NewPoint(-0.841153, 52.68179432)
+	m := NewPoint(-1.8444, 53.1506).Midpoint(NewPoint(0.1406, 52.2047))
+
+	if d := m.DistanceFrom(answer); d > 1 {
+		t.Errorf("line, midpoint expected %v, got %v", answer, m)
+	}
+}
+
 func TestPointGeoHash(t *testing.T) {
 	for _, c := range citiesGeoHash {
 		hash := NewPoint(c[1].(float64), c[0].(float64)).GeoHash(12)

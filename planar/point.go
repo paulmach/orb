@@ -30,6 +30,11 @@ func (p Point) DistanceFromSquared(point Point) float64 {
 	return d0*d0 + d1*d1
 }
 
+// Midpoint is the middle of the given point and the one passed in.
+func (p Point) Midpoint(p2 Point) Point {
+	return Point{(p[0] + p2[0]) / 2, (p[1] + p2[1]) / 2}
+}
+
 // Add a point to the given point.
 func (p Point) Add(vector Vector) Point {
 	p[0] += vector[0]
