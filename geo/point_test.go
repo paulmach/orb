@@ -122,6 +122,23 @@ func TestPointDistanceFrom(t *testing.T) {
 	if d := p1.DistanceFrom(p2, false); math.Abs(d-170400.503437) > epsilon {
 		t.Errorf("incorrect geodistance, got %v", d)
 	}
+
+	p1 = NewPoint(0.5, 30)
+	p2 = NewPoint(-0.5, 30)
+
+	dFast := p1.DistanceFrom(p2, false)
+	dHav := p1.DistanceFrom(p2, true)
+
+	p1 = NewPoint(179.5, 30)
+	p2 = NewPoint(-179.5, 30)
+
+	if d := p1.DistanceFrom(p2, false); math.Abs(d-dFast) > epsilon {
+		t.Errorf("incorrect geodistance, got %v", d)
+	}
+
+	if d := p1.DistanceFrom(p2, true); math.Abs(d-dHav) > epsilon {
+		t.Errorf("incorrect geodistance, got %v", d)
+	}
 }
 
 func TestPointBearingTo(t *testing.T) {

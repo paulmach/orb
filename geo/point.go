@@ -70,6 +70,11 @@ func (p Point) DistanceFrom(point Point, haversine ...bool) float64 {
 		return 2.0 * EarthRadius * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 	}
 
+	dLng = math.Abs(dLng)
+	if dLng > math.Pi {
+		dLng = 2*math.Pi - dLng
+	}
+
 	// fast way using pythagorean theorem on an equirectangular projection
 	x := dLng * math.Cos(deg2rad((p.Lat()+point.Lat())/2.0))
 	return math.Sqrt(dLat*dLat+x*x) * EarthRadius
