@@ -48,6 +48,19 @@ func unWKBLine(data []byte, littleEndian bool) (Line, error) {
 }
 
 // Scan implements the sql.Scanner interface allowing
+// bound to be read in as the bound of a two point line string.
+func (b *Bound) Scan(value interface{}) error {
+	l := Line{}
+	err := l.Scan(value)
+	if err != nil {
+		return err
+	}
+
+	*b = l.Bound()
+	return nil
+}
+
+// Scan implements the sql.Scanner interface allowing
 // line structs to be passed into rows.Scan(...interface{})
 // The column must be of type LineString, Polygon or MultiPoint
 // or an error will be returned. Data must be fetched in WKB format.

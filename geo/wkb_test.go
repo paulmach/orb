@@ -27,6 +27,23 @@ func TestPointScan(t *testing.T) {
 	}
 }
 
+func TestBoundScan(t *testing.T) {
+	b := Bound{}
+	for i, test := range wkb.LineTestCases {
+		err := b.Scan(test.Data)
+		if err != nil {
+			if err != test.Err {
+				t.Errorf("test %d, incorrect error, got %v", i, err)
+			}
+			continue
+		}
+
+		if !b.Equal(pointsToPath(test.Points).Bound()) {
+			t.Errorf("test %d incorrect bound, got %v", i, b)
+		}
+	}
+}
+
 func TestPointSetScan(t *testing.T) {
 	p := PointSet{}
 	for i, test := range wkb.PointSetTestCases {
