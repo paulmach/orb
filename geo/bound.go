@@ -242,6 +242,16 @@ func (b Bound) West() float64 {
 	return b.SW[0]
 }
 
+// SouthWest returns the lower left point of the bound.
+func (b Bound) SouthWest() Point {
+	return NewPoint(b.SW[0], b.SW[1])
+}
+
+// NorthEast return the upper right point of the bound.
+func (b Bound) NorthEast() Point {
+	return NewPoint(b.NE[0], b.NE[1])
+}
+
 // Empty returns true if it contains zero area or if
 // it's in some malformed negative state where the left point is larger than the right.
 // This can be caused by padding too much negative.
