@@ -88,8 +88,8 @@ func TestPathBound(t *testing.T) {
 	}
 
 	ps = NewPointSet()
-	if !ps.Bound().Empty() {
-		t.Error("expect empty point set to have empty bounds")
+	if !ps.Bound().IsZero() {
+		t.Error("expect empty point set to have zero bounds")
 	}
 }
 

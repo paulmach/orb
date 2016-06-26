@@ -168,30 +168,32 @@ func TestBoundIsEmpty(t *testing.T) {
 	}
 
 	bound = New(1, 1, 2, 2)
-	if !bound.IsEmpty() {
-		t.Error("IsEmpty expected true, got false")
+	if bound.IsEmpty() {
+		t.Error("IsEmpty expected false, got true")
 	}
 
 	// horizontal bar
 	bound = New(1, 1, 2, 3)
-	if !bound.IsEmpty() {
-		t.Error("IsEmpty expected true, got false")
+	if bound.IsEmpty() {
+		t.Error("IsEmpty expected false, got true")
 	}
 
 	// vertical bar
 	bound = New(1, 2, 2, 2)
+	if bound.IsEmpty() {
+		t.Error("IsEmpty expected false, got true")
+	}
+
+	// negative/malformed area
+	bound = New(1, 1, 2, 2)
+	bound.NE[0] = 0
 	if !bound.IsEmpty() {
 		t.Error("IsEmpty expected true, got false")
 	}
 
 	// negative/malformed area
-	bound = New(1, 0, 2, 2)
-	if !bound.IsEmpty() {
-		t.Error("IsEmpty expected true, got false")
-	}
-
-	// negative/malformed area
-	bound = New(1, 1, 2, 1)
+	bound = New(1, 1, 2, 2)
+	bound.SW[1] = 3
 	if !bound.IsEmpty() {
 		t.Error("IsEmpty expected true, got false")
 	}

@@ -107,11 +107,11 @@ func (b Bound) Left() float64 {
 	return b.SW[0]
 }
 
-// Empty returns true if it contains zero area or if
-// it's in some malformed negative state where the left point is larger than the right.
+// IsEmpty returns true if it's in some malformed negative state
+// where the left point is larger than the right.
 // This can be caused by padding too much negative.
-func (b Bound) Empty() bool {
-	return b.Bound.Empty()
+func (b Bound) IsEmpty() bool {
+	return b.Bound.IsEmpty()
 }
 
 // Equal returns if two bounds are equal.
