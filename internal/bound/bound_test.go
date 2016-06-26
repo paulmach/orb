@@ -161,39 +161,56 @@ func TestBoundCenter(t *testing.T) {
 	}
 }
 
-func TestBoundEmpty(t *testing.T) {
+func TestBoundIsEmpty(t *testing.T) {
 	bound := New(1, 2, 3, 4)
-	if bound.Empty() {
-		t.Error("empty exported false, got true")
+	if bound.IsEmpty() {
+		t.Error("IsEmpty expected false, got true")
 	}
 
 	bound = New(1, 1, 2, 2)
-	if !bound.Empty() {
-		t.Error("empty exported true, got false")
+	if !bound.IsEmpty() {
+		t.Error("IsEmpty expected true, got false")
 	}
 
 	// horizontal bar
 	bound = New(1, 1, 2, 3)
-	if !bound.Empty() {
-		t.Error("empty exported true, got false")
+	if !bound.IsEmpty() {
+		t.Error("IsEmpty expected true, got false")
 	}
 
 	// vertical bar
 	bound = New(1, 2, 2, 2)
-	if !bound.Empty() {
-		t.Error("empty exported true, got false")
+	if !bound.IsEmpty() {
+		t.Error("IsEmpty expected true, got false")
 	}
 
 	// negative/malformed area
 	bound = New(1, 0, 2, 2)
-	if !bound.Empty() {
-		t.Error("empty exported true, got false")
+	if !bound.IsEmpty() {
+		t.Error("IsEmpty expected true, got false")
 	}
 
 	// negative/malformed area
 	bound = New(1, 1, 2, 1)
-	if !bound.Empty() {
-		t.Error("empty exported true, got false")
+	if !bound.IsEmpty() {
+		t.Error("IsEmpty expected true, got false")
+	}
+}
+
+func TestBoundIsZero(t *testing.T) {
+	bound := New(1, 1, 2, 2)
+	if bound.IsZero() {
+		t.Error("IsZero expected false, got true")
+	}
+
+	bound = New(0, 0, 0, 0)
+	if !bound.IsZero() {
+		t.Error("IsZero expected true, got false")
+	}
+
+	var b Bound
+	if !b.IsZero() {
+		t.Error("IsZero expected true, got false")
 	}
 }
 

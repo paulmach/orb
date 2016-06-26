@@ -112,11 +112,16 @@ func (b Bound) Center() Point {
 	}
 }
 
-// Empty returns true if it contains zero area or if
+// IsEmpty returns true if it contains zero area or if
 // it's in some malformed negative state where the left point is larger than the right.
 // This can be caused by padding too much negative.
-func (b Bound) Empty() bool {
+func (b Bound) IsEmpty() bool {
 	return b.SW.X() >= b.NE.X() || b.SW.Y() >= b.NE.Y()
+}
+
+// IsZero will return true if the bound is the empty undefined bound.
+func (b Bound) IsZero() bool {
+	return b == Bound{}
 }
 
 // Equal returns if two bounds are equal.
