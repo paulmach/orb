@@ -6,10 +6,6 @@ import "math"
 // Haversine formula should be used for geo distances.
 var UseHaversineGeoDistanceByDefault = false
 
-// EarthRadius is the radius of the earth in meters. It is used in geo distance calculations.
-// To keep things consistent, this values matches that used in WGS84 Web Mercator (EPSG:3857).
-var EarthRadius = 6378137.0 // meters
-
 //MinLatitude is the minimum possible latitude
 var minLatitude = deg2rad(-90)
 

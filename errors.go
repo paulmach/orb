@@ -15,3 +15,9 @@ var (
 	// For example, unmarshaling linestring data into a point.
 	ErrIncorrectGeometry = errors.New("orb: incorrect geometry")
 )
+
+var (
+	// ErrPointOutsideOfBounds is returned when trying to add a point
+	// to a quad tree and the point is outside the bounds used to create the tree.
+	ErrPointOutsideOfBounds = errors.New("quadtree: point outside of bounds")
+)

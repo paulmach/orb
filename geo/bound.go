@@ -4,6 +4,7 @@ import (
 	"math"
 	"strings"
 
+	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/internal/bound"
 	"github.com/paulmach/orb/internal/mercator"
 )
@@ -33,7 +34,7 @@ func NewBoundFromPoints(corner, oppositeCorner Point) Bound {
 // and a distance from the center point in meters.
 func NewBoundAroundPoint(center Point, distance float64) Bound {
 
-	radDist := distance / EarthRadius
+	radDist := distance / orb.EarthRadius
 	radLat := deg2rad(center.Lat())
 	radLon := deg2rad(center.Lng())
 	minLat := radLat - radDist
@@ -259,7 +260,7 @@ func (b Bound) IsEmpty() bool {
 	return b.Bound.IsEmpty()
 }
 
-// IsZero return true if the bound just includes null island.
+// IsZero return true if the bound just includes just null island.
 func (b Bound) IsZero() bool {
 	return b.Bound.IsZero()
 }
@@ -273,6 +274,11 @@ func (b Bound) String() string {
 // POLYGON(west, south, west, north, east, north, east, south, west, south)
 func (b Bound) WKT() string {
 	return b.Bound.WKT()
+}
+
+// Pointer is a helper for using bound in a nullable context.
+func (b Bound) Pointer() *Bound {
+	return &b
 }
 
 // MysqlIntersectsCondition returns a condition defining the intersection

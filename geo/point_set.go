@@ -82,7 +82,7 @@ func (ps PointSet) DistanceFrom(point Point) (float64, int) {
 // Bound returns a bound around the point set. Simply uses rectangular coordinates.
 func (ps PointSet) Bound() Bound {
 	if len(ps) == 0 {
-		return NewBound(0, 0, 0, 0)
+		return Bound{}
 	}
 
 	minX := math.Inf(1)

@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/paulmach/go.geojson"
+	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/internal/mercator"
 )
 
@@ -67,7 +68,7 @@ func (p Point) DistanceFrom(point Point, haversine ...bool) float64 {
 		dLng2Sin := math.Sin(dLng / 2)
 		a := dLat2Sin*dLat2Sin + math.Cos(deg2rad(p.Lat()))*math.Cos(deg2rad(point.Lat()))*dLng2Sin*dLng2Sin
 
-		return 2.0 * EarthRadius * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+		return 2.0 * orb.EarthRadius * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 	}
 
 	dLng = math.Abs(dLng)
@@ -77,7 +78,7 @@ func (p Point) DistanceFrom(point Point, haversine ...bool) float64 {
 
 	// fast way using pythagorean theorem on an equirectangular projection
 	x := dLng * math.Cos(deg2rad((p.Lat()+point.Lat())/2.0))
-	return math.Sqrt(dLat*dLat+x*x) * EarthRadius
+	return math.Sqrt(dLat*dLat+x*x) * orb.EarthRadius
 }
 
 // BearingTo computes the direction one must start traveling on earth
