@@ -36,7 +36,7 @@ func NewBoundAroundPoint(center Point, distance float64) Bound {
 
 	radDist := distance / orb.EarthRadius
 	radLat := deg2rad(center.Lat())
-	radLon := deg2rad(center.Lng())
+	radLon := deg2rad(center.Lon())
 	minLat := radLat - radDist
 	maxLat := radLat + radDist
 
@@ -79,13 +79,13 @@ func NewBoundFromMapTile(x, y, z uint64) Bound {
 		shift = 0
 	}
 
-	lng1, lat1 := mercator.ScalarInverse(x<<shift, y<<shift, 31)
-	lng2, lat2 := mercator.ScalarInverse((x+1)<<shift, (y+1)<<shift, 31)
+	lon1, lat1 := mercator.ScalarInverse(x<<shift, y<<shift, 31)
+	lon2, lat2 := mercator.ScalarInverse((x+1)<<shift, (y+1)<<shift, 31)
 
 	return Bound{
 		Bound: bound.FromPoints(
-			bound.Point([2]float64{math.Min(lng1, lng2), math.Min(lat1, lat2)}),
-			bound.Point([2]float64{math.Max(lng1, lng2), math.Max(lat1, lat2)}),
+			bound.Point([2]float64{math.Min(lon1, lon2), math.Min(lat1, lat2)}),
+			bound.Point([2]float64{math.Max(lon1, lon2), math.Max(lat1, lat2)}),
 		),
 	}
 }
@@ -105,7 +105,7 @@ func NewBoundFromGeoHashInt64(hash int64, bits int) Bound {
 
 func geoHash2ranges(hash string) (float64, float64, float64, float64) {
 	latMin, latMax := -90.0, 90.0
-	lngMin, lngMax := -180.0, 180.0
+	lonMin, lonMax := -180.0, 180.0
 	even := true
 
 	for _, r := range hash {
@@ -113,11 +113,11 @@ func geoHash2ranges(hash string) (float64, float64, float64, float64) {
 		i := strings.Index("0123456789bcdefghjkmnpqrstuvwxyz", string(r))
 		for j := 0x10; j != 0; j >>= 1 {
 			if even {
-				mid := (lngMin + lngMax) / 2.0
+				mid := (lonMin + lonMax) / 2.0
 				if i&j == 0 {
-					lngMax = mid
+					lonMax = mid
 				} else {
-					lngMin = mid
+					lonMin = mid
 				}
 			} else {
 				mid := (latMin + latMax) / 2.0
@@ -131,12 +131,12 @@ func geoHash2ranges(hash string) (float64, float64, float64, float64) {
 		}
 	}
 
-	return lngMin, lngMax, latMin, latMax
+	return lonMin, lonMax, latMin, latMax
 }
 
 func geoHashInt2ranges(hash int64, bits int) (float64, float64, float64, float64) {
 	latMin, latMax := -90.0, 90.0
-	lngMin, lngMax := -180.0, 180.0
+	lonMin, lonMax := -180.0, 180.0
 
 	var i int64
 	i = 1 << uint(bits)
@@ -144,11 +144,11 @@ func geoHashInt2ranges(hash int64, bits int) (float64, float64, float64, float64
 	for i != 0 {
 		i >>= 1
 
-		mid := (lngMin + lngMax) / 2.0
+		mid := (lonMin + lonMax) / 2.0
 		if hash&i == 0 {
-			lngMax = mid
+			lonMax = mid
 		} else {
-			lngMin = mid
+			lonMin = mid
 		}
 
 		i >>= 1
@@ -160,7 +160,7 @@ func geoHashInt2ranges(hash int64, bits int) (float64, float64, float64, float64
 		}
 	}
 
-	return lngMin, lngMax, latMin, latMax
+	return lonMin, lonMax, latMin, latMax
 }
 
 // Extend grows the bound to include the new point.

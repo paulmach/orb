@@ -44,11 +44,11 @@ func (ps PointSet) Centroid() Point {
 	var x, y, z float64
 
 	for _, p := range ps {
-		lngSin, lngCos := math.Sincos(deg2rad(p[0]))
+		lonSin, lonCos := math.Sincos(deg2rad(p[0]))
 		latSin, latCos := math.Sincos(deg2rad(p[1]))
 
-		x += latCos * lngCos
-		y += latCos * lngSin
+		x += latCos * lonCos
+		y += latCos * lonSin
 		z += latSin
 	}
 
@@ -92,10 +92,10 @@ func (ps PointSet) Bound() Bound {
 	maxY := math.Inf(-1)
 
 	for _, v := range ps {
-		minX = math.Min(minX, v.Lng())
+		minX = math.Min(minX, v.Lon())
 		minY = math.Min(minY, v.Lat())
 
-		maxX = math.Max(maxX, v.Lng())
+		maxX = math.Max(maxX, v.Lon())
 		maxY = math.Max(maxY, v.Lat())
 	}
 

@@ -17,8 +17,8 @@ func TestBoundAroundPoint(t *testing.T) {
 		t.Errorf("bound, should have correct center lat point")
 	}
 
-	if bound.Center().Lng() != p.Lng() {
-		t.Errorf("bound, should have correct center lng point")
+	if bound.Center().Lon() != p.Lon() {
+		t.Errorf("bound, should have correct center lon point")
 	}
 
 	//Given point is 968.9 km away from center
@@ -31,8 +31,8 @@ func TestBoundAroundPoint(t *testing.T) {
 		t.Errorf("bound, should have correct center lat point")
 	}
 
-	if bound.Center().Lng() != p.Lng() {
-		t.Errorf("bound, should have correct center lng point")
+	if bound.Center().Lon() != p.Lon() {
+		t.Errorf("bound, should have correct center lon point")
 	}
 
 	//Given point is 968.9 km away from center
@@ -48,23 +48,23 @@ func TestNewBoundFromMapTile(t *testing.T) {
 	factor := uint64(5)
 
 	// edges should be within the bounds
-	lng, lat := mercator.ScalarInverse(7<<factor+1, 8<<factor+1, level)
-	if !bound.Contains(NewPoint(lng, lat)) {
+	lon, lat := mercator.ScalarInverse(7<<factor+1, 8<<factor+1, level)
+	if !bound.Contains(NewPoint(lon, lat)) {
 		t.Errorf("bound, should contain point")
 	}
 
-	lng, lat = mercator.ScalarInverse(7<<factor-1, 8<<factor-1, level)
-	if bound.Contains(NewPoint(lng, lat)) {
+	lon, lat = mercator.ScalarInverse(7<<factor-1, 8<<factor-1, level)
+	if bound.Contains(NewPoint(lon, lat)) {
 		t.Errorf("bound, should not contain point")
 	}
 
-	lng, lat = mercator.ScalarInverse(8<<factor-1, 9<<factor-1, level)
-	if !bound.Contains(NewPoint(lng, lat)) {
+	lon, lat = mercator.ScalarInverse(8<<factor-1, 9<<factor-1, level)
+	if !bound.Contains(NewPoint(lon, lat)) {
 		t.Errorf("bound, should contain point")
 	}
 
-	lng, lat = mercator.ScalarInverse(8<<factor+1, 9<<factor+1, level)
-	if bound.Contains(NewPoint(lng, lat)) {
+	lon, lat = mercator.ScalarInverse(8<<factor+1, 9<<factor+1, level)
+	if bound.Contains(NewPoint(lon, lat)) {
 		t.Errorf("bound, should not contain point")
 	}
 

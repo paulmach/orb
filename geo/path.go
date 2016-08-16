@@ -21,7 +21,7 @@ func NewPathPreallocate(length, capacity int) Path {
 	return Path(make([]Point, length, capacity))
 }
 
-// NewPathFromEncoding is the inverse of path.Encode. It takes a string encoding of a lat/lng path
+// NewPathFromEncoding is the inverse of path.Encode. It takes a string encoding of a lat/lon path
 // and returns the actual path it represents. Factor defaults to 1.0e5,
 // the same used by Google for polyline encoding.
 func NewPathFromEncoding(encoded string, factor ...int) Path {
@@ -33,7 +33,7 @@ func NewPathFromEncoding(encoded string, factor ...int) Path {
 	}
 
 	p := NewPath()
-	tempLatLng := [2]int{0, 0}
+	tempLatLon := [2]int{0, 0}
 
 	for index < len(encoded) {
 		var result int
@@ -56,13 +56,13 @@ func NewPathFromEncoding(encoded string, factor ...int) Path {
 		}
 
 		if count%2 == 0 {
-			result += tempLatLng[0]
-			tempLatLng[0] = result
+			result += tempLatLon[0]
+			tempLatLon[0] = result
 		} else {
-			result += tempLatLng[1]
-			tempLatLng[1] = result
+			result += tempLatLon[1]
+			tempLatLon[1] = result
 
-			p = append(p, Point{float64(tempLatLng[1]) / f, float64(tempLatLng[0]) / f})
+			p = append(p, Point{float64(tempLatLon[1]) / f, float64(tempLatLon[0]) / f})
 		}
 
 		count++
@@ -72,7 +72,7 @@ func NewPathFromEncoding(encoded string, factor ...int) Path {
 }
 
 // NewPathFromXYData creates a path from a slice of [2]float64 values
-// representing [horizontal, vertical] type data, for example lng/lat values from geojson.
+// representing [horizontal, vertical] type data, for example lon/lat values from geojson.
 func NewPathFromXYData(data [][2]float64) Path {
 	p := NewPathPreallocate(0, len(data))
 	for i := range data {
@@ -83,7 +83,7 @@ func NewPathFromXYData(data [][2]float64) Path {
 }
 
 // NewPathFromYXData creates a path from a slice of [2]float64 values
-// representing [vertical, horizontal] type data, for example typical lat/lng data.
+// representing [vertical, horizontal] type data, for example typical lat/lon data.
 func NewPathFromYXData(data [][2]float64) Path {
 	p := NewPathPreallocate(0, len(data))
 	for i := range data {
@@ -130,7 +130,7 @@ func (p Path) Encode(factor ...int) string {
 	}
 
 	var pLat int
-	var pLng int
+	var pLon int
 
 	var result bytes.Buffer
 	scratch1 := make([]byte, 0, 50)
@@ -138,15 +138,15 @@ func (p Path) Encode(factor ...int) string {
 
 	for _, p := range p {
 		lat5 := int(math.Floor(p.Lat()*f + 0.5))
-		lng5 := int(math.Floor(p.Lng()*f + 0.5))
+		lon5 := int(math.Floor(p.Lon()*f + 0.5))
 
 		deltaLat := lat5 - pLat
-		deltaLng := lng5 - pLng
+		deltaLon := lon5 - pLon
 
 		pLat = lat5
-		pLng = lng5
+		pLon = lon5
 
-		result.Write(append(encodeSignedNumber(deltaLat, scratch1), encodeSignedNumber(deltaLng, scratch2)...))
+		result.Write(append(encodeSignedNumber(deltaLat, scratch1), encodeSignedNumber(deltaLon, scratch2)...))
 
 		scratch1 = scratch1[:0]
 		scratch2 = scratch2[:0]

@@ -17,8 +17,8 @@ var citiesGeoHash = [][3]interface{}{
 
 func TestNewPoint(t *testing.T) {
 	p := NewPoint(1, 2)
-	if p.Lng() != 1 {
-		t.Errorf("point, expected 1, got %f", p.Lng())
+	if p.Lon() != 1 {
+		t.Errorf("point, expected 1, got %f", p.Lon())
 	}
 
 	if p.Lat() != 2 {
@@ -51,8 +51,8 @@ func TestPointQuadkey(t *testing.T) {
 			t.Errorf("point quadkey, latitude miss match: %f != %f", p.Lat(), city[0])
 		}
 
-		if math.Abs(p.Lng()-city[1]) > epsilon {
-			t.Errorf("point quadkey, longitude miss match: %f != %f", p.Lng(), city[1])
+		if math.Abs(p.Lon()-city[1]) > epsilon {
+			t.Errorf("point quadkey, longitude miss match: %f != %f", p.Lon(), city[1])
 		}
 	}
 }
@@ -82,8 +82,8 @@ func TestPointQuadkeyString(t *testing.T) {
 			t.Errorf("point quadkey, latitude miss match: %f != %f", p.Lat(), city[0])
 		}
 
-		if math.Abs(p.Lng()-city[1]) > epsilon {
-			t.Errorf("point quadkey, longitude miss match: %f != %f", p.Lng(), city[1])
+		if math.Abs(p.Lon()-city[1]) > epsilon {
+			t.Errorf("point quadkey, longitude miss match: %f != %f", p.Lon(), city[1])
 		}
 	}
 }

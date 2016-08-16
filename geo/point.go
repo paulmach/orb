@@ -14,7 +14,7 @@ import (
 	"github.com/paulmach/orb/internal/mercator"
 )
 
-// A Point is a simple X/Y or Lng/Lat 2d point. [X, Y] or [Lng, Lat]
+// A Point is a simple X/Y or Lon/Lat 2d point. [X, Y] or [Lon, Lat]
 type Point [2]float64
 
 // NewPoint creates a new point
@@ -34,8 +34,8 @@ func NewPointFromQuadkey(key int64, level int) Point {
 		y |= (key & (1 << (2*i + 1))) >> (i + 1)
 	}
 
-	lng, lat := mercator.ScalarInverse(uint64(x), uint64(y), uint64(level))
-	return Point{lng, lat}
+	lon, lat := mercator.ScalarInverse(uint64(x), uint64(y), uint64(level))
+	return Point{lon, lat}
 }
 
 // NewPointFromQuadkeyString creates a new point from a quadkey string.
@@ -60,53 +60,53 @@ func NewPointFromGeoHashInt64(hash int64, bits int) Point {
 // DistanceFrom returns the geodesic distance in meters.
 func (p Point) DistanceFrom(point Point, haversine ...bool) float64 {
 	dLat := deg2rad(point.Lat() - p.Lat())
-	dLng := deg2rad(point.Lng() - p.Lng())
+	dLon := deg2rad(point.Lon() - p.Lon())
 
 	if yesHaversine(haversine) {
 		// yes trig functions
 		dLat2Sin := math.Sin(dLat / 2)
-		dLng2Sin := math.Sin(dLng / 2)
-		a := dLat2Sin*dLat2Sin + math.Cos(deg2rad(p.Lat()))*math.Cos(deg2rad(point.Lat()))*dLng2Sin*dLng2Sin
+		dLon2Sin := math.Sin(dLon / 2)
+		a := dLat2Sin*dLat2Sin + math.Cos(deg2rad(p.Lat()))*math.Cos(deg2rad(point.Lat()))*dLon2Sin*dLon2Sin
 
 		return 2.0 * orb.EarthRadius * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 	}
 
-	dLng = math.Abs(dLng)
-	if dLng > math.Pi {
-		dLng = 2*math.Pi - dLng
+	dLon = math.Abs(dLon)
+	if dLon > math.Pi {
+		dLon = 2*math.Pi - dLon
 	}
 
 	// fast way using pythagorean theorem on an equirectangular projection
-	x := dLng * math.Cos(deg2rad((p.Lat()+point.Lat())/2.0))
+	x := dLon * math.Cos(deg2rad((p.Lat()+point.Lat())/2.0))
 	return math.Sqrt(dLat*dLat+x*x) * orb.EarthRadius
 }
 
 // BearingTo computes the direction one must start traveling on earth
 // to be heading to the given point.
 func (p Point) BearingTo(point Point) float64 {
-	dLng := deg2rad(point.Lng() - p.Lng())
+	dLon := deg2rad(point.Lon() - p.Lon())
 
 	pLatRad := deg2rad(p.Lat())
 	pointLatRad := deg2rad(point.Lat())
 
-	y := math.Sin(dLng) * math.Cos(pointLatRad)
-	x := math.Cos(pLatRad)*math.Sin(pointLatRad) - math.Sin(pLatRad)*math.Cos(pointLatRad)*math.Cos(dLng)
+	y := math.Sin(dLon) * math.Cos(pointLatRad)
+	x := math.Cos(pLatRad)*math.Sin(pointLatRad) - math.Sin(pLatRad)*math.Cos(pointLatRad)*math.Cos(dLon)
 
 	return rad2deg(math.Atan2(y, x))
 }
 
 // Midpoint returns the half-way point along a great circle path between the two points.
 func (p Point) Midpoint(p2 Point) Point {
-	dLng := deg2rad(p2.Lng() - p.Lng())
+	dLon := deg2rad(p2.Lon() - p.Lon())
 
 	aLatRad := deg2rad(p.Lat())
 	bLatRad := deg2rad(p2.Lat())
 
-	x := math.Cos(bLatRad) * math.Cos(dLng)
-	y := math.Cos(bLatRad) * math.Sin(dLng)
+	x := math.Cos(bLatRad) * math.Cos(dLon)
+	y := math.Cos(bLatRad) * math.Sin(dLon)
 
 	r := Point{
-		deg2rad(p.Lng()) + math.Atan2(y, math.Cos(aLatRad)+x),
+		deg2rad(p.Lon()) + math.Atan2(y, math.Cos(aLatRad)+x),
 		math.Atan2(math.Sin(aLatRad)+math.Sin(bLatRad), math.Sqrt((math.Cos(aLatRad)+x)*(math.Cos(aLatRad)+x)+y*y)),
 	}
 
@@ -121,7 +121,7 @@ func (p Point) Midpoint(p2 Point) Point {
 // See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
 // about this coordinate system.
 func (p Point) Quadkey(level int) int64 {
-	x, y := mercator.ScalarProject(p.Lng(), p.Lat(), uint64(level))
+	x, y := mercator.ScalarProject(p.Lon(), p.Lat(), uint64(level))
 
 	var i uint
 	var result uint64
@@ -146,7 +146,7 @@ func (p Point) QuadkeyString(level int) string {
 
 const base32 = "0123456789bcdefghjkmnpqrstuvwxyz"
 
-// GeoHash returns the geohash string of a point representing a lng/lat location.
+// GeoHash returns the geohash string of a point representing a lon/lat location.
 // The resulting hash will be `GeoHashPrecision` characters long, default is 12.
 // Optionally one can include their required number of chars precision.
 func (p Point) GeoHash(precision int) string {
@@ -170,19 +170,19 @@ func (p Point) GeoHashInt64(bits int) (hash int64) {
 	// This code was inspired by https://github.com/broady/gogeohash
 
 	latMin, latMax := -90.0, 90.0
-	lngMin, lngMax := -180.0, 180.0
+	lonMin, lonMax := -180.0, 180.0
 
 	for i := 0; i < bits; i++ {
 		hash <<= 1
 
 		// interleave bits
 		if i%2 == 0 {
-			mid := (lngMin + lngMax) / 2.0
+			mid := (lonMin + lonMax) / 2.0
 			if p[0] > mid {
-				lngMin = mid
+				lonMin = mid
 				hash |= 1
 			} else {
-				lngMax = mid
+				lonMax = mid
 			}
 		} else {
 			mid := (latMin + latMax) / 2.0
@@ -208,8 +208,8 @@ func (p Point) Lat() float64 {
 	return p[1]
 }
 
-// Lng returns the longitude/horizontal component of the point.
-func (p Point) Lng() float64 {
+// Lon returns the longitude/horizontal component of the point.
+func (p Point) Lon() float64 {
 	return p[0]
 }
 
