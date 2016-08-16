@@ -238,15 +238,6 @@ func TestPathInterpolate(t *testing.T) {
 	}
 }
 
-func TestPathGeoJSON(t *testing.T) {
-	p := append(NewPath(), NewPoint(1, 2))
-
-	f := p.GeoJSON()
-	if !f.Geometry.IsLineString() {
-		t.Errorf("path, should be linestring geometry")
-	}
-}
-
 func TestPathWKT(t *testing.T) {
 	p := NewPath()
 

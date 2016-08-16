@@ -3,8 +3,6 @@ package planar
 import (
 	"fmt"
 	"math"
-
-	"github.com/paulmach/go.geojson"
 )
 
 // A Point is a simple X/Y or Lng/Lat 2d point. [X, Y] or [Lng, Lat]
@@ -64,11 +62,6 @@ func (p Point) X() float64 {
 // Y returns the y/vertical component of the point.
 func (p Point) Y() float64 {
 	return p[1]
-}
-
-// GeoJSON creates a new geojson feature with a point geometry.
-func (p Point) GeoJSON() *geojson.Feature {
-	return geojson.NewPointFeature([]float64{p[0], p[1]})
 }
 
 // WKT returns the point in WKT format, eg. POINT(30.5 10.5)

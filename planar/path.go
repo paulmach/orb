@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-
-	"github.com/paulmach/go.geojson"
 )
 
 // Path represents a set of points to be thought of as a polyline.
@@ -172,18 +170,6 @@ func (p Path) Equal(path Path) bool {
 func (p Path) Clone() Path {
 	ps := PointSet(p)
 	return Path(ps.Clone())
-}
-
-// GeoJSON creates a new geojson feature with a linestring geometry
-// containing all the points.
-func (p Path) GeoJSON() *geojson.Feature {
-	coords := make([][]float64, 0, len(p))
-
-	for _, point := range p {
-		coords = append(coords, []float64{point[0], point[1]})
-	}
-
-	return geojson.NewLineStringFeature(coords)
 }
 
 // WKT returns the path in WKT format, eg. LINESTRING(30 10,10 30,40 40)

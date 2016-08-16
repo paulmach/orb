@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-
-	"github.com/paulmach/go.geojson"
 )
 
 // Line represents the shortest path between A and B.
@@ -236,15 +234,6 @@ func (l Line) A() Point {
 // B returns a pointer to the second point in the line.
 func (l Line) B() Point {
 	return l.b
-}
-
-// GeoJSON creates a new geojson feature with a linestring geometry
-// containing the two points.
-func (l Line) GeoJSON() *geojson.Feature {
-	return geojson.NewLineStringFeature([][]float64{
-		{l.a[0], l.a[1]},
-		{l.b[0], l.b[1]},
-	})
 }
 
 // WKT returns the line in WKT format, eg. LINESTRING(30 10,10 30)

@@ -98,15 +98,6 @@ func TestPointEqual(t *testing.T) {
 	}
 }
 
-func TestPointToGeoJSON(t *testing.T) {
-	p := NewPoint(1, 2.5)
-
-	f := p.GeoJSON()
-	if !f.Geometry.IsPoint() {
-		t.Errorf("point, should be point geometry")
-	}
-}
-
 func TestPointWKT(t *testing.T) {
 	p := NewPoint(1, 2.5)
 

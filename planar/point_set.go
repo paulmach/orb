@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-
-	"github.com/paulmach/go.geojson"
 )
 
 // A PointSet represents a set of points in the 2D Eucledian or Cartesian plane.
@@ -99,17 +97,6 @@ func (ps PointSet) Equal(pointSet PointSet) bool {
 	}
 
 	return true
-}
-
-// GeoJSON creates a new geojson feature with a multipoint geometry
-// containing all the points.
-func (ps PointSet) GeoJSON() *geojson.Feature {
-	f := geojson.NewMultiPointFeature()
-	for _, v := range ps {
-		f.Geometry.MultiPoint = append(f.Geometry.MultiPoint, []float64{v[0], v[1]})
-	}
-
-	return f
 }
 
 // WKT returns the point set in WKT format,
