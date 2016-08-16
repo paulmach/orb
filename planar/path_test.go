@@ -206,6 +206,38 @@ func TestPathMeasure(t *testing.T) {
 	}
 }
 
+func TestPathInterpolate(t *testing.T) {
+	p := NewPath()
+	p = append(p, NewPoint(0, 0))
+	p = append(p, NewPoint(1, 1))
+	p = append(p, NewPoint(2, 2))
+	p = append(p, NewPoint(3, 3))
+
+	type testCase struct {
+		Percent float64
+		Result  Point
+	}
+
+	tests := []testCase{
+		{-0.1, NewPoint(0, 0)},
+		{0.0, NewPoint(0, 0)},
+		{0.1, NewPoint(0.3, 0.3)},
+		{0.2, NewPoint(0.6, 0.6)},
+		{0.25, NewPoint(0.75, 0.75)},
+		{0.5, NewPoint(1.5, 1.5)},
+		{0.75, NewPoint(2.25, 2.25)},
+		{1.0, NewPoint(3, 3)},
+		{1.1, NewPoint(3, 3)},
+	}
+
+	for i, test := range tests {
+		r := p.Interpolate(test.Percent)
+		if r != test.Result {
+			t.Errorf("incorrect result for %d: got %v, expected %v", i, r, test.Result)
+		}
+	}
+}
+
 func TestPathGeoJSON(t *testing.T) {
 	p := append(NewPath(), NewPoint(1, 2))
 

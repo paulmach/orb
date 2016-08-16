@@ -125,6 +125,32 @@ func (p Path) Measure(point Point) float64 {
 	return measure
 }
 
+// Interpolate interpolates the path by geo distance.
+func (p Path) Interpolate(percent float64) Point {
+	if percent <= 0 {
+		return p[0]
+	} else if percent >= 1 {
+		return p[len(p)-1]
+	}
+
+	destination := p.Distance() * percent
+	travelled := 0.0
+
+	for i := 0; i < len(p)-1; i++ {
+		dist := p[i].DistanceFrom(p[i+1])
+		if (travelled + dist) > destination {
+			factor := (destination - travelled) / dist
+			return Point{
+				p[i][0]*(1-factor) + p[i+1][0]*factor,
+				p[i][1]*(1-factor) + p[i+1][1]*factor,
+			}
+		}
+		travelled += dist
+	}
+
+	return p[0]
+}
+
 // Project computes the measure along this path closest to the given point,
 // normalized to the length of the path.
 func (p Path) Project(point Point) float64 {
