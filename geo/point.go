@@ -25,8 +25,8 @@ func NewPoint(x, y float64) Point {
 // NewPointFromQuadkey creates a new point from a quadkey.
 // See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
 // about this coordinate system.
-func NewPointFromQuadkey(key int64, level int) Point {
-	var x, y int64
+func NewPointFromQuadkey(key uint64, level int) Point {
+	var x, y uint64
 
 	var i uint
 	for i = 0; i < uint(level); i++ {
@@ -34,13 +34,13 @@ func NewPointFromQuadkey(key int64, level int) Point {
 		y |= (key & (1 << (2*i + 1))) >> (i + 1)
 	}
 
-	lon, lat := mercator.ScalarInverse(uint64(x), uint64(y), uint64(level))
+	lon, lat := mercator.ScalarInverse(x, y, uint64(level))
 	return Point{lon, lat}
 }
 
 // NewPointFromQuadkeyString creates a new point from a quadkey string.
 func NewPointFromQuadkeyString(key string) Point {
-	i, _ := strconv.ParseInt(key, 4, 64)
+	i, _ := strconv.ParseUint(key, 4, 64)
 	return NewPointFromQuadkey(i, len(key))
 }
 
@@ -120,7 +120,7 @@ func (p Point) Midpoint(p2 Point) Point {
 // Quadkey returns the quad key for the given point at the provided level.
 // See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
 // about this coordinate system.
-func (p Point) Quadkey(level int) int64 {
+func (p Point) Quadkey(level int) uint64 {
 	x, y := mercator.ScalarProject(p.Lon(), p.Lat(), uint64(level))
 
 	var i uint
@@ -130,14 +130,14 @@ func (p Point) Quadkey(level int) int64 {
 		result |= (y & (1 << i)) << (i + 1)
 	}
 
-	return int64(result)
+	return result
 }
 
 // QuadkeyString returns the quad key for the given point at the provided level in string form
 // See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
 // about this coordinate system.
 func (p Point) QuadkeyString(level int) string {
-	s := strconv.FormatInt(p.Quadkey(level), 4)
+	s := strconv.FormatUint(p.Quadkey(level), 4)
 
 	// for zero padding
 	zeros := "000000000000000000000000000000"
