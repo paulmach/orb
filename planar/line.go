@@ -226,12 +226,12 @@ func (l Line) Equal(line Line) bool {
 	return (l.a.Equal(line.a) && l.b.Equal(line.b)) || (l.a.Equal(line.b) && l.b.Equal(line.a))
 }
 
-// A returns a pointer to the first point in the line.
+// A returns the first point in the line.
 func (l Line) A() Point {
 	return l.a
 }
 
-// B returns a pointer to the second point in the line.
+// B returns the second point in the line.
 func (l Line) B() Point {
 	return l.b
 }

@@ -32,7 +32,7 @@ var Mercator = Projection{
 	Forward: func(g geo.Point) planar.Point {
 		y := math.Log(math.Tan((90.0+g.Lat())*math.Pi/360.0)) / math.Pi * mercatorPole
 		return planar.Point{
-			mercatorPole / 180.0 * g.Lng(),
+			mercatorPole / 180.0 * g.Lon(),
 			math.Max(-mercatorPole, math.Min(y, mercatorPole)),
 		}
 	},
@@ -54,37 +54,37 @@ func MercatorScaleFactor(g geo.Point) float64 {
 }
 
 // BuildTransverseMercator builds a transverse Mercator projection
-// that automatically recenters the longitude around the provided centerLng.
+// that automatically recenters the longitude around the provided centerLon.
 // Works correctly around the anti-meridian.
 // http://en.wikipedia.org/wiki/Transverse_Mercator_projection
-func BuildTransverseMercator(centerLng float64) Projection {
+func BuildTransverseMercator(centerLon float64) Projection {
 	return Projection{
 		Forward: func(g geo.Point) planar.Point {
-			lng := g.Lng() - centerLng
-			if lng < 180 {
-				lng += 360.0
+			lon := g.Lon() - centerLon
+			if lon < 180 {
+				lon += 360.0
 			}
 
-			if lng > 180 {
-				lng -= 360.0
+			if lon > 180 {
+				lon -= 360.0
 			}
 
-			g[0] = lng
+			g[0] = lon
 			return TransverseMercator.Forward(g)
 		},
 		Reverse: func(p planar.Point) geo.Point {
 			g := TransverseMercator.Reverse(p)
 
-			lng := g.Lng() + centerLng
-			if lng < 180 {
-				lng += 360.0
+			lon := g.Lon() + centerLon
+			if lon < 180 {
+				lon += 360.0
 			}
 
-			if lng > 180 {
-				lng -= 360.0
+			if lon > 180 {
+				lon -= 360.0
 			}
 
-			g[0] = lng
+			g[0] = lon
 			return g
 		},
 	}
@@ -95,29 +95,29 @@ func BuildTransverseMercator(centerLng float64) Projection {
 var TransverseMercator = Projection{
 	Forward: func(g geo.Point) planar.Point {
 		radLat := deg2rad(g.Lat())
-		radLng := deg2rad(g.Lng())
+		radLon := deg2rad(g.Lon())
 
-		sincos := math.Sin(radLng) * math.Cos(radLat)
+		sincos := math.Sin(radLon) * math.Cos(radLat)
 		return planar.Point{
 			0.5 * math.Log((1+sincos)/(1-sincos)) * orb.EarthRadius,
-			math.Atan(math.Tan(radLat)/math.Cos(radLng)) * orb.EarthRadius,
+			math.Atan(math.Tan(radLat)/math.Cos(radLon)) * orb.EarthRadius,
 		}
 	},
 	Reverse: func(p planar.Point) geo.Point {
 		x := p.X() / orb.EarthRadius
 		y := p.Y() / orb.EarthRadius
 
-		lng := math.Atan(math.Sinh(x) / math.Cos(y))
+		lon := math.Atan(math.Sinh(x) / math.Cos(y))
 		lat := math.Asin(math.Sin(y) / math.Cosh(x))
 
 		return geo.Point{
-			rad2deg(lng),
+			rad2deg(lon),
 			rad2deg(lat),
 		}
 	},
 }
 
-// ScalarMercator converts from lng/lat float64 to x,y uint64.
+// ScalarMercator converts from lon/lat float64 to x,y uint64.
 // This is the same as Google's world coordinates.
 var ScalarMercator struct {
 	Level   uint64
@@ -132,7 +132,7 @@ func init() {
 		if len(level) != 0 {
 			l = level[0]
 		}
-		return mercator.ScalarProject(g.Lng(), g.Lat(), l)
+		return mercator.ScalarProject(g.Lon(), g.Lat(), l)
 	}
 	ScalarMercator.Reverse = func(x, y uint64, level ...uint64) geo.Point {
 		l := ScalarMercator.Level
@@ -140,7 +140,7 @@ func init() {
 			l = level[0]
 		}
 
-		lng, lat := mercator.ScalarInverse(x, y, l)
-		return geo.Point{lng, lat}
+		lon, lat := mercator.ScalarInverse(x, y, l)
+		return geo.Point{lon, lat}
 	}
 }

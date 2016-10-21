@@ -5,7 +5,8 @@ package orb
 const EarthRadius = 6378137.0 // meters
 
 // Pointer is an interface for things that can express themselves as
-// generic x, y coordinates.
+// generic x, y coordinates. The function is not named Point so that
+// {geo,planar}.Point types can be embedded.
 type Pointer interface {
-	Point() (x, y float64)
+	XY() (x, y float64)
 }

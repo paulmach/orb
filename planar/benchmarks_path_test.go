@@ -46,6 +46,16 @@ func BenchmarkPathMeasure(b *testing.B) {
 	}
 }
 
+func BenchmarkPathInterpolate(b *testing.B) {
+	basePath := testPath1()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		basePath.Interpolate(float64(i) / float64(b.N))
+	}
+}
+
 func BenchmarkPathResampleToMorePoints(b *testing.B) {
 	path := testPath1()
 	totalPoints := int(float64(len(path)) * 1.616)
