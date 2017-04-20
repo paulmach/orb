@@ -44,10 +44,10 @@ func TestLineScan(t *testing.T) {
 	}
 }
 
-func TestBoundScan(t *testing.T) {
-	b := Bound{}
+func TestRectScan(t *testing.T) {
+	r := Rect{}
 	for i, test := range wkb.LineTestCases {
-		err := b.Scan(test.Data)
+		err := r.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
 				t.Errorf("test %d, incorrect error, got %v", i, err)
@@ -55,8 +55,8 @@ func TestBoundScan(t *testing.T) {
 			continue
 		}
 
-		if !b.Equal(pointsToLine(test.Points).Bound()) {
-			t.Errorf("test %d incorrect bound, got %v", i, b)
+		if !r.Equal(pointsToLine(test.Points).Bound()) {
+			t.Errorf("test %d incorrect rectangle, got %v", i, r)
 		}
 	}
 }

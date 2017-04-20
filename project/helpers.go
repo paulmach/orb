@@ -25,18 +25,18 @@ func PathReverse(path planar.Path, r Reverse) geo.Path {
 	return n
 }
 
-// BoundForward is a helper to project a bound.
-func BoundForward(bound geo.Bound, f Forward) planar.Bound {
-	return planar.NewBoundFromPoints(
+// RectForward is a helper to project a bound.
+func RectForward(bound geo.Rect, f Forward) planar.Rect {
+	return planar.NewRectFromPoints(
 		f(geo.Point(bound.SW)),
 		f(geo.Point(bound.NE)),
 	)
 
 }
 
-// BoundReverse is a helper to project a bound.
-func BoundReverse(bound planar.Bound, r Reverse) geo.Bound {
-	return geo.NewBoundFromPoints(
+// RectReverse is a helper to project a bound.
+func RectReverse(bound planar.Rect, r Reverse) geo.Rect {
+	return geo.NewRectFromPoints(
 		r(planar.Point(bound.SW)),
 		r(planar.Point(bound.NE)),
 	)

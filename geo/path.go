@@ -183,8 +183,8 @@ func (p Path) Distance(haversine ...bool) float64 {
 	return sum
 }
 
-// Bound returns a bound around the path. Uses rectangular coordinates.
-func (p Path) Bound() Bound {
+// Bound returns a rect around the path. Uses rectangular coordinates.
+func (p Path) Bound() Rect {
 	return PointSet(p).Bound()
 }
 

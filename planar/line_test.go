@@ -290,13 +290,13 @@ func TestLineMidpoint(t *testing.T) {
 }
 
 func TestLineBound(t *testing.T) {
-	var answer Bound
+	var answer Rect
 	a := NewPoint(1, 2)
 	b := NewPoint(3, 4)
 
 	l := NewLine(a, b)
 
-	answer = NewBound(1, 3, 2, 4)
+	answer = NewRect(1, 3, 2, 4)
 	if b := l.Bound(); !b.Equal(answer) {
 		t.Errorf("line, bounds expected %v, got %v", answer, b)
 	}

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	geo "."
+	"github.com/paulmach/orb/geo"
 )
 
 func BenchmarkPathEncode(b *testing.B) {

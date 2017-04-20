@@ -71,7 +71,7 @@ func TestPathBound(t *testing.T) {
 		NewPoint(1, 8),
 	)
 
-	answer := NewBound(-1, 1, 0, 10)
+	answer := NewRect(-1, 1, 0, 10)
 	if b := ps.Bound(); !b.Equal(answer) {
 		t.Errorf("bound, %v != %v", b, answer)
 	}

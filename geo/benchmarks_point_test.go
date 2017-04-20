@@ -3,7 +3,7 @@ package geo_test
 import (
 	"testing"
 
-	geo "."
+	"github.com/paulmach/orb/geo"
 )
 
 func BenchmarkPointDistanceFrom(b *testing.B) {

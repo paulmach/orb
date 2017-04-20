@@ -3,7 +3,7 @@ package planar_test
 import (
 	"testing"
 
-	planar "."
+	"github.com/paulmach/orb/planar"
 )
 
 func BenchmarkPointDistanceFrom(b *testing.B) {

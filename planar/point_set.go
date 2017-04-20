@@ -60,10 +60,10 @@ func (ps PointSet) DistanceFrom(point Point) (float64, int) {
 	return math.Sqrt(dist), index
 }
 
-// Bound returns a bound around the point set. Simply uses rectangular coordinates.
-func (ps PointSet) Bound() Bound {
+// Bound returns a rectangle bound around the point set. Simply uses rectangular coordinates.
+func (ps PointSet) Bound() Rect {
 	if len(ps) == 0 {
-		return NewBound(0, 0, 0, 0)
+		return NewRect(0, 0, 0, 0)
 	}
 
 	minX := math.Inf(1)
@@ -80,7 +80,7 @@ func (ps PointSet) Bound() Bound {
 		maxY = math.Max(maxY, v.Y())
 	}
 
-	return NewBound(maxX, minX, maxY, minY)
+	return NewRect(maxX, minX, maxY, minY)
 }
 
 // Equal compares two point sets. Returns true if lengths are the same

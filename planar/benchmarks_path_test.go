@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	planar "."
+	"github.com/paulmach/orb/planar"
 )
 
 func BenchmarkPathDistanceFrom(b *testing.B) {

@@ -155,8 +155,8 @@ func (p Path) Project(point Point) float64 {
 	return p.Measure(point) / p.Distance()
 }
 
-// Bound returns a bound around the path. Uses rectangular coordinates.
-func (p Path) Bound() Bound {
+// Bound returns a rectangle bound around the path. Uses rectangular coordinates.
+func (p Path) Bound() Rect {
 	return PointSet(p).Bound()
 }
 

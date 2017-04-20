@@ -27,8 +27,8 @@ func TestPointScan(t *testing.T) {
 	}
 }
 
-func TestBoundScan(t *testing.T) {
-	b := Bound{}
+func TestRectScan(t *testing.T) {
+	b := Rect{}
 	for i, test := range wkb.LineTestCases {
 		err := b.Scan(test.Data)
 		if err != nil {

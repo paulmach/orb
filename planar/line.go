@@ -208,9 +208,9 @@ func (l Line) Midpoint() Point {
 	return Point{(l.a[0] + l.b[0]) / 2, (l.a[1] + l.b[1]) / 2}
 }
 
-// Bound returns a bound around the line. Simply uses rectangular coordinates.
-func (l Line) Bound() Bound {
-	return NewBound(math.Max(l.a[0], l.b[0]), math.Min(l.a[0], l.b[0]),
+// Bound returns a rectangle bound around the line. Simply uses rectangular coordinates.
+func (l Line) Bound() Rect {
+	return NewRect(math.Max(l.a[0], l.b[0]), math.Min(l.a[0], l.b[0]),
 		math.Max(l.a[1], l.b[1]), math.Min(l.a[1], l.b[1]))
 }
 
