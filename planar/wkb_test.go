@@ -78,9 +78,9 @@ func TestMultiPointScan(t *testing.T) {
 	}
 }
 
-func TestPathScan(t *testing.T) {
-	p := Path{}
-	for i, test := range wkb.PathTestCases {
+func TestLineStringScan(t *testing.T) {
+	p := LineString{}
+	for i, test := range wkb.LineStringTestCases {
 		err := p.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
@@ -89,8 +89,8 @@ func TestPathScan(t *testing.T) {
 			continue
 		}
 
-		if !p.Equal(pointsToPath(test.Points)) {
-			t.Errorf("test %d incorrect path, got %v", i, p)
+		if !p.Equal(pointsToLineString(test.Points)) {
+			t.Errorf("test %d incorrect line string, got %v", i, p)
 		}
 	}
 }
@@ -107,10 +107,10 @@ func pointsToMultiPoint(points [][2]float64) MultiPoint {
 	return p
 }
 
-func pointsToPath(points [][2]float64) Path {
-	p := NewPath()
+func pointsToLineString(points [][2]float64) LineString {
+	ls := NewLineString()
 	for _, point := range points {
-		p = append(p, Point(point))
+		ls = append(ls, Point(point))
 	}
-	return p
+	return ls
 }

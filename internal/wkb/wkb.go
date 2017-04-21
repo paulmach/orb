@@ -61,7 +61,7 @@ func ReadPoint(data []byte) (float64, float64, error) {
 
 // ValidateLine checks the wkb input for a two point linestring.
 func ValidateLine(value interface{}) ([]byte, bool, error) {
-	data, littleEndian, length, err := ValidatePath(value)
+	data, littleEndian, length, err := ValidateLineString(value)
 	if err != nil {
 		return data, littleEndian, err
 	}
@@ -101,8 +101,8 @@ func ValidateMultiPoint(value interface{}) ([]byte, bool, int, error) {
 	return data[9:], littleEndian, length, nil
 }
 
-// ValidatePath checks the wkb for a linestring geometry.
-func ValidatePath(value interface{}) ([]byte, bool, int, error) {
+// ValidateLineString checks the wkb for a linestring geometry.
+func ValidateLineString(value interface{}) ([]byte, bool, int, error) {
 	data, ok := value.([]byte)
 	if !ok {
 		return nil, false, 0, orb.ErrUnsupportedDataType

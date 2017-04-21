@@ -21,11 +21,11 @@ func BenchmarkPointScan(b *testing.B) {
 	}
 }
 
-func BenchmarkPathScan(b *testing.B) {
-	ps := NewPath()
+func BenchmarkLineStringScan(b *testing.B) {
+	ls := NewLineString()
 
-	testPathWKB := wkb.PathTestCases[0].Data
-	err := ps.Scan(testPathWKB)
+	testLineStringWKB := wkb.LineStringTestCases[0].Data
+	err := ls.Scan(testLineStringWKB)
 	if err != nil {
 		b.Fatalf("should scan without error, got %v", err)
 	}
@@ -33,6 +33,6 @@ func BenchmarkPathScan(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ps.Scan(testPathWKB)
+		ls.Scan(testLineStringWKB)
 	}
 }

@@ -134,39 +134,18 @@ func TestMultiPointWKT(t *testing.T) {
 
 	answer := "EMPTY"
 	if s := mp.WKT(); s != answer {
-		t.Errorf("incorrect string: %v != %v", s, answer)
+		t.Errorf("incorrect wkt: %v != %v", s, answer)
 	}
 
 	mp = append(mp, NewPoint(1, 2))
 	answer = "MULTIPOINT(1 2)"
 	if s := mp.WKT(); s != answer {
-		t.Errorf("incorrect string: %v != %v", s, answer)
+		t.Errorf("incorrect wkt: %v != %v", s, answer)
 	}
 
 	mp = append(mp, NewPoint(3, 4))
 	answer = "MULTIPOINT(1 2,3 4)"
 	if s := mp.WKT(); s != answer {
-		t.Errorf("incorrect string: %v != %v", s, answer)
-	}
-}
-
-func TestMultiPointString(t *testing.T) {
-	mp := NewMultiPoint()
-
-	answer := "EMPTY"
-	if s := mp.String(); s != answer {
-		t.Errorf("incorrect string: %v != %v", s, answer)
-	}
-
-	mp = append(mp, NewPoint(1, 2))
-	answer = "MULTIPOINT(1 2)"
-	if s := mp.String(); s != answer {
-		t.Errorf("incorrect string: %v != %v", s, answer)
-	}
-
-	mp = append(mp, NewPoint(3, 4))
-	answer = "MULTIPOINT(1 2,3 4)"
-	if s := mp.String(); s != answer {
-		t.Errorf("incorrect string: %v != %v", s, answer)
+		t.Errorf("incorrect wkt: %v != %v", s, answer)
 	}
 }

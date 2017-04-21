@@ -18,11 +18,11 @@ func TestPointScan(t *testing.T) {
 		}
 
 		if test.X != p[0] {
-			t.Errorf("test %d incorrect x, got %v", i, p[0])
+			t.Errorf("test %d, incorrect x: %v", i, p[0])
 		}
 
 		if test.Y != p[1] {
-			t.Errorf("test %d incorrect y, got %v", i, p[1])
+			t.Errorf("test %d, incorrect y: %v", i, p[1])
 		}
 	}
 }
@@ -33,47 +33,47 @@ func TestRectScan(t *testing.T) {
 		err := b.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
-				t.Errorf("test %d, incorrect error, got %v", i, err)
+				t.Errorf("test %d, incorrect error: %v", i, err)
 			}
 			continue
 		}
 
-		if !b.Equal(pointsToPath(test.Points).Bound()) {
-			t.Errorf("test %d incorrect bound, got %v", i, b)
+		if !b.Equal(pointsToLineString(test.Points).Bound()) {
+			t.Errorf("test %d, incorrect bound: %v", i, b)
 		}
 	}
 }
 
 func TestMultiPointScan(t *testing.T) {
-	p := MultiPoint{}
+	mp := MultiPoint{}
 	for i, test := range wkb.MultiPointTestCases {
-		err := p.Scan(test.Data)
+		err := mp.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
-				t.Errorf("test %d, incorrect error, got %v", i, err)
+				t.Errorf("test %d, incorrect error: %v", i, err)
 			}
 			continue
 		}
 
-		if !p.Equal(pointsToMultiPoint(test.Points)) {
-			t.Errorf("test %d incorrect point set, got %v", i, p)
+		if !mp.Equal(pointsToMultiPoint(test.Points)) {
+			t.Errorf("test %d, incorrect points: %v", i, mp)
 		}
 	}
 }
 
-func TestPathScan(t *testing.T) {
-	p := Path{}
-	for i, test := range wkb.PathTestCases {
-		err := p.Scan(test.Data)
+func TestLineStringScan(t *testing.T) {
+	ls := LineString{}
+	for i, test := range wkb.LineStringTestCases {
+		err := ls.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
-				t.Errorf("test %d, incorrect error, got %v", i, err)
+				t.Errorf("test %d, incorrect error: %v", i, err)
 			}
 			continue
 		}
 
-		if !p.Equal(pointsToPath(test.Points)) {
-			t.Errorf("test %d incorrect path, got %v", i, p)
+		if !ls.Equal(pointsToLineString(test.Points)) {
+			t.Errorf("test %d, incorrect line string: %v", i, ls)
 		}
 	}
 }
@@ -86,10 +86,10 @@ func pointsToMultiPoint(points [][2]float64) MultiPoint {
 	return mp
 }
 
-func pointsToPath(points [][2]float64) Path {
-	p := NewPath()
+func pointsToLineString(points [][2]float64) LineString {
+	ls := NewLineString()
 	for _, point := range points {
-		p = append(p, Point(point))
+		ls = append(ls, Point(point))
 	}
-	return p
+	return ls
 }

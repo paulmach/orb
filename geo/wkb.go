@@ -27,13 +27,13 @@ func readWKBPoint(data []byte, littleEndian bool) Point {
 // Scan implements the sql.Scanner interface allowing
 // Rect to be read in as the bound of a two point line string.
 func (r *Rect) Scan(value interface{}) error {
-	p := Path{} // TOOD: once we have line type, use that.
-	err := p.Scan(value)
+	ls := LineString{} // TOOD: once we have line type, use that.
+	err := ls.Scan(value)
 	if err != nil {
 		return err
 	}
 
-	*r = p.Bound()
+	*r = ls.Bound()
 	return nil
 }
 
@@ -74,22 +74,22 @@ func unWKBMultiPoint(data []byte, littleEndian bool, length int) (MultiPoint, er
 // or an error will be returned. Data must be fetched in WKB format.
 // Will attempt to parse MySQL's SRID+WKB format if obviously no WKB
 // or parsing as WKB fails.
-// If the column is empty (not null) an empty path will be returned.
-func (p *Path) Scan(value interface{}) error {
-	data, littleEndian, length, err := wkb.ValidatePath(value)
+// If the column is empty (not null) an empty line string will be returned.
+func (ls *LineString) Scan(value interface{}) error {
+	data, littleEndian, length, err := wkb.ValidateLineString(value)
 	if err != nil || data == nil {
 		return err
 	}
 
-	*p, err = unWKBPath(data, littleEndian, length)
+	*ls, err = unWKBLineString(data, littleEndian, length)
 	return err
 }
 
-func unWKBPath(data []byte, littleEndian bool, length int) (Path, error) {
+func unWKBLineString(data []byte, littleEndian bool, length int) (LineString, error) {
 	points := make([]Point, length, length)
 	for i := 0; i < length; i++ {
 		points[i] = readWKBPoint(data[16*i:], littleEndian)
 	}
 
-	return Path(points), nil
+	return LineString(points), nil
 }

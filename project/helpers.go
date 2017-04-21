@@ -5,9 +5,9 @@ import (
 	"github.com/paulmach/orb/planar"
 )
 
-// PathForward is a helper to project an entire path.
-func PathForward(path geo.Path, f Forward) planar.Path {
-	n := planar.NewPathPreallocate(len(path), len(path))
+// LineStringForward is a helper to project an entire line string.
+func LineStringForward(path geo.LineString, f Forward) planar.LineString {
+	n := planar.NewLineStringPreallocate(len(path), len(path))
 	for i := range path {
 		n[i] = f(path[i])
 	}
@@ -15,9 +15,9 @@ func PathForward(path geo.Path, f Forward) planar.Path {
 	return n
 }
 
-// PathReverse is a helper to project an entire path.
-func PathReverse(path planar.Path, r Reverse) geo.Path {
-	n := geo.NewPathPreallocate(len(path), len(path))
+// LineStringReverse is a helper to project an entire line string.
+func LineStringReverse(path planar.LineString, r Reverse) geo.LineString {
+	n := geo.NewLineStringPreallocate(len(path), len(path))
 	for i := range path {
 		n[i] = r(path[i])
 	}
@@ -25,7 +25,7 @@ func PathReverse(path planar.Path, r Reverse) geo.Path {
 	return n
 }
 
-// RectForward is a helper to project a bound.
+// RectForward is a helper to project a rectangle.
 func RectForward(bound geo.Rect, f Forward) planar.Rect {
 	return planar.NewRectFromPoints(
 		f(geo.Point(bound.SW)),
@@ -34,7 +34,7 @@ func RectForward(bound geo.Rect, f Forward) planar.Rect {
 
 }
 
-// RectReverse is a helper to project a bound.
+// RectReverse is a helper to project a rectangle.
 func RectReverse(bound planar.Rect, r Reverse) geo.Rect {
 	return geo.NewRectFromPoints(
 		r(planar.Point(bound.SW)),

@@ -119,28 +119,28 @@ var MultiPointTestCases = []MultiPointTestCase{
 	},
 }
 
-var testPathWKB = []byte{1, 2, 0, 0, 0, 6, 0, 0, 0, 205, 228, 155, 109, 110, 114, 87, 192, 174, 158, 147, 222, 55, 50, 64, 64, 134, 56, 214, 197, 109, 114, 87, 192, 238, 235, 192, 57, 35, 50, 64, 64, 173, 47, 18, 218, 114, 114, 87, 192, 25, 4, 86, 14, 45, 50, 64, 64, 10, 75, 60, 160, 108, 114, 87, 192, 224, 161, 40, 208, 39, 50, 64, 64, 149, 159, 84, 251, 116, 114, 87, 192, 96, 147, 53, 234, 33, 50, 64, 64, 195, 158, 118, 248, 107, 114, 87, 192, 89, 139, 79, 1, 48, 50, 64, 64}
+var testLineStringWKB = []byte{1, 2, 0, 0, 0, 6, 0, 0, 0, 205, 228, 155, 109, 110, 114, 87, 192, 174, 158, 147, 222, 55, 50, 64, 64, 134, 56, 214, 197, 109, 114, 87, 192, 238, 235, 192, 57, 35, 50, 64, 64, 173, 47, 18, 218, 114, 114, 87, 192, 25, 4, 86, 14, 45, 50, 64, 64, 10, 75, 60, 160, 108, 114, 87, 192, 224, 161, 40, 208, 39, 50, 64, 64, 149, 159, 84, 251, 116, 114, 87, 192, 96, 147, 53, 234, 33, 50, 64, 64, 195, 158, 118, 248, 107, 114, 87, 192, 89, 139, 79, 1, 48, 50, 64, 64}
 
-// PathTestCase is used to get path scanning.
-type PathTestCase struct {
+// LineStringTestCase is used to get line string scanning.
+type LineStringTestCase struct {
 	Points [][2]float64
 	Data   interface{}
 	Err    error
 }
 
-// PathTestCases check different path scanning behavior.
-var PathTestCases = []PathTestCase{
+// LineStringTestCases check different line string scanning behavior.
+var LineStringTestCases = []LineStringTestCase{
 	{
 		Points: [][2]float64{{-93.78799, 32.39233}, {-93.78795, 32.3917}, {-93.78826, 32.392}, {-93.78788, 32.39184}, {-93.78839, 32.39166}, {-93.78784, 32.39209}},
-		Data:   testPathWKB,
+		Data:   testLineStringWKB,
 	},
 	{
 		Points: [][2]float64{{-93.78799, 32.39233}, {-93.78795, 32.3917}, {-93.78826, 32.392}, {-93.78788, 32.39184}, {-93.78839, 32.39166}, {-93.78784, 32.39209}},
-		Data:   append([]byte{215, 15, 0, 0}, testPathWKB...),
+		Data:   append([]byte{215, 15, 0, 0}, testLineStringWKB...),
 	},
 	{
 		Points: [][2]float64{{-93.78799, 32.39233}, {-93.78795, 32.3917}, {-93.78826, 32.392}, {-93.78788, 32.39184}, {-93.78839, 32.39166}, {-93.78784, 32.39209}},
-		Data:   append([]byte{0, 0, 0, 0}, testPathWKB...),
+		Data:   append([]byte{0, 0, 0, 0}, testLineStringWKB...),
 	},
 	{
 		Data: 123,

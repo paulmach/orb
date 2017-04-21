@@ -1,54 +1,53 @@
 package planar
 
 // Resample converts the path into totalPoints-1 evenly spaced segments.
-// Assumes euclidean geometry.
-func (p Path) Resample(totalPoints int) Path {
+func (ls LineString) Resample(totalPoints int) LineString {
 	if totalPoints <= 0 {
-		return Path(make([]Point, 0))
+		return LineString{}
 	}
 
-	p, ret := p.resampleEdgeCases(totalPoints)
+	ls, ret := ls.resampleEdgeCases(totalPoints)
 	if ret {
-		return p
+		return ls
 	}
 
 	// precomputes the total distance and intermediate distances
-	total, dists := precomputeDistances([]Point(p))
-	return p.resample(dists, total, totalPoints)
+	total, dists := precomputeDistances(ls)
+	return ls.resample(dists, total, totalPoints)
 }
 
 // ResampleWithInterval coverts the path into evenly spaced points of
 // about the given distance. The total distance is computed using euclidean
 // geometry and then divided by the given distance to get the number of segments.
-func (p Path) ResampleWithInterval(dist float64) Path {
+func (ls LineString) ResampleWithInterval(dist float64) LineString {
 	if dist <= 0 {
-		return Path(make([]Point, 0))
+		return LineString{}
 	}
 
 	// precomputes the total distance and intermediate distances
-	total, dists := precomputeDistances([]Point(p))
+	total, dists := precomputeDistances(ls)
 
 	totalPoints := int(total/dist) + 1
-	p, ret := p.resampleEdgeCases(totalPoints)
+	ls, ret := ls.resampleEdgeCases(totalPoints)
 	if ret {
-		return p
+		return ls
 	}
 
-	return p.resample(dists, total, totalPoints)
+	return ls.resample(dists, total, totalPoints)
 }
 
-func (p Path) resample(distances []float64, totalDistance float64, totalPoints int) Path {
+func (ls LineString) resample(distances []float64, totalDistance float64, totalPoints int) LineString {
 	points := make([]Point, 1, totalPoints)
-	points[0] = p[0] // start stays the same
+	points[0] = ls[0] // start stays the same
 
 	step := 1
 	distance := 0.0
 
 	currentDistance := totalDistance / float64(totalPoints-1)
 	currentLine := Line{} // declare here and update has nice performance benefits
-	for i := 0; i < len(p)-1; i++ {
-		currentLine.a = p[i]
-		currentLine.b = p[i+1]
+	for i := 0; i < len(ls)-1; i++ {
+		currentLine.a = ls[i]
+		currentLine.b = ls[i+1]
 
 		currentLineDistance := distances[i]
 		nextDistance := distance + currentLineDistance
@@ -75,55 +74,55 @@ func (p Path) resample(distances []float64, totalDistance float64, totalPoints i
 
 	// end stays the same, to handle round off errors
 	if totalPoints != 1 { // for 1, we want the first point
-		points[totalPoints-1] = p[len(p)-1]
+		points[totalPoints-1] = ls[len(ls)-1]
 	}
 
-	return Path(points)
+	return LineString(points)
 }
 
 // resampleEdgeCases is used to handle edge case for
 // resampling like not enough points and the path is all the same point.
 // will return nil if there are no edge cases. If return true if
 // one of these edge cases was found and handled.
-func (p Path) resampleEdgeCases(totalPoints int) (Path, bool) {
+func (ls LineString) resampleEdgeCases(totalPoints int) (LineString, bool) {
 	// degenerate case
-	if len(p) <= 1 {
-		return p, true
+	if len(ls) <= 1 {
+		return ls, true
 	}
 
 	// if all the points are the same, treat as special case.
 	equal := true
-	for _, point := range p {
-		if !p[0].Equal(point) {
+	for _, point := range ls {
+		if !ls[0].Equal(point) {
 			equal = false
 			break
 		}
 	}
 
 	if equal {
-		if totalPoints > len(p) {
+		if totalPoints > len(ls) {
 			// extend to be requested length
-			for len(p) != totalPoints {
-				p = append(p, p[0])
+			for len(ls) != totalPoints {
+				ls = append(ls, ls[0])
 			}
 
-			return p, true
+			return ls, true
 		}
 
 		// contract to be requested length
-		p = p[:totalPoints]
-		return p, true
+		ls = ls[:totalPoints]
+		return ls, true
 	}
 
-	return p, false
+	return ls, false
 }
 
 // precomputeDistances precomputes the total distance and intermediate distances.
-func precomputeDistances(p []Point) (float64, []float64) {
+func precomputeDistances(ls LineString) (float64, []float64) {
 	total := 0.0
-	dists := make([]float64, len(p)-1)
-	for i := 0; i < len(p)-1; i++ {
-		dists[i] = p[i].DistanceFrom(p[i+1])
+	dists := make([]float64, len(ls)-1)
+	for i := 0; i < len(ls)-1; i++ {
+		dists[i] = ls[i].DistanceFrom(ls[i+1])
 		total += dists[i]
 	}
 
