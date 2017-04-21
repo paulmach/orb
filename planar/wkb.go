@@ -42,8 +42,8 @@ func (s *Segment) Scan(value interface{}) error {
 
 func unWKBSegment(data []byte, littleEndian bool) (Segment, error) {
 	return Segment{
-		a: readWKBPoint(data[:16], littleEndian),
-		b: readWKBPoint(data[16:], littleEndian),
+		readWKBPoint(data[:16], littleEndian),
+		readWKBPoint(data[16:], littleEndian),
 	}, nil
 }
 

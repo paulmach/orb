@@ -36,28 +36,29 @@ func (ls LineString) ResampleWithInterval(dist float64) LineString {
 	return ls.resample(dists, total, totalPoints)
 }
 
-func (ls LineString) resample(distances []float64, totalDistance float64, totalPoints int) LineString {
+func (ls LineString) resample(dists []float64, totalDistance float64, totalPoints int) LineString {
 	points := make([]Point, 1, totalPoints)
 	points[0] = ls[0] // start stays the same
 
 	step := 1
-	distance := 0.0
+	dist := 0.0
 
 	currentDistance := totalDistance / float64(totalPoints-1)
-	currentSegment := Segment{} // declare here and update has nice performance benefits
+	// declare here and update had nice performance benefits need to retest
+	currentSeg := Segment{}
 	for i := 0; i < len(ls)-1; i++ {
-		currentSegment.a = ls[i]
-		currentSegment.b = ls[i+1]
+		currentSeg[0] = ls[i]
+		currentSeg[1] = ls[i+1]
 
-		currentSegmentDistance := distances[i]
-		nextDistance := distance + currentSegmentDistance
+		currentSegDistance := dists[i]
+		nextDistance := dist + currentSegDistance
 
 		for currentDistance <= nextDistance {
 			// need to add a point
-			percent := (currentDistance - distance) / currentSegmentDistance
+			percent := (currentDistance - dist) / currentSegDistance
 			points = append(points, Point{
-				currentSegment.a[0] + percent*(currentSegment.b[0]-currentSegment.a[0]),
-				currentSegment.a[1] + percent*(currentSegment.b[1]-currentSegment.a[1]),
+				currentSeg[0][0] + percent*(currentSeg[1][0]-currentSeg[0][0]),
+				currentSeg[0][1] + percent*(currentSeg[1][1]-currentSeg[0][1]),
 			})
 
 			// move to the next distance we want
@@ -69,7 +70,7 @@ func (ls LineString) resample(distances []float64, totalDistance float64, totalP
 		}
 
 		// past the current point in the original segment, so move to the next one
-		distance = nextDistance
+		dist = nextDistance
 	}
 
 	// end stays the same, to handle round off errors

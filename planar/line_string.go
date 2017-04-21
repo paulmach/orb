@@ -95,8 +95,8 @@ func (ls LineString) DistanceFromSquared(point Point) float64 {
 	seg := Segment{}
 	loopTo := len(ls) - 1
 	for i := 0; i < loopTo; i++ {
-		seg.a = ls[i]
-		seg.b = ls[i+1]
+		seg[0] = ls[i]
+		seg[1] = ls[i+1]
 		dist = math.Min(seg.DistanceFromSquared(point), dist)
 	}
 
@@ -138,8 +138,8 @@ func (ls LineString) Project(point Point) float64 {
 
 	seg := Segment{}
 	for i := 0; i < len(ls)-1; i++ {
-		seg.a = ls[i]
-		seg.b = ls[i+1]
+		seg[0] = ls[i]
+		seg[1] = ls[i+1]
 
 		distanceToLine := seg.DistanceFromSquared(point)
 		segDistance := seg.Distance()
@@ -168,8 +168,8 @@ func (ls LineString) Centroid() Point {
 
 	seg := Segment{}
 	for i := 0; i < len(ls)-1; i++ {
-		seg.a = ls[i]
-		seg.b = ls[i+1]
+		seg[0] = ls[i]
+		seg[1] = ls[i+1]
 
 		d := seg.Distance()
 		centroid := seg.Interpolate(0.5)
