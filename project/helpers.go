@@ -5,28 +5,28 @@ import (
 	"github.com/paulmach/orb/planar"
 )
 
-// LineStringForward is a helper to project an entire line string.
-func LineStringForward(path geo.LineString, f Forward) planar.LineString {
-	n := planar.NewLineStringPreallocate(len(path), len(path))
-	for i := range path {
-		n[i] = f(path[i])
+// ForwardLineString is a helper to project an entire line string.
+func ForwardLineString(ls geo.LineString, f func(geo.Point) planar.Point) planar.LineString {
+	n := planar.NewLineStringPreallocate(len(ls), len(ls))
+	for i := range ls {
+		n[i] = f(ls[i])
 	}
 
 	return n
 }
 
-// LineStringReverse is a helper to project an entire line string.
-func LineStringReverse(path planar.LineString, r Reverse) geo.LineString {
-	n := geo.NewLineStringPreallocate(len(path), len(path))
-	for i := range path {
-		n[i] = r(path[i])
+// ReverseLineString is a helper to project an entire line string.
+func ReverseLineString(ls planar.LineString, r func(planar.Point) geo.Point) geo.LineString {
+	n := geo.NewLineStringPreallocate(len(ls), len(ls))
+	for i := range ls {
+		n[i] = r(ls[i])
 	}
 
 	return n
 }
 
-// RectForward is a helper to project a rectangle.
-func RectForward(bound geo.Rect, f Forward) planar.Rect {
+// ForwardRect is a helper to project a rectangle.
+func ForwardRect(bound geo.Rect, f func(geo.Point) planar.Point) planar.Rect {
 	return planar.NewRectFromPoints(
 		f(geo.Point(bound.SW)),
 		f(geo.Point(bound.NE)),
@@ -34,8 +34,8 @@ func RectForward(bound geo.Rect, f Forward) planar.Rect {
 
 }
 
-// RectReverse is a helper to project a rectangle.
-func RectReverse(bound planar.Rect, r Reverse) geo.Rect {
+// ReverseRect is a helper to project a rectangle.
+func ReverseRect(bound planar.Rect, r func(planar.Point) geo.Point) geo.Rect {
 	return geo.NewRectFromPoints(
 		r(planar.Point(bound.SW)),
 		r(planar.Point(bound.NE)),

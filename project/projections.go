@@ -12,16 +12,13 @@ import (
 
 // Transformation functions that define how projections work.
 type (
-	// Forward is a function that projects from geo to planar.
-	Forward func(geo.Point) planar.Point
-
-	// Reverse is a function that projects from planar to geo.
-	Reverse func(planar.Point) geo.Point
-
 	// A Projection can transform between both planar and geo spaces.
 	Projection struct {
-		Forward Forward
-		Reverse Reverse
+		// Forward is a function that projects from geo to planar.
+		Forward func(geo.Point) planar.Point
+
+		// Reverse is a function that projects from planar to geo.
+		Reverse func(planar.Point) geo.Point
 	}
 )
 
