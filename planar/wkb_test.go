@@ -12,51 +12,51 @@ func TestPointScan(t *testing.T) {
 		err := p.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
-				t.Errorf("test %d, incorrect error, got %v", i, err)
+				t.Errorf("test %d, incorrect error: %v", i, err)
 			}
 			continue
 		}
 
 		if test.X != p[0] {
-			t.Errorf("test %d incorrect x, got %v", i, p[0])
+			t.Errorf("test %d, incorrect x: %v != %v", i, p[0], test.X)
 		}
 
 		if test.Y != p[1] {
-			t.Errorf("test %d incorrect y, got %v", i, p[1])
+			t.Errorf("test %d, incorrect y: %v != %v", i, p[1], test.Y)
 		}
 	}
 }
 
-func TestLineScan(t *testing.T) {
-	l := Line{}
-	for i, test := range wkb.LineTestCases {
-		err := l.Scan(test.Data)
+func TestSegmentScan(t *testing.T) {
+	s := Segment{}
+	for i, test := range wkb.SegmentTestCases {
+		err := s.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
-				t.Errorf("test %d, incorrect error, got %v", i, err)
+				t.Errorf("test %d, incorrect error: %v", i, err)
 			}
 			continue
 		}
 
-		if !l.Equal(pointsToLine(test.Points)) {
-			t.Errorf("test %d incorrect line, got %v", i, l)
+		if !s.Equal(pointsToSegment(test.Points)) {
+			t.Errorf("test %d, incorrect line: %v", i, s)
 		}
 	}
 }
 
 func TestRectScan(t *testing.T) {
 	r := Rect{}
-	for i, test := range wkb.LineTestCases {
+	for i, test := range wkb.SegmentTestCases {
 		err := r.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
-				t.Errorf("test %d, incorrect error, got %v", i, err)
+				t.Errorf("test %d, incorrect error: %v", i, err)
 			}
 			continue
 		}
 
-		if !r.Equal(pointsToLine(test.Points).Bound()) {
-			t.Errorf("test %d incorrect rectangle, got %v", i, r)
+		if !r.Equal(pointsToSegment(test.Points).Bound()) {
+			t.Errorf("test %d, incorrect rectangle: %v", i, r)
 		}
 	}
 }
@@ -67,13 +67,13 @@ func TestMultiPointScan(t *testing.T) {
 		err := p.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
-				t.Errorf("test %d, incorrect error, got %v", i, err)
+				t.Errorf("test %d, incorrect error: %v", i, err)
 			}
 			continue
 		}
 
 		if !p.Equal(pointsToMultiPoint(test.Points)) {
-			t.Errorf("test %d incorrect point set, got %v", i, p)
+			t.Errorf("test %d, incorrect multi point: %v", i, p)
 		}
 	}
 }
@@ -84,19 +84,19 @@ func TestLineStringScan(t *testing.T) {
 		err := p.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
-				t.Errorf("test %d, incorrect error, got %v", i, err)
+				t.Errorf("test %d, incorrect error: %v", i, err)
 			}
 			continue
 		}
 
 		if !p.Equal(pointsToLineString(test.Points)) {
-			t.Errorf("test %d incorrect line string, got %v", i, p)
+			t.Errorf("test %d, incorrect line string: %v", i, p)
 		}
 	}
 }
 
-func pointsToLine(p [][2]float64) Line {
-	return NewLine(Point(p[0]), Point(p[1]))
+func pointsToSegment(p [][2]float64) Segment {
+	return NewSegment(Point(p[0]), Point(p[1]))
 }
 
 func pointsToMultiPoint(points [][2]float64) MultiPoint {

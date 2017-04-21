@@ -44,20 +44,20 @@ func (ls LineString) resample(distances []float64, totalDistance float64, totalP
 	distance := 0.0
 
 	currentDistance := totalDistance / float64(totalPoints-1)
-	currentLine := Line{} // declare here and update has nice performance benefits
+	currentSegment := Segment{} // declare here and update has nice performance benefits
 	for i := 0; i < len(ls)-1; i++ {
-		currentLine.a = ls[i]
-		currentLine.b = ls[i+1]
+		currentSegment.a = ls[i]
+		currentSegment.b = ls[i+1]
 
-		currentLineDistance := distances[i]
-		nextDistance := distance + currentLineDistance
+		currentSegmentDistance := distances[i]
+		nextDistance := distance + currentSegmentDistance
 
 		for currentDistance <= nextDistance {
 			// need to add a point
-			percent := (currentDistance - distance) / currentLineDistance
+			percent := (currentDistance - distance) / currentSegmentDistance
 			points = append(points, Point{
-				currentLine.a[0] + percent*(currentLine.b[0]-currentLine.a[0]),
-				currentLine.a[1] + percent*(currentLine.b[1]-currentLine.a[1]),
+				currentSegment.a[0] + percent*(currentSegment.b[0]-currentSegment.a[0]),
+				currentSegment.a[1] + percent*(currentSegment.b[1]-currentSegment.a[1]),
 			})
 
 			// move to the next distance we want
@@ -68,7 +68,7 @@ func (ls LineString) resample(distances []float64, totalDistance float64, totalP
 			}
 		}
 
-		// past the current point in the original line, so move to the next one
+		// past the current point in the original segment, so move to the next one
 		distance = nextDistance
 	}
 

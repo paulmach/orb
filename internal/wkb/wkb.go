@@ -59,8 +59,8 @@ func ReadPoint(data []byte) (float64, float64, error) {
 		nil
 }
 
-// ValidateLine checks the wkb input for a two point linestring.
-func ValidateLine(value interface{}) ([]byte, bool, error) {
+// ValidateSegment checks the wkb input for a two point line string.
+func ValidateSegment(value interface{}) ([]byte, bool, error) {
 	data, littleEndian, length, err := ValidateLineString(value)
 	if err != nil {
 		return data, littleEndian, err

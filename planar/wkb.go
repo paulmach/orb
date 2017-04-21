@@ -30,18 +30,18 @@ func readWKBPoint(data []byte, littleEndian bool) Point {
 // or an error will be returned. Data must be fetched in WKB format.
 // Will attempt to parse MySQL's SRID+WKB format if the data is of the right size.
 // If the column is empty (not null) an empty line [(0, 0), (0, 0)] will be returned.
-func (l *Line) Scan(value interface{}) error {
-	data, littleEndian, err := wkb.ValidateLine(value)
+func (s *Segment) Scan(value interface{}) error {
+	data, littleEndian, err := wkb.ValidateSegment(value)
 	if err != nil || data == nil {
 		return err
 	}
 
-	*l, err = unWKBLine(data, littleEndian)
+	*s, err = unWKBSegment(data, littleEndian)
 	return err
 }
 
-func unWKBLine(data []byte, littleEndian bool) (Line, error) {
-	return Line{
+func unWKBSegment(data []byte, littleEndian bool) (Segment, error) {
+	return Segment{
 		a: readWKBPoint(data[:16], littleEndian),
 		b: readWKBPoint(data[16:], littleEndian),
 	}, nil
@@ -50,13 +50,13 @@ func unWKBLine(data []byte, littleEndian bool) (Line, error) {
 // Scan implements the sql.Scanner interface allowing
 // bound to be read in as the rect of a two point line string.
 func (r *Rect) Scan(value interface{}) error {
-	l := Line{}
-	err := l.Scan(value)
+	s := Segment{}
+	err := s.Scan(value)
 	if err != nil {
 		return err
 	}
 
-	*r = l.Bound()
+	*r = s.Bound()
 	return nil
 }
 

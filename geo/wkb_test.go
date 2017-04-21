@@ -29,7 +29,7 @@ func TestPointScan(t *testing.T) {
 
 func TestRectScan(t *testing.T) {
 	b := Rect{}
-	for i, test := range wkb.LineTestCases {
+	for i, test := range wkb.SegmentTestCases {
 		err := b.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {

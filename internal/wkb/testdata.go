@@ -49,15 +49,15 @@ var PointTestCases = []PointTestCase{
 	},
 }
 
-// LineTestCase is used to test line scanning.
-type LineTestCase struct {
+// SegmentTestCase is used to test segment scanning.
+type SegmentTestCase struct {
 	Points [][2]float64
 	Data   interface{}
 	Err    error
 }
 
-// LineTestCases check different line scanning behavior.
-var LineTestCases = []LineTestCase{
+// SegmentTestCases check different segment scanning behavior.
+var SegmentTestCases = []SegmentTestCase{
 	{
 		Points: [][2]float64{{-123.016508, 38.040608}, {-122.670176, 38.548019}},
 		Data:   []byte{1, 2, 0, 0, 0, 2, 0, 0, 0, 213, 7, 146, 119, 14, 193, 94, 192, 93, 250, 151, 164, 50, 5, 67, 64, 26, 164, 224, 41, 228, 170, 94, 192, 22, 75, 145, 124, 37, 70, 67, 64},
