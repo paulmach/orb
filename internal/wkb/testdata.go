@@ -88,15 +88,15 @@ var LineTestCases = []LineTestCase{
 	},
 }
 
-// PointSetTestCase is used to get point set scanning.
-type PointSetTestCase struct {
+// MultiPointTestCase is used to get point set scanning.
+type MultiPointTestCase struct {
 	Points [][2]float64
 	Data   interface{}
 	Err    error
 }
 
-// PointSetTestCases check different point set scanning behavior.
-var PointSetTestCases = []LineTestCase{
+// MultiPointTestCases check different point set scanning behavior.
+var MultiPointTestCases = []MultiPointTestCase{
 	{
 		Points: [][2]float64{{1, 2}, {3, 4}, {5, 6}},
 		Data:   []byte{0, 0, 0, 0, 1, 4, 0, 0, 0, 3, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 64, 0, 0, 0, 0, 0, 0, 16, 64, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 64, 0, 0, 0, 0, 0, 0, 24, 64},

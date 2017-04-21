@@ -44,17 +44,17 @@ func (r *Rect) Scan(value interface{}) error {
 // Will attempt to parse MySQL's SRID+WKB format if obviously no WKB
 // or parsing as WKB fails.
 // If the column is empty (not null) an empty point set will be returned.
-func (ps *PointSet) Scan(value interface{}) error {
-	data, littleEndian, length, err := wkb.ValidatePointSet(value)
+func (mp *MultiPoint) Scan(value interface{}) error {
+	data, littleEndian, length, err := wkb.ValidateMultiPoint(value)
 	if err != nil || data == nil {
 		return err
 	}
 
-	*ps, err = unWKBPointSet(data, littleEndian, length)
+	*mp, err = unWKBMultiPoint(data, littleEndian, length)
 	return err
 }
 
-func unWKBPointSet(data []byte, littleEndian bool, length int) (PointSet, error) {
+func unWKBMultiPoint(data []byte, littleEndian bool, length int) (MultiPoint, error) {
 	points := make([]Point, length, length)
 	for i := 0; i < length; i++ {
 		x, y, err := wkb.ReadPoint(data[21*i:])
@@ -65,7 +65,7 @@ func unWKBPointSet(data []byte, littleEndian bool, length int) (PointSet, error)
 		points[i] = Point{x, y}
 	}
 
-	return PointSet(points), nil
+	return MultiPoint(points), nil
 }
 
 // Scan implements the sql.Scanner interface allowing

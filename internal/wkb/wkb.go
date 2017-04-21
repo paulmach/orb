@@ -73,8 +73,8 @@ func ValidateLine(value interface{}) ([]byte, bool, error) {
 	return data, littleEndian, err
 }
 
-// ValidatePointSet checks wkb for a multipoint geometry.
-func ValidatePointSet(value interface{}) ([]byte, bool, int, error) {
+// ValidateMultiPoint checks wkb for a multipoint geometry.
+func ValidateMultiPoint(value interface{}) ([]byte, bool, int, error) {
 	data, ok := value.([]byte)
 	if !ok {
 		return nil, false, 0, orb.ErrUnsupportedDataType

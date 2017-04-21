@@ -185,18 +185,18 @@ func (p Path) Distance(haversine ...bool) float64 {
 
 // Bound returns a rect around the path. Uses rectangular coordinates.
 func (p Path) Bound() Rect {
-	return PointSet(p).Bound()
+	return MultiPoint(p).Bound()
 }
 
 // Equal compares two paths. Returns true if lengths are the same
 // and all points are Equal.
 func (p Path) Equal(path Path) bool {
-	return PointSet(p).Equal(PointSet(path))
+	return MultiPoint(p).Equal(MultiPoint(path))
 }
 
 // Clone returns a new copy of the path.
 func (p Path) Clone() Path {
-	ps := PointSet(p)
+	ps := MultiPoint(p)
 	return Path(ps.Clone())
 }
 

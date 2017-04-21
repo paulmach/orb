@@ -61,9 +61,9 @@ func TestRectScan(t *testing.T) {
 	}
 }
 
-func TestPointSetScan(t *testing.T) {
-	p := PointSet{}
-	for i, test := range wkb.PointSetTestCases {
+func TestMultiPointScan(t *testing.T) {
+	p := MultiPoint{}
+	for i, test := range wkb.MultiPointTestCases {
 		err := p.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
@@ -72,7 +72,7 @@ func TestPointSetScan(t *testing.T) {
 			continue
 		}
 
-		if !p.Equal(pointsToPointSet(test.Points)) {
+		if !p.Equal(pointsToMultiPoint(test.Points)) {
 			t.Errorf("test %d incorrect point set, got %v", i, p)
 		}
 	}
@@ -99,8 +99,8 @@ func pointsToLine(p [][2]float64) Line {
 	return NewLine(Point(p[0]), Point(p[1]))
 }
 
-func pointsToPointSet(points [][2]float64) PointSet {
-	p := NewPointSet()
+func pointsToMultiPoint(points [][2]float64) MultiPoint {
+	p := NewMultiPoint()
 	for _, point := range points {
 		p = append(p, Point(point))
 	}
