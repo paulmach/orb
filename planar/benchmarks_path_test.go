@@ -33,7 +33,7 @@ func BenchmarkPathDistanceFromSquared(b *testing.B) {
 	}
 }
 
-func BenchmarkPathMeasure(b *testing.B) {
+func BenchmarkPathProject(b *testing.B) {
 	basePath := testPath1()
 	otherPath := testPath2()
 
@@ -42,7 +42,7 @@ func BenchmarkPathMeasure(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		basePath.Measure(otherPath[i%length])
+		basePath.Project(otherPath[i%length])
 	}
 }
 

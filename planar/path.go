@@ -103,26 +103,6 @@ func (p Path) DistanceFromSquared(point Point) float64 {
 	return dist
 }
 
-// Measure computes the distance along this path to the point nearest the given point.
-func (p Path) Measure(point Point) float64 {
-	minDistance := math.Inf(1)
-	measure := math.Inf(-1)
-	sum := 0.0
-
-	seg := Line{}
-	for i := 0; i < len(p)-1; i++ {
-		seg.a = p[i]
-		seg.b = p[i+1]
-		distanceToLine := seg.DistanceFromSquared(point)
-		if distanceToLine < minDistance {
-			minDistance = distanceToLine
-			measure = sum + seg.Measure(point)
-		}
-		sum += seg.Distance()
-	}
-	return measure
-}
-
 // Interpolate interpolates the path by geo distance.
 func (p Path) Interpolate(percent float64) Point {
 	if percent <= 0 {
@@ -149,10 +129,36 @@ func (p Path) Interpolate(percent float64) Point {
 	return p[0]
 }
 
-// Project computes the measure along this path closest to the given point,
+// Project computes the percent along this path closest to the given point,
 // normalized to the length of the path.
 func (p Path) Project(point Point) float64 {
-	return p.Measure(point) / p.Distance()
+	minDistance := math.Inf(1)
+	measure := math.Inf(-1)
+	sum := 0.0
+
+	seg := Line{}
+	for i := 0; i < len(p)-1; i++ {
+		seg.a = p[i]
+		seg.b = p[i+1]
+
+		distanceToLine := seg.DistanceFromSquared(point)
+		segDistance := seg.Distance()
+
+		if distanceToLine < minDistance {
+			minDistance = distanceToLine
+
+			proj := seg.Project(point)
+			if proj < 0 {
+				proj = 0
+			} else if proj > 1 {
+				proj = 1
+			}
+
+			measure = sum + proj*segDistance
+		}
+		sum += segDistance
+	}
+	return measure / sum
 }
 
 // Bound returns a rectangle bound around the path. Uses rectangular coordinates.

@@ -128,28 +128,6 @@ func TestLineProject(t *testing.T) {
 	}
 }
 
-func TestLineMeasure(t *testing.T) {
-	l1 := NewLine(NewPoint(0, 0), NewPoint(0, 4))
-
-	measure := l1.Measure(NewPoint(1, 2))
-	expected := 2.0
-	if measure != expected {
-		t.Errorf("line, measure expected %v == %v", measure, expected)
-	}
-
-	measure = l1.Measure(NewPoint(1, -2))
-	expected = 0.0
-	if measure != expected {
-		t.Errorf("line, measure expected %v == %v", measure, expected)
-	}
-
-	measure = l1.Measure(NewPoint(1, 6))
-	expected = 4.0
-	if measure != expected {
-		t.Errorf("line, measure expected %v == %v", measure, expected)
-	}
-}
-
 func TestLineDistance(t *testing.T) {
 	l := NewLine(NewPoint(0, 0), NewPoint(3, 4))
 	if d := l.Distance(); d != 5 {

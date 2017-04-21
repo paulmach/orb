@@ -102,21 +102,6 @@ func (l Line) Project(point Point) float64 {
 	return ((point[0]-l.a[0])*dx + (point[1]-l.a[1])*dy) / d
 }
 
-// Measure returns the distance along the line to the point nearest the given point.
-// Treats the line as a line segment such that if the nearest point is an endpoint of the line,
-// the function will return 0 or 1 as appropriate.
-func (l Line) Measure(point Point) float64 {
-	projFactor := l.Project(point)
-	if projFactor <= 0.0 {
-		return 0.0
-	}
-	if projFactor <= 1.0 {
-		return projFactor * l.Distance()
-	}
-	// projFactor is > 1
-	return l.Distance()
-}
-
 // Interpolate performs a simple linear interpolation, from A to B.
 // This function is the opposite of Project.
 func (l Line) Interpolate(percent float64) Point {
