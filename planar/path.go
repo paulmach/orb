@@ -161,6 +161,31 @@ func (p Path) Project(point Point) float64 {
 	return measure / sum
 }
 
+// Centroid computes the centroid of the path.
+func (p Path) Centroid() Point {
+	dist := 0.0
+	point := Point{}
+
+	seg := Line{}
+	for i := 0; i < len(p)-1; i++ {
+		seg.a = p[i]
+		seg.b = p[i+1]
+
+		d := seg.Distance()
+		centroid := seg.Interpolate(0.5)
+
+		point[0] += centroid[0] * d
+		point[1] += centroid[1] * d
+
+		dist += d
+	}
+
+	point[0] /= dist
+	point[1] /= dist
+
+	return point
+}
+
 // Bound returns a rectangle bound around the path. Uses rectangular coordinates.
 func (p Path) Bound() Rect {
 	return PointSet(p).Bound()

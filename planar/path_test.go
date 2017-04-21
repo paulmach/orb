@@ -238,6 +238,19 @@ func TestPathInterpolate(t *testing.T) {
 	}
 }
 
+func TestPathCentroid(t *testing.T) {
+	p := append(NewPath(),
+		NewPoint(0, 0),
+		NewPoint(5, 0),
+		NewPoint(5, 4),
+		NewPoint(8, 4))
+
+	expected := NewPoint(13.0/3.0, 5.0/3.0)
+	if c := p.Centroid(); !c.Equal(expected) {
+		t.Errorf("incorrect result: %v != %v", c, expected)
+	}
+}
+
 func TestPathWKT(t *testing.T) {
 	p := NewPath()
 

@@ -111,6 +111,14 @@ func (l Line) Interpolate(percent float64) Point {
 	}
 }
 
+// Centroid computes the midpoint or centroid of the line.
+func (l Line) Centroid() Point {
+	return Point{
+		l.a[0] + 0.5*(l.b[0]-l.a[0]),
+		l.a[1] + 0.5*(l.b[1]-l.a[1]),
+	}
+}
+
 // Side returns -1 if the point is on the right side, 1 if on the left side, and 0 if collinear.
 func (l Line) Side(p Point) int {
 	val := (l.b[0]-l.a[0])*(p[1]-l.b[1]) - (l.b[1]-l.a[1])*(p[0]-l.b[0])
