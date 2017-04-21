@@ -63,7 +63,7 @@ func TestNewMultiPointPreallocate(t *testing.T) {
 	}
 }
 
-func TestPathBound(t *testing.T) {
+func TestMultiPointBound(t *testing.T) {
 	mp := append(NewMultiPoint(),
 		NewPoint(0.5, .2),
 		NewPoint(-1, 0),
@@ -96,18 +96,18 @@ func TestMultiPointEqual(t *testing.T) {
 	)
 
 	if !p1.Equal(p2) {
-		t.Error("paths should be equal")
+		t.Error("sets should be equal")
 	}
 
 	p2[1] = NewPoint(1, 0)
 	if p1.Equal(p2) {
-		t.Error("paths should not be equal")
+		t.Error("sets should not be equal")
 	}
 
 	p1[1] = NewPoint(1, 0)
 	p1 = append(p1, NewPoint(0, 0))
 	if p2.Equal(p1) {
-		t.Error("paths should not be equal")
+		t.Error("sets should not be equal")
 	}
 }
 
@@ -125,7 +125,7 @@ func TestMultiPointClone(t *testing.T) {
 	}
 
 	if p2.Equal(p1) {
-		t.Error("clone paths should be equal")
+		t.Error("clone sets should be equal")
 	}
 }
 

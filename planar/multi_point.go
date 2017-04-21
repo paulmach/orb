@@ -119,7 +119,7 @@ func (mp MultiPoint) WKT() string {
 
 // String returns a string representation of the points.
 // The format is WKT, e.g. MULTIPOINT(30 10,10 30,40 40)
-// For empty paths the result will be 'EMPTY'.
+// For empty sets the result will be 'EMPTY'.
 func (mp MultiPoint) String() string {
 	return mp.WKT()
 }

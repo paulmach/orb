@@ -57,24 +57,24 @@ func BenchmarkLineStringInterpolate(b *testing.B) {
 }
 
 func BenchmarkLineStringResampleToMorePoints(b *testing.B) {
-	path := testLineString1()
-	totalPoints := int(float64(len(path)) * 1.616)
+	ls := testLineString1()
+	totalPoints := int(float64(len(ls)) * 1.616)
 
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		path.Resample(totalPoints)
+		ls.Resample(totalPoints)
 	}
 }
 
 func BenchmarkLineStringResampleToLessPoints(b *testing.B) {
-	path := testLineString1()
-	totalPoints := int(float64(len(path)) / 1.616)
+	ls := testLineString1()
+	totalPoints := int(float64(len(ls)) / 1.616)
 
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		path.Resample(totalPoints)
+		ls.Resample(totalPoints)
 	}
 }
 

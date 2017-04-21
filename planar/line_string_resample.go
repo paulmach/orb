@@ -1,6 +1,6 @@
 package planar
 
-// Resample converts the path into totalPoints-1 evenly spaced segments.
+// Resample converts the line string into totalPoints-1 evenly spaced segments.
 func (ls LineString) Resample(totalPoints int) LineString {
 	if totalPoints <= 0 {
 		return LineString{}
@@ -16,7 +16,7 @@ func (ls LineString) Resample(totalPoints int) LineString {
 	return ls.resample(dists, total, totalPoints)
 }
 
-// ResampleWithInterval coverts the path into evenly spaced points of
+// ResampleWithInterval coverts the line string into evenly spaced points of
 // about the given distance. The total distance is computed using euclidean
 // geometry and then divided by the given distance to get the number of segments.
 func (ls LineString) ResampleWithInterval(dist float64) LineString {
@@ -81,7 +81,7 @@ func (ls LineString) resample(distances []float64, totalDistance float64, totalP
 }
 
 // resampleEdgeCases is used to handle edge case for
-// resampling like not enough points and the path is all the same point.
+// resampling like not enough points and the line string is all the same point.
 // will return nil if there are no edge cases. If return true if
 // one of these edge cases was found and handled.
 func (ls LineString) resampleEdgeCases(totalPoints int) (LineString, bool) {
