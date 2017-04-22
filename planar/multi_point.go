@@ -46,7 +46,14 @@ func (mp MultiPoint) Centroid() Point {
 }
 
 // DistanceFrom returns the minimum euclidean distance from the points.
-func (mp MultiPoint) DistanceFrom(point Point) (float64, int) {
+func (mp MultiPoint) DistanceFrom(point Point) float64 {
+	d, _ := mp.DistanceFromWithIndex(point)
+	return d
+}
+
+// DistanceFromWithIndex returns the minimum euclidean distance
+// from the points plus the index of that point.
+func (mp MultiPoint) DistanceFromWithIndex(point Point) (float64, int) {
 	dist := math.Inf(1)
 	index := 0
 
@@ -107,13 +114,9 @@ func (mp MultiPoint) WKT() string {
 	}
 
 	buff := bytes.NewBuffer(nil)
-	fmt.Fprintf(buff, "MULTIPOINT(%g %g", mp[0][0], mp[0][1])
+	fmt.Fprintf(buff, "MULTIPOINT")
+	wktPoints(buff, mp)
 
-	for i := 1; i < len(mp); i++ {
-		fmt.Fprintf(buff, ",%g %g", mp[i][0], mp[i][1])
-	}
-
-	buff.Write([]byte(")"))
 	return buff.String()
 }
 

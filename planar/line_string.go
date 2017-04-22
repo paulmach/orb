@@ -3,6 +3,7 @@ package planar
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"math"
 )
 
@@ -203,7 +204,7 @@ func (ls LineString) Clone() LineString {
 	return LineString(ps.Clone())
 }
 
-// WKT returns the lines string in WKT format, eg. LINESTRING(30 10,10 30,40 40)
+// WKT returns the line string in WKT format, eg. LINESTRING(30 10,10 30,40 40)
 // For empty line strings the result will be 'EMPTY'.
 func (ls LineString) WKT() string {
 	if len(ls) == 0 {
@@ -211,17 +212,23 @@ func (ls LineString) WKT() string {
 	}
 
 	buff := bytes.NewBuffer(nil)
-	fmt.Fprintf(buff, "LINESTRING(%g %g", ls[0][0], ls[0][1])
+	fmt.Fprintf(buff, "LINESTRING")
+	wktPoints(buff, ls)
 
-	for i := 1; i < len(ls); i++ {
-		fmt.Fprintf(buff, ",%g %g", ls[i][0], ls[i][1])
-	}
-
-	buff.Write([]byte(")"))
 	return buff.String()
 }
 
 // String returns a string representation of the line string.
 func (ls LineString) String() string {
 	return ls.WKT()
+}
+
+func wktPoints(w io.Writer, ps []Point) {
+	fmt.Fprintf(w, "(%g %g", ps[0][0], ps[0][1])
+
+	for i := 1; i < len(ps); i++ {
+		fmt.Fprintf(w, ",%g %g", ps[i][0], ps[i][1])
+	}
+
+	fmt.Fprintf(w, ")")
 }

@@ -26,7 +26,7 @@ func TestMultiPointDistanceFrom(t *testing.T) {
 
 	fromPoint := Point{3, 2}
 
-	if distance, _ := mp.DistanceFrom(fromPoint); distance != 1 {
+	if distance := mp.DistanceFrom(fromPoint); distance != 1 {
 		t.Errorf("distance incorrect: %v != %v", distance, 1)
 	}
 }

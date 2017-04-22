@@ -13,6 +13,16 @@ func NewPoint(x, y float64) Point {
 	return Point{x, y}
 }
 
+// Bound return a bound that is just a single point.
+func (p Point) Bound() Rect {
+	return NewRect(p[0], p[0], p[1], p[1])
+}
+
+// Centroid returns the point, a centroid of a point is the point.
+func (p Point) Centroid() Point {
+	return p
+}
+
 // DistanceFrom returns the Euclidean distance between the points.
 func (p Point) DistanceFrom(point Point) float64 {
 	d0 := (point[0] - p[0])

@@ -1,6 +1,59 @@
 package planar
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
+
+func TestPolygonDistanceFrom(t *testing.T) {
+	r1 := append(NewLineString(),
+		NewPoint(0, 0),
+		NewPoint(3, 0),
+		NewPoint(3, 3),
+		NewPoint(0, 3),
+		NewPoint(0, 0),
+	)
+
+	r2 := append(NewLineString(),
+		NewPoint(1, 1),
+		NewPoint(2, 1),
+		NewPoint(2, 2),
+		NewPoint(1, 2),
+		NewPoint(1, 1),
+	)
+
+	poly := append(NewPolygon(), r1, r2)
+
+	cases := []struct {
+		name   string
+		point  Point
+		result float64
+	}{
+		{
+			name:   "outside",
+			point:  NewPoint(-1, 2),
+			result: 1,
+		},
+		{
+			name:   "inside",
+			point:  NewPoint(0.4, 2),
+			result: 0,
+		},
+		{
+			name:   "in hole",
+			point:  NewPoint(1.3, 1.4),
+			result: 0.3,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if d := poly.DistanceFrom(tc.point); math.Abs(d-tc.result) > epsilon {
+				t.Errorf("incorrect distance: %v != %v", d, tc.result)
+			}
+		})
+	}
+}
 
 func TestPolygonCentroid(t *testing.T) {
 	cases := []struct {
@@ -249,4 +302,35 @@ func TestLineStringArea(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPolygonWKT(t *testing.T) {
+	r1 := append(NewLineString(),
+		NewPoint(0, 0),
+		NewPoint(1, 0),
+		NewPoint(1, 1),
+		NewPoint(0, 1),
+		NewPoint(0, 0),
+	)
+
+	poly := Polygon{r1}
+	expected := "POLYGON((0 0,1 0,1 1,0 1,0 0))"
+	if w := poly.WKT(); w != expected {
+		t.Errorf("incorrect wkt: %v", w)
+	}
+
+	r2 := append(NewLineString(),
+		NewPoint(0.4, 0.4),
+		NewPoint(0.6, 0.4),
+		NewPoint(0.6, 0.6),
+		NewPoint(0.4, 0.6),
+		NewPoint(0.4, 0.4),
+	)
+
+	poly = Polygon{r1, r2}
+	expected = "POLYGON((0 0,1 0,1 1,0 1,0 0),(0.4 0.4,0.6 0.4,0.6 0.6,0.4 0.6,0.4 0.4))"
+	if w := poly.WKT(); w != expected {
+		t.Errorf("incorrect wkt: %v", w)
+	}
+
 }

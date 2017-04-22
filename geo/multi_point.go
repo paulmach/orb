@@ -26,6 +26,11 @@ func NewMultiPointPreallocate(length, capacity int) MultiPoint {
 	return MultiPoint(mp)
 }
 
+// GeoJSONType returns the GeoJSON type for the object.
+func (mp MultiPoint) GeoJSONType() string {
+	return "MultiPoint"
+}
+
 // Clone returns a new copy of the points.
 func (mp MultiPoint) Clone() MultiPoint {
 	points := make([]Point, len(mp))
@@ -137,13 +142,9 @@ func (mp MultiPoint) WKT() string {
 	}
 
 	buff := bytes.NewBuffer(nil)
-	fmt.Fprintf(buff, "MULTIPOINT(%g %g", mp[0][0], mp[0][1])
+	fmt.Fprintf(buff, "MULTIPOINT")
+	wktPoints(buff, mp)
 
-	for i := 1; i < len(mp); i++ {
-		fmt.Fprintf(buff, ",%g %g", mp[i][0], mp[i][1])
-	}
-
-	buff.Write([]byte(")"))
 	return buff.String()
 }
 

@@ -57,6 +57,16 @@ func NewPointFromGeoHashInt64(hash int64, bits int) Point {
 	return NewPoint((west+east)/2.0, (north+south)/2.0)
 }
 
+// GeoJSONType returns the GeoJSON type for the object.
+func (p Point) GeoJSONType() string {
+	return "Point"
+}
+
+// Bound returns a single point Rect of the point.
+func (p Point) Bound() Rect {
+	return NewRect(p[0], p[0], p[1], p[1])
+}
+
 // DistanceFrom returns the geodesic distance in meters.
 func (p Point) DistanceFrom(point Point, haversine ...bool) float64 {
 	dLat := deg2rad(point.Lat() - p.Lat())

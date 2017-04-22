@@ -1,6 +1,10 @@
 package planar
 
-import "math"
+import (
+	"bytes"
+	"fmt"
+	"math"
+)
 
 // Polygon is a closed area. The first LineString is the outer ring.
 // The others are the holes. Each LineString is expected to be closed
@@ -10,6 +14,26 @@ type Polygon []LineString
 // NewPolygon creates a new Polygon.
 func NewPolygon() Polygon {
 	return Polygon{}
+}
+
+// DistanceFrom will return the distance from the point to
+// the polygon. Returns 0 if the point is within the polygon.
+func (p Polygon) DistanceFrom(point Point) float64 {
+	ring := Polygon{p[0]}
+	if !ring.Contains(point) {
+		return p[0].DistanceFrom(point)
+	}
+
+	// since we're within, check the holes
+	for i := 1; i < len(p); i++ {
+		hole := Polygon{p[i]}
+		if hole.Contains(point) {
+			return p[i].DistanceFrom(point)
+		}
+	}
+
+	// within the polygon, but not within any of the holes.
+	return 0
 }
 
 // Centroid computes the area based centroid of the outer ring.
@@ -72,6 +96,26 @@ func (p Polygon) Area() float64 {
 // Bound returns a bound around the polygon.
 func (p Polygon) Bound() Rect {
 	return p[0].Bound()
+}
+
+// WKT returns the polygon in WKT format, eg. POlYGON((0 0,1 0,1 1,0 0))
+// For empty polygons the result will be 'EMPTY'.
+func (p Polygon) WKT() string {
+	if len(p) == 0 {
+		return "EMPTY"
+	}
+
+	buff := bytes.NewBuffer(nil)
+	fmt.Fprintf(buff, "POLYGON(")
+	wktPoints(buff, p[0])
+
+	for i := 1; i < len(p); i++ {
+		buff.Write([]byte(","))
+		wktPoints(buff, p[i])
+	}
+
+	buff.Write([]byte(")"))
+	return buff.String()
 }
 
 // Equal compares two polygons. Returns true if lengths are the same

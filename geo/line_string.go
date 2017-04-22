@@ -3,6 +3,7 @@ package geo
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"math"
 
 	"github.com/paulmach/go.geojson"
@@ -121,6 +122,11 @@ func NewLineStringFromYXSlice(data [][]float64) LineString {
 	return ls
 }
 
+// GeoJSONType returns the GeoJSON type for the object.
+func (ls LineString) GeoJSONType() string {
+	return "LineString"
+}
+
 // Encode converts the line string to a string using the Google Maps Polyline Encoding method.
 // Factor defaults to 1.0e5, the same used by Google for polyline encoding.
 func (ls LineString) Encode(factor ...int) string {
@@ -220,17 +226,23 @@ func (ls LineString) WKT() string {
 	}
 
 	buff := bytes.NewBuffer(nil)
-	fmt.Fprintf(buff, "LINESTRING(%g %g", ls[0][0], ls[0][1])
+	fmt.Fprintf(buff, "LINESTRING")
+	wktPoints(buff, ls)
 
-	for i := 1; i < len(ls); i++ {
-		fmt.Fprintf(buff, ",%g %g", ls[i][0], ls[i][1])
-	}
-
-	buff.Write([]byte(")"))
 	return buff.String()
 }
 
 // String returns the wkt representation of the line string.
 func (ls LineString) String() string {
 	return ls.WKT()
+}
+
+func wktPoints(w io.Writer, ps []Point) {
+	fmt.Fprintf(w, "(%g %g", ps[0][0], ps[0][1])
+
+	for i := 1; i < len(ps); i++ {
+		fmt.Fprintf(w, ",%g %g", ps[i][0], ps[i][1])
+	}
+
+	fmt.Fprintf(w, ")")
 }

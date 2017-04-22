@@ -14,8 +14,8 @@ func NewSegment(a, b Point) Segment {
 	return Segment{a, b}
 }
 
-// DistanceFrom does NOT use spherical geometry. It finds the distance from
-// the segment using standard Euclidean geometry, using the units the points are in.
+// DistanceFrom finds the distance from the segment using Euclidean
+// geometry, using the units the points are in.
 func (s Segment) DistanceFrom(point Point) float64 {
 	// yes duplicate code, but saw a 15% performance increase by removing the function call
 	// return math.Sqrt(s.SquaredDistanceFrom(point))
