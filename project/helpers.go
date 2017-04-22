@@ -27,17 +27,10 @@ func ReverseLineString(ls planar.LineString, r func(planar.Point) geo.Point) geo
 
 // ForwardRect is a helper to project a rectangle.
 func ForwardRect(bound geo.Rect, f func(geo.Point) planar.Point) planar.Rect {
-	return planar.NewRectFromPoints(
-		f(geo.Point(bound.SW)),
-		f(geo.Point(bound.NE)),
-	)
-
+	return planar.NewRectFromPoints(f(bound[0]), f(bound[1]))
 }
 
 // ReverseRect is a helper to project a rectangle.
 func ReverseRect(bound planar.Rect, r func(planar.Point) geo.Point) geo.Rect {
-	return geo.NewRectFromPoints(
-		r(planar.Point(bound.SW)),
-		r(planar.Point(bound.NE)),
-	)
+	return geo.NewRectFromPoints(r(bound[0]), r(bound[1]))
 }

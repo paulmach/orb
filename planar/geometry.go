@@ -21,6 +21,7 @@ var (
 	_ Geometry = Segment{}
 	_ Geometry = MultiPoint{}
 	_ Geometry = LineString{}
+	_ Geometry = Rect{}
 	_ Geometry = Polygon{}
 )
 
