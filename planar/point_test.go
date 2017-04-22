@@ -2,13 +2,6 @@ package planar
 
 import "testing"
 
-var citiesGeoHash = [][3]interface{}{
-	{57.09700, 9.85000, "u4phb4hw"},
-	{49.03000, -122.32000, "c29nbt9k3q"},
-	{39.23500, -76.17490, "dqcz4we0k"},
-	{-34.7666, 138.53670, "r1fd0qzmg"},
-}
-
 func TestNewPoint(t *testing.T) {
 	p := NewPoint(1, 2)
 	if p.X() != 1 {

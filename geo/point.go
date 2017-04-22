@@ -165,7 +165,7 @@ func (p Point) GeoHash(precision int) string {
 
 	hash := p.GeoHashInt64(5 * precision)
 	for i := 1; i <= precision; i++ {
-		result[precision-i] = byte(base32[hash&0x1F])
+		result[precision-i] = base32[hash&0x1F]
 		hash >>= 5
 	}
 
