@@ -14,11 +14,11 @@ import (
 type (
 	// A Projection can transform between both planar and geo spaces.
 	Projection struct {
-		// Forward is a function that projects from geo to planar.
-		Forward func(geo.Point) planar.Point
+		// ToPlanar is a function that projects from geo to planar.
+		ToPlanar func(geo.Point) planar.Point
 
-		// Reverse is a function that projects from planar to geo.
-		Reverse func(planar.Point) geo.Point
+		// ToGeo is a function that projects from planar to geo.
+		ToGeo func(planar.Point) geo.Point
 	}
 )
 
@@ -26,14 +26,14 @@ const mercatorPole = 20037508.34
 
 // Mercator projection, performs EPSG:3857, sometimes also described as EPSG:900913.
 var Mercator = Projection{
-	Forward: func(g geo.Point) planar.Point {
+	ToPlanar: func(g geo.Point) planar.Point {
 		y := math.Log(math.Tan((90.0+g.Lat())*math.Pi/360.0)) / math.Pi * mercatorPole
 		return planar.Point{
 			mercatorPole / 180.0 * g.Lon(),
 			math.Max(-mercatorPole, math.Min(y, mercatorPole)),
 		}
 	},
-	Reverse: func(p planar.Point) geo.Point {
+	ToGeo: func(p planar.Point) geo.Point {
 		return geo.Point{
 			p.X() * 180.0 / mercatorPole,
 			180.0 / math.Pi * (2*math.Atan(math.Exp((p.Y()/mercatorPole)*math.Pi)) - math.Pi/2.0),
@@ -56,7 +56,7 @@ func MercatorScaleFactor(g geo.Point) float64 {
 // http://en.wikipedia.org/wiki/Transverse_Mercator_projection
 func BuildTransverseMercator(centerLon float64) Projection {
 	return Projection{
-		Forward: func(g geo.Point) planar.Point {
+		ToPlanar: func(g geo.Point) planar.Point {
 			lon := g.Lon() - centerLon
 			if lon < 180 {
 				lon += 360.0
@@ -67,10 +67,10 @@ func BuildTransverseMercator(centerLon float64) Projection {
 			}
 
 			g[0] = lon
-			return TransverseMercator.Forward(g)
+			return TransverseMercator.ToPlanar(g)
 		},
-		Reverse: func(p planar.Point) geo.Point {
-			g := TransverseMercator.Reverse(p)
+		ToGeo: func(p planar.Point) geo.Point {
+			g := TransverseMercator.ToGeo(p)
 
 			lon := g.Lon() + centerLon
 			if lon < 180 {
@@ -90,7 +90,7 @@ func BuildTransverseMercator(centerLon float64) Projection {
 // TransverseMercator implements a default transverse Mercator projector
 // that will only work well +-10 degrees around longitude 0.
 var TransverseMercator = Projection{
-	Forward: func(g geo.Point) planar.Point {
+	ToPlanar: func(g geo.Point) planar.Point {
 		radLat := deg2rad(g.Lat())
 		radLon := deg2rad(g.Lon())
 
@@ -100,7 +100,7 @@ var TransverseMercator = Projection{
 			math.Atan(math.Tan(radLat)/math.Cos(radLon)) * orb.EarthRadius,
 		}
 	},
-	Reverse: func(p planar.Point) geo.Point {
+	ToGeo: func(p planar.Point) geo.Point {
 		x := p.X() / orb.EarthRadius
 		y := p.Y() / orb.EarthRadius
 
@@ -117,21 +117,21 @@ var TransverseMercator = Projection{
 // ScalarMercator converts from lon/lat float64 to x,y uint64.
 // This is the same as Google's world coordinates.
 var ScalarMercator struct {
-	Level   uint64
-	Forward func(g geo.Point, level ...uint64) (x, y uint64)
-	Reverse func(x, y uint64, level ...uint64) geo.Point
+	Level    uint64
+	ToPlanar func(g geo.Point, level ...uint64) (x, y uint64)
+	ToGeo    func(x, y uint64, level ...uint64) geo.Point
 }
 
 func init() {
 	ScalarMercator.Level = 31
-	ScalarMercator.Forward = func(g geo.Point, level ...uint64) (x, y uint64) {
+	ScalarMercator.ToPlanar = func(g geo.Point, level ...uint64) (x, y uint64) {
 		l := ScalarMercator.Level
 		if len(level) != 0 {
 			l = level[0]
 		}
 		return mercator.ScalarProject(g.Lon(), g.Lat(), l)
 	}
-	ScalarMercator.Reverse = func(x, y uint64, level ...uint64) geo.Point {
+	ScalarMercator.ToGeo = func(x, y uint64, level ...uint64) geo.Point {
 		l := ScalarMercator.Level
 		if len(level) != 0 {
 			l = level[0]

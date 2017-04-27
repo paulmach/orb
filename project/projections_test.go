@@ -15,8 +15,8 @@ func TestMercator(t *testing.T) {
 			city[0],
 		}
 
-		p := Mercator.Forward(g)
-		g = Mercator.Reverse(p)
+		p := Mercator.ToPlanar(g)
+		g = Mercator.ToGeo(p)
 
 		if math.Abs(g.Lat()-city[0]) > mercator.Epsilon {
 			t.Errorf("latitude miss match: %f != %f", g.Lat(), city[0])
@@ -78,8 +78,8 @@ func TestTransverseMercator(t *testing.T) {
 			continue
 		}
 
-		p := TransverseMercator.Forward(g)
-		g = TransverseMercator.Reverse(p)
+		p := TransverseMercator.ToPlanar(g)
+		g = TransverseMercator.ToGeo(p)
 
 		if math.Abs(g.Lat()-city[0]) > mercator.Epsilon {
 			t.Errorf("latitude miss match: %f != %f", g.Lat(), city[0])
@@ -106,8 +106,8 @@ func TestTransverseMercatorScaling(t *testing.T) {
 
 	geoDistance := g1.DistanceFrom(g2)
 
-	p1 := TransverseMercator.Forward(g1)
-	p2 := TransverseMercator.Forward(g2)
+	p1 := TransverseMercator.ToPlanar(g1)
+	p2 := TransverseMercator.ToPlanar(g2)
 	projectedDistance := p1.DistanceFrom(p2)
 
 	if math.Abs(geoDistance-projectedDistance) > mercator.Epsilon {
@@ -125,8 +125,8 @@ func TestBuildTransverseMercator(t *testing.T) {
 		offset := math.Floor(g.Lon()/10.0) * 10.0
 		projector := BuildTransverseMercator(offset)
 
-		p := projector.Forward(g)
-		g = projector.Reverse(p)
+		p := projector.ToPlanar(g)
+		g = projector.ToGeo(p)
 
 		if math.Abs(g.Lat()-city[0]) > mercator.Epsilon {
 			t.Errorf("latitude miss match: %f != %f", g.Lat(), city[0])
@@ -143,8 +143,8 @@ func TestBuildTransverseMercator(t *testing.T) {
 	test := geo.NewPoint(-175.0, 30)
 
 	g := test
-	p := projector.Forward(g)
-	g = projector.Reverse(p)
+	p := projector.ToPlanar(g)
+	g = projector.ToGeo(p)
 
 	if math.Abs(g.Lat()-test.Lat()) > mercator.Epsilon {
 		t.Errorf("latitude miss match: %f != %f", g.Lat(), test.Lat())
@@ -157,8 +157,8 @@ func TestBuildTransverseMercator(t *testing.T) {
 	test = geo.NewPoint(179.0, 30)
 
 	g = test
-	p = projector.Forward(g)
-	g = projector.Reverse(p)
+	p = projector.ToPlanar(g)
+	g = projector.ToGeo(p)
 
 	if math.Abs(g.Lat()-test.Lat()) > mercator.Epsilon {
 		t.Errorf("latitude miss match: %f != %f", g.Lat(), test.Lat())
@@ -174,8 +174,8 @@ func TestBuildTransverseMercator(t *testing.T) {
 	test = geo.NewPoint(175.0, 30)
 
 	g = test
-	p = projector.Forward(g)
-	g = projector.Reverse(p)
+	p = projector.ToPlanar(g)
+	g = projector.ToGeo(p)
 
 	if math.Abs(g.Lat()-test.Lat()) > mercator.Epsilon {
 		t.Errorf("latitude miss match: %f != %f", g.Lat(), test.Lat())
@@ -188,8 +188,8 @@ func TestBuildTransverseMercator(t *testing.T) {
 	test = geo.NewPoint(-179.0, 30)
 
 	g = test
-	p = projector.Forward(g)
-	g = projector.Reverse(p)
+	p = projector.ToPlanar(g)
+	g = projector.ToGeo(p)
 
 	if math.Abs(g.Lat()-test.Lat()) > mercator.Epsilon {
 		t.Errorf("latitude miss match: %f != %f", g.Lat(), test.Lat())
@@ -202,8 +202,8 @@ func TestBuildTransverseMercator(t *testing.T) {
 
 func TestScalarMercator(t *testing.T) {
 
-	x, y := ScalarMercator.Forward(geo.NewPoint(0, 0))
-	g := ScalarMercator.Reverse(x, y)
+	x, y := ScalarMercator.ToPlanar(geo.NewPoint(0, 0))
+	g := ScalarMercator.ToGeo(x, y)
 
 	if g.Lat() != 0.0 {
 		t.Errorf("latitude should be 0: %f", g.Lat())
@@ -214,12 +214,12 @@ func TestScalarMercator(t *testing.T) {
 	}
 
 	// specific case
-	if x, y := ScalarMercator.Forward(geo.NewPoint(-87.65005229999997, 41.850033), 20); x != 268988 || y != 389836 {
+	if x, y := ScalarMercator.ToPlanar(geo.NewPoint(-87.65005229999997, 41.850033), 20); x != 268988 || y != 389836 {
 		t.Errorf("projection incorrect: %d %d", x, y)
 	}
 
 	ScalarMercator.Level = 28
-	if x, y := ScalarMercator.Forward(geo.NewPoint(-87.65005229999997, 41.850033)); x != 68861112 || y != 99798110 {
+	if x, y := ScalarMercator.ToPlanar(geo.NewPoint(-87.65005229999997, 41.850033)); x != 68861112 || y != 99798110 {
 		t.Errorf("projection incorrect: %d %d", x, y)
 	}
 
@@ -231,8 +231,8 @@ func TestScalarMercator(t *testing.T) {
 			city[0],
 		}
 
-		x, y := ScalarMercator.Forward(g, 31)
-		g = ScalarMercator.Reverse(x, y)
+		x, y := ScalarMercator.ToPlanar(g, 31)
+		g = ScalarMercator.ToGeo(x, y)
 
 		if math.Abs(g.Lat()-city[0]) > mercator.Epsilon {
 			t.Errorf("latitude miss match: %f != %f", g.Lat(), city[0])
@@ -244,11 +244,11 @@ func TestScalarMercator(t *testing.T) {
 	}
 
 	// test polar regions
-	if _, y := ScalarMercator.Forward(geo.NewPoint(0, 89.9)); y != (1<<ScalarMercator.Level)-1 {
+	if _, y := ScalarMercator.ToPlanar(geo.NewPoint(0, 89.9)); y != (1<<ScalarMercator.Level)-1 {
 		t.Errorf("top of the world error: %d", y)
 	}
 
-	if _, y := ScalarMercator.Forward(geo.NewPoint(0, -89.9)); y != 0 {
+	if _, y := ScalarMercator.ToPlanar(geo.NewPoint(0, -89.9)); y != 0 {
 		t.Errorf("bottom of the world error: %d", y)
 	}
 }
