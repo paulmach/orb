@@ -36,31 +36,64 @@ func (p Polygon) DistanceFrom(point Point) float64 {
 	return 0
 }
 
-// Centroid computes the area based centroid of the outer ring.
+// Centroid computes the area based centroid of the polygon.
+// The algorithm removes the contribution of the holes.
 func (p Polygon) Centroid() Point {
-	ring := p[0]
-	centroid := Point{}
-	area := 0.0
-	for i := 0; i < len(ring)-1; i++ {
-		a := ring[i][0]*ring[i+1][1] - ring[i+1][0]*ring[i][1]
-		area += a
+	point, _ := p.CentroidArea()
+	return point
+}
 
-		centroid[0] += (ring[i][0] + ring[i+1][0]) * a
-		centroid[1] += (ring[i][1] + ring[i+1][1]) * a
+// CentroidArea computes the centroid and returns the area.
+// If you need both this is faster since we need to area to compute the centroid.
+func (p Polygon) CentroidArea() (Point, float64) {
+	centroid, area := p[0].ringCentroid()
+
+	holeArea := 0.0
+	holeCentroid := Point{}
+	for i := 1; i < len(p); i++ {
+		ring := p[i]
+
+		hc, ha := ring.ringCentroid()
+		holeArea += ha
+		holeCentroid[0] += hc[0] * ha
+		holeCentroid[1] += hc[1] * ha
 	}
 
-	// last vertext
-	i := len(ring) - 1
-	a := ring[i][0]*ring[0][1] - ring[0][0]*ring[i][1]
-	area += a
-	centroid[0] += (ring[i][0] + ring[0][0]) * a
-	centroid[1] += (ring[i][1] + ring[0][1]) * a
+	centroid[0] = (area*centroid[0] - holeArea*holeCentroid[0]) / (area - holeArea)
+	centroid[1] = (area*centroid[1] - holeArea*holeCentroid[1]) / (area - holeArea)
+
+	return centroid, area - holeArea
+}
+
+func (ls LineString) ringCentroid() (Point, float64) {
+	ring := ls
+	centroid := Point{}
+
+	area := 0.0
+
+	// implicitly move everything to near the origin to help with roundoff
+	offsetX := ring[0][0]
+	offsetY := ring[0][1]
+	for i := 1; i < len(ring)-1; i++ {
+		a := (ring[i][0]-offsetX)*(ring[i+1][1]-offsetY) -
+			(ring[i+1][0]-offsetX)*(ring[i][1]-offsetY)
+		area += a
+
+		centroid[0] += (ring[i][0] + ring[i+1][0] - 2*offsetX) * a
+		centroid[1] += (ring[i][1] + ring[i+1][1] - 2*offsetY) * a
+	}
+
+	// no need to deal with first and last vertex since we "moved"
+	// that point the origin (multiply by 0 == 0)
 
 	area /= 2
 	centroid[0] /= 6 * area
 	centroid[1] /= 6 * area
 
-	return centroid
+	centroid[0] += offsetX
+	centroid[1] += offsetY
+
+	return centroid, area
 }
 
 // Contains checks if the point is within the polygon.

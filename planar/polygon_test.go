@@ -94,6 +94,19 @@ func TestPolygonCentroid(t *testing.T) {
 			if c := poly.Centroid(); !c.Equal(tc.result) {
 				t.Errorf("wrong centroid: %v != %v", c, tc.result)
 			}
+
+			// check that is recenters to deal with roundoff
+			for i := range tc.points {
+				tc.points[i][0] += 1e8
+				tc.points[i][1] -= 1e8
+			}
+
+			tc.result[0] += 1e8
+			tc.result[1] -= 1e8
+
+			if c := poly.Centroid(); !c.Equal(tc.result) {
+				t.Errorf("wrong centroid: %v != %v", c, tc.result)
+			}
 		})
 	}
 }
@@ -121,6 +134,36 @@ func TestPolygonCentroidAdv(t *testing.T) {
 	expected := NewPoint(1.5, 0.45)
 	if c := poly.Centroid(); !c.Equal(expected) {
 		t.Errorf("incorrect centroid: %v != %v", c, expected)
+	}
+}
+
+func TestPolygonCentroidArea(t *testing.T) {
+	r1 := append(NewLineString(),
+		NewPoint(0, 0),
+		NewPoint(4, 0),
+		NewPoint(4, 3),
+		NewPoint(0, 3),
+		NewPoint(0, 0),
+	)
+
+	r2 := append(NewLineString(),
+		NewPoint(2, 1),
+		NewPoint(3, 1),
+		NewPoint(3, 2),
+		NewPoint(2, 2),
+		NewPoint(2, 1),
+	)
+
+	poly := Polygon{r1, r2}
+
+	centroid, area := poly.CentroidArea()
+	if !centroid.Equal(NewPoint(21.5/11.0, 1.5)) {
+		t.Errorf("%v", 21.5/11.0)
+		t.Errorf("incorrect centroid: %v", centroid)
+	}
+
+	if area != 11 {
+		t.Errorf("incorrect area: %v != 11", area)
 	}
 }
 
