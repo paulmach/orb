@@ -189,6 +189,19 @@ func (ls LineString) Distance(haversine ...bool) float64 {
 	return sum
 }
 
+// Reverse changes the direction of the line string.
+// It returns a new list string.
+func (ls LineString) Reverse() LineString {
+	n := NewLineStringPreallocate(len(ls), len(ls))
+
+	l := len(n) - 1
+	for i := 0; i <= l/2; i++ {
+		n[i], n[l-i] = ls[l-i], ls[i]
+	}
+
+	return n
+}
+
 // Bound returns a rect around the line string. Uses rectangular coordinates.
 func (ls LineString) Bound() Rect {
 	return MultiPoint(ls).Bound()
