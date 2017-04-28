@@ -75,3 +75,13 @@ func (p Properties) MustString(key string, def ...string) string {
 
 	return ""
 }
+
+// Clone returns a shallow copy of the properties.
+func (p Properties) Clone() Properties {
+	n := make(Properties, len(p))
+	for k, v := range p {
+		n[k] = v
+	}
+
+	return n
+}
