@@ -24,6 +24,7 @@ var (
 	_ Geometry = MultiLineString{}
 	_ Geometry = Rect{}
 	_ Geometry = Polygon{}
+	_ Geometry = MultiPolygon{}
 )
 
 // A Collection is a collection of geometries that is also a Geometry.

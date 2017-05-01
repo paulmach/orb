@@ -7,4 +7,5 @@ const (
 	LineString      = "LineString"
 	MultiLineString = "MultiLineString"
 	Polygon         = "Polygon"
+	MultiPolygon    = "MultiPolygon"
 )

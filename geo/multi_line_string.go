@@ -21,7 +21,7 @@ func (mls MultiLineString) GeoJSONType() string {
 // Bound returns a rectangle bound around all the line strings.
 func (mls MultiLineString) Bound() Rect {
 	bound := mls[0].Bound()
-	for i := 0; i < len(mls); i++ {
+	for i := 1; i < len(mls); i++ {
 		bound = bound.Union(mls[i].Bound())
 	}
 
@@ -54,7 +54,7 @@ func (mls MultiLineString) Clone() MultiLineString {
 	return nmls
 }
 
-// WKT returns the line string in WKT format, eg. LINESTRING(30 10,10 30,40 40)
+// WKT returns the line string in WKT format, eg. MULTILINESTRING((30 10,10 30,40 40))
 // For empty line strings the result will be 'EMPTY'.
 func (mls MultiLineString) WKT() string {
 	if len(mls) == 0 {
