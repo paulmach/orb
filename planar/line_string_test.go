@@ -276,6 +276,19 @@ func TestLineStringCentroid(t *testing.T) {
 	if c := ls.Centroid(); !c.Equal(expected) {
 		t.Errorf("incorrect result: %v != %v", c, expected)
 	}
+
+	// check that is recenters to deal with roundoff
+	for i := range ls {
+		ls[i][0] += 1e16
+		ls[i][1] -= 1e16
+	}
+
+	expected[0] += 1e16
+	expected[1] -= 1e16
+
+	if c := ls.Centroid(); !c.Equal(expected) {
+		t.Errorf("incorrect result: %v != %v", c, expected)
+	}
 }
 
 func TestLineStringReverse(t *testing.T) {

@@ -98,6 +98,8 @@ func (ls LineString) DistanceFromSquared(point Point) float64 {
 	for i := 0; i < loopTo; i++ {
 		seg[0] = ls[i]
 		seg[1] = ls[i+1]
+
+		// TODO: would checking the distance to the bound first be faster?
 		dist = math.Min(seg.DistanceFromSquared(point), dist)
 	}
 
@@ -164,13 +166,24 @@ func (ls LineString) Project(point Point) float64 {
 
 // Centroid computes the centroid of the line string.
 func (ls LineString) Centroid() Point {
+	point, _ := ls.CentroidDistance()
+	return point
+}
+
+// CentroidDistance computes the centroid and the distance/length
+// of the line. If you need both this is faster since we need the
+// length to compute the centroid.
+func (ls LineString) CentroidDistance() (Point, float64) {
 	dist := 0.0
 	point := Point{}
 
 	seg := Segment{}
+
+	// implicitly move everything to near the origin to help with roundoff
+	offset := Vector(ls[0]).Negative()
 	for i := 0; i < len(ls)-1; i++ {
-		seg[0] = ls[i]
-		seg[1] = ls[i+1]
+		seg[0] = ls[i].Add(offset)
+		seg[1] = ls[i+1].Add(offset)
 
 		d := seg.Distance()
 		centroid := seg.Interpolate(0.5)
@@ -184,7 +197,8 @@ func (ls LineString) Centroid() Point {
 	point[0] /= dist
 	point[1] /= dist
 
-	return point
+	point = point.Add(offset.Negative())
+	return point, dist
 }
 
 // Reverse changes the direction of the line string.

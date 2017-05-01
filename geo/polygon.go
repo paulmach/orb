@@ -48,26 +48,11 @@ func (p Polygon) WKT() string {
 // Equal compares two polygons. Returns true if lengths are the same
 // and all points are Equal.
 func (p Polygon) Equal(polygon Polygon) bool {
-	if len(p) != len(polygon) {
-		return false
-	}
-
-	for i, ring := range p {
-		if !ring.Equal(polygon[i]) {
-			return false
-		}
-	}
-
-	return true
+	return MultiLineString(p).Equal(MultiLineString(polygon))
 }
 
 // Clone returns a new deep copy of the polygon.
 // All of the rings are also cloned.
 func (p Polygon) Clone() Polygon {
-	np := make(Polygon, 0, len(p))
-	for _, ring := range p {
-		np = append(np, ring.Clone())
-	}
-
-	return np
+	return Polygon(MultiLineString(p).Clone())
 }

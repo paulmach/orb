@@ -10,6 +10,12 @@ func NewVector(x, y float64) Vector {
 	return Vector{x, y}
 }
 
+// Negative returns the negative of the vector.
+// eg. Vector{0, 0}.Sub(v)
+func (v Vector) Negative() Vector {
+	return Vector{0, 0}.Sub(v)
+}
+
 // Add adds to two vectors.
 func (v Vector) Add(vector Vector) Vector {
 	v[0] += vector[0]
