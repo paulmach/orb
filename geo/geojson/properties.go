@@ -1,5 +1,7 @@
 package geojson
 
+import "fmt"
+
 // Properties defines the feature properties with some helper methods.
 type Properties map[string]interface{}
 
@@ -7,10 +9,15 @@ type Properties map[string]interface{}
 // This function useful when you explicitly want a `bool` in a single
 // value return context, for example:
 //     myFunc(f.Properties.MustBool("param1"), f.Properties.MustBool("optional_param", true))
+// This function will panic if the value is present but not a bool.
 func (p Properties) MustBool(key string, def ...bool) bool {
-	b, ok := p[key].(bool)
-	if ok {
+	v := p[key]
+	if b, ok := v.(bool); ok {
 		return b
+	}
+
+	if v != nil {
+		panic(fmt.Sprintf("not a bool, but a %T: %v", v, v))
 	}
 
 	if len(def) > 0 {
@@ -24,15 +31,19 @@ func (p Properties) MustBool(key string, def ...bool) bool {
 // This function useful when you explicitly want a `int` in a single
 // value return context, for example:
 //     myFunc(f.Properties.MustInt("param1"), f.Properties.MustInt("optional_param", 123))
+// This function will panic if the value is present but not a number.
 func (p Properties) MustInt(key string, def ...int) int {
-	i, ok := p[key].(int)
-	if ok {
+	v := p[key]
+	if i, ok := v.(int); ok {
 		return i
 	}
 
-	f, ok := p[key].(float64)
-	if ok {
+	if f, ok := v.(float64); ok {
 		return int(f)
+	}
+
+	if v != nil {
+		panic(fmt.Sprintf("not a number, but a %T: %v", v, v))
 	}
 
 	if len(def) > 0 {
@@ -46,10 +57,19 @@ func (p Properties) MustInt(key string, def ...int) int {
 // This function useful when you explicitly want a `float64` in a single
 // value return context, for example:
 //     myFunc(f.Properties.MustFloat64("param1"), f.Properties.MustFloat64("optional_param", 10.1))
+// This function will panic if the value is present but not a number.
 func (p Properties) MustFloat64(key string, def ...float64) float64 {
-	f, ok := p[key].(float64)
-	if ok {
+	v := p[key]
+	if f, ok := v.(float64); ok {
 		return f
+	}
+
+	if i, ok := v.(int); ok {
+		return float64(i)
+	}
+
+	if v != nil {
+		panic(fmt.Sprintf("not a number, but a %T: %v", v, v))
 	}
 
 	if len(def) > 0 {
@@ -63,10 +83,15 @@ func (p Properties) MustFloat64(key string, def ...float64) float64 {
 // This function useful when you explicitly want a `string` in a single
 // value return context, for example:
 //     myFunc(f.Properties.MustString("param1"), f.Properties.MustString("optional_param", "default"))
+// This function will panic if the value is present but not a string.
 func (p Properties) MustString(key string, def ...string) string {
-	s, ok := p[key].(string)
-	if ok {
+	v := p[key]
+	if s, ok := v.(string); ok {
 		return s
+	}
+
+	if v != nil {
+		panic(fmt.Sprintf("not a string, but a %T: %v", v, v))
 	}
 
 	if len(def) > 0 {
