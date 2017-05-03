@@ -58,6 +58,11 @@ func (mp MultiPolygon) WKT() string {
 	return buff.String()
 }
 
+// String returns the wkt representation of the multi polygon.
+func (mp MultiPolygon) String() string {
+	return mp.WKT()
+}
+
 // Equal compares two multi-polygons.
 func (mp MultiPolygon) Equal(multiPolygon MultiPolygon) bool {
 	if len(mp) != len(multiPolygon) {

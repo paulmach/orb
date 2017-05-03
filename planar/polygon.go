@@ -151,6 +151,11 @@ func (p Polygon) WKT() string {
 	return buff.String()
 }
 
+// String returns the wkt representation of the polygon.
+func (p Polygon) String() string {
+	return p.WKT()
+}
+
 // Equal compares two polygons. Returns true if lengths are the same
 // and all points are Equal.
 func (p Polygon) Equal(polygon Polygon) bool {

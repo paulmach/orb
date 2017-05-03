@@ -56,3 +56,8 @@ func (p Polygon) Equal(polygon Polygon) bool {
 func (p Polygon) Clone() Polygon {
 	return Polygon(MultiLineString(p).Clone())
 }
+
+// String returns the wkt representation of the polygon.
+func (p Polygon) String() string {
+	return p.WKT()
+}
