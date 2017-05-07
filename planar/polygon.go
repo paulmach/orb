@@ -127,7 +127,7 @@ func (p Polygon) Area() float64 {
 }
 
 // Bound returns a bound around the polygon.
-func (p Polygon) Bound() Rect {
+func (p Polygon) Bound() Bound {
 	return p[0].Bound()
 }
 

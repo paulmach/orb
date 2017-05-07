@@ -215,7 +215,7 @@ func (ls LineString) Reverse() LineString {
 }
 
 // Bound returns a rectangle bound around the line string. Uses rectangular coordinates.
-func (ls LineString) Bound() Rect {
+func (ls LineString) Bound() Bound {
 	return MultiPoint(ls).Bound()
 }
 

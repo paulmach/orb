@@ -44,10 +44,10 @@ func TestSegmentScan(t *testing.T) {
 	}
 }
 
-func TestRectScan(t *testing.T) {
-	r := Rect{}
+func TestBoundScan(t *testing.T) {
+	b := Bound{}
 	for i, test := range wkb.SegmentTestCases {
-		err := r.Scan(test.Data)
+		err := b.Scan(test.Data)
 		if err != nil {
 			if err != test.Err {
 				t.Errorf("test %d, incorrect error: %v", i, err)
@@ -55,8 +55,8 @@ func TestRectScan(t *testing.T) {
 			continue
 		}
 
-		if !r.Equal(pointsToSegment(test.Points).Bound()) {
-			t.Errorf("test %d, incorrect rectangle: %v", i, r)
+		if !b.Equal(pointsToSegment(test.Points).Bound()) {
+			t.Errorf("test %d, incorrect rectangle: %v", i, b)
 		}
 	}
 }

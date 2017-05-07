@@ -383,7 +383,7 @@ func TestSegmentBound(t *testing.T) {
 
 	s := NewSegment(a, b)
 
-	expected := NewRect(1, 3, 2, 4)
+	expected := NewBound(1, 3, 2, 4)
 	if b := s.Bound(); !b.Equal(expected) {
 		t.Errorf("bounds incorrect: %v != %v", b, expected)
 	}

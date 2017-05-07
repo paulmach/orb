@@ -62,9 +62,9 @@ func (p Point) GeoJSONType() string {
 	return "Point"
 }
 
-// Bound returns a single point Rect of the point.
-func (p Point) Bound() Rect {
-	return NewRect(p[0], p[0], p[1], p[1])
+// Bound returns a single point bound of the point.
+func (p Point) Bound() Bound {
+	return NewBound(p[0], p[0], p[1], p[1])
 }
 
 // DistanceFrom returns the geodesic distance in meters.

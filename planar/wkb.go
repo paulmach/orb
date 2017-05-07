@@ -48,15 +48,15 @@ func unWKBSegment(data []byte, littleEndian bool) (Segment, error) {
 }
 
 // Scan implements the sql.Scanner interface allowing
-// bound to be read in as the rect of a two point line string.
-func (r *Rect) Scan(value interface{}) error {
+// bound to be read in as the bound of a two point line string.
+func (b *Bound) Scan(value interface{}) error {
 	s := Segment{}
 	err := s.Scan(value)
 	if err != nil {
 		return err
 	}
 
-	*r = s.Bound()
+	*b = s.Bound()
 	return nil
 }
 

@@ -21,7 +21,7 @@ func (p Polygon) GeoJSONType() string {
 }
 
 // Bound returns a bound around the polygon.
-func (p Polygon) Bound() Rect {
+func (p Polygon) Bound() Bound {
 	return p[0].Bound()
 }
 

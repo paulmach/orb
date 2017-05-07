@@ -14,8 +14,8 @@ func NewPoint(x, y float64) Point {
 }
 
 // Bound return a bound that is just a single point.
-func (p Point) Bound() Rect {
-	return NewRect(p[0], p[0], p[1], p[1])
+func (p Point) Bound() Bound {
+	return NewBound(p[0], p[0], p[1], p[1])
 }
 
 // Centroid returns the point, a centroid of a point is the point.

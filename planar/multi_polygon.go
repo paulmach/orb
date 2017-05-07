@@ -77,7 +77,7 @@ func (mp MultiPolygon) Area() float64 {
 }
 
 // Bound returns a bound around the multi-polygon.
-func (mp MultiPolygon) Bound() Rect {
+func (mp MultiPolygon) Bound() Bound {
 	bound := mp[0].Bound()
 	for i := 1; i < len(mp); i++ {
 		bound = bound.Union(mp[i].Bound())

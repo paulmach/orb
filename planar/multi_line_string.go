@@ -60,7 +60,7 @@ func (mls MultiLineString) Centroid() Point {
 }
 
 // Bound returns a rectangle bound around all the line strings.
-func (mls MultiLineString) Bound() Rect {
+func (mls MultiLineString) Bound() Bound {
 	bound := mls[0].Bound()
 	for i := 1; i < len(mls); i++ {
 		bound = bound.Union(mls[i].Bound())

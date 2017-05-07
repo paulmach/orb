@@ -25,15 +25,15 @@ func readWKBPoint(data []byte, littleEndian bool) Point {
 }
 
 // Scan implements the sql.Scanner interface allowing
-// Rect to be read in as the bound of a two point line string.
-func (r *Rect) Scan(value interface{}) error {
+// Bound to be read in as the bound of a two point line string.
+func (b *Bound) Scan(value interface{}) error {
 	ls := LineString{} // TOOD: once we have line type, use that.
 	err := ls.Scan(value)
 	if err != nil {
 		return err
 	}
 
-	*r = ls.Bound()
+	*b = ls.Bound()
 	return nil
 }
 

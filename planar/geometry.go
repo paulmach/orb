@@ -9,7 +9,7 @@ import (
 // Geometry is an interface that represents the shared attributes
 // of a geometry.
 type Geometry interface {
-	Bound() Rect
+	Bound() Bound
 	DistanceFrom(Point) float64
 	Centroid() Point
 	WKT() string
@@ -22,7 +22,7 @@ var (
 	_ Geometry = MultiPoint{}
 	_ Geometry = LineString{}
 	_ Geometry = MultiLineString{}
-	_ Geometry = Rect{}
+	_ Geometry = Bound{}
 	_ Geometry = Polygon{}
 	_ Geometry = MultiPolygon{}
 )
@@ -31,7 +31,7 @@ var (
 type Collection []Geometry
 
 // Bound returns the bounding box of all the Geometries combined.
-func (c Collection) Bound() Rect {
+func (c Collection) Bound() Bound {
 	r := c[0].Bound()
 	for i := 1; i < len(c); i++ {
 		r = r.Union(c[i].Bound())

@@ -84,10 +84,10 @@ func (mp MultiPoint) DistanceFrom(point Point) (float64, int) {
 	return dist, index
 }
 
-// Bound returns a rectangle bound around the points. Uses rectangular coordinates.
-func (mp MultiPoint) Bound() Rect {
+// Bound returns a bound around the points. Uses rectangular coordinates.
+func (mp MultiPoint) Bound() Bound {
 	if len(mp) == 0 {
-		return Rect{}
+		return Bound{}
 	}
 
 	minX := math.Inf(1)
@@ -104,7 +104,7 @@ func (mp MultiPoint) Bound() Rect {
 		maxY = math.Max(maxY, v.Lat())
 	}
 
-	return NewRect(maxX, minX, maxY, minY)
+	return NewBound(maxX, minX, maxY, minY)
 }
 
 // Equal compares two MultiPoint objects. Returns true if lengths are the same

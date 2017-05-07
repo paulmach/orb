@@ -10,7 +10,7 @@ import (
 type Geometry interface {
 	GeoJSONType() string
 
-	Bound() Rect
+	Bound() Bound
 	WKT() string
 }
 
@@ -28,7 +28,7 @@ var (
 type Collection []Geometry
 
 // Bound returns the bounding box of all the Geometries combined.
-func (c Collection) Bound() Rect {
+func (c Collection) Bound() Bound {
 	r := c[0].Bound()
 	for i := 1; i < len(c); i++ {
 		r = r.Union(c[i].Bound())

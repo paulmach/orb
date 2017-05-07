@@ -199,9 +199,9 @@ func (s Segment) Midpoint() Point {
 	return Point{(s[0][0] + s[1][0]) / 2, (s[0][1] + s[1][1]) / 2}
 }
 
-// Bound returns a rectangle bound around the segment. Simply uses rectangular coordinates.
-func (s Segment) Bound() Rect {
-	return NewRect(
+// Bound returns a rectangle bound around the segment.
+func (s Segment) Bound() Bound {
+	return NewBound(
 		math.Min(s[0][0], s[1][0]),
 		math.Max(s[0][0], s[1][0]),
 		math.Min(s[0][1], s[1][1]),

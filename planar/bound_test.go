@@ -2,66 +2,66 @@ package planar
 
 import "testing"
 
-func TestNewRect(t *testing.T) {
-	rect := NewRect(5, 0, 3, 0)
-	if rect[0] != NewPoint(0, 0) {
-		t.Errorf("incorrect sw: %v != %v", rect[0], NewPoint(0, 0))
+func TestNewBound(t *testing.T) {
+	bound := NewBound(5, 0, 3, 0)
+	if bound[0] != NewPoint(0, 0) {
+		t.Errorf("incorrect sw: %v != %v", bound[0], NewPoint(0, 0))
 	}
 
-	if rect[1] != NewPoint(5, 3) {
-		t.Errorf("incorrect ne: %v != %v", rect[1], NewPoint(5, 3))
+	if bound[1] != NewPoint(5, 3) {
+		t.Errorf("incorrect ne: %v != %v", bound[1], NewPoint(5, 3))
 	}
 
-	rect = NewRectFromPoints(NewPoint(0, 3), NewPoint(4, 0))
-	if rect[0] != NewPoint(0, 0) {
-		t.Errorf("incorrect sw: %v != %v", rect[0], NewPoint(0, 0))
+	bound = NewBoundFromPoints(NewPoint(0, 3), NewPoint(4, 0))
+	if bound[0] != NewPoint(0, 0) {
+		t.Errorf("incorrect sw: %v != %v", bound[0], NewPoint(0, 0))
 	}
 
-	if rect[1] != NewPoint(4, 3) {
-		t.Errorf("incorrect ne: %v != %v", rect[1], NewPoint(4, 3))
+	if bound[1] != NewPoint(4, 3) {
+		t.Errorf("incorrect ne: %v != %v", bound[1], NewPoint(4, 3))
 	}
 
-	rect1 := NewRect(1, 2, 3, 4)
-	rect2 := NewRectFromPoints(NewPoint(1, 3), NewPoint(2, 4))
-	if !rect1.Equal(rect2) {
-		t.Errorf("incorrect rect: %v != %v", rect1, rect2)
-	}
-}
-
-func TestRectPad(t *testing.T) {
-	var rect, tester Rect
-
-	rect = NewRect(0, 1, 2, 3)
-	tester = NewRect(-0.5, 1.5, 1.5, 3.5)
-	if rect = rect.Pad(0.5); !rect.Equal(tester) {
-		t.Errorf("bound, pad expected %v, got %v", tester, rect)
-	}
-
-	rect = NewRect(0, 1, 2, 3)
-	tester = NewRect(0.1, 0.9, 2.1, 2.9)
-	if rect = rect.Pad(-0.1); !rect.Equal(tester) {
-		t.Errorf("bound, pad expected %v, got %v", tester, rect)
+	bound1 := NewBound(1, 2, 3, 4)
+	bound2 := NewBoundFromPoints(NewPoint(1, 3), NewPoint(2, 4))
+	if !bound1.Equal(bound2) {
+		t.Errorf("incorrect bound: %v != %v", bound1, bound2)
 	}
 }
 
-func TestRectExtend(t *testing.T) {
-	rect := NewRect(3, 0, 5, 0)
+func TestBoundPad(t *testing.T) {
+	var bound, tester Bound
 
-	if r := rect.Extend(NewPoint(2, 1)); !r.Equal(rect) {
-		t.Errorf("extend incorrect: %v != %v", r, rect)
+	bound = NewBound(0, 1, 2, 3)
+	tester = NewBound(-0.5, 1.5, 1.5, 3.5)
+	if bound = bound.Pad(0.5); !bound.Equal(tester) {
+		t.Errorf("bound, pad expected %v, got %v", tester, bound)
 	}
 
-	answer := NewRect(6, 0, 5, -1)
-	if r := rect.Extend(NewPoint(6, -1)); !r.Equal(answer) {
+	bound = NewBound(0, 1, 2, 3)
+	tester = NewBound(0.1, 0.9, 2.1, 2.9)
+	if bound = bound.Pad(-0.1); !bound.Equal(tester) {
+		t.Errorf("bound, pad expected %v, got %v", tester, bound)
+	}
+}
+
+func TestBoundExtend(t *testing.T) {
+	bound := NewBound(3, 0, 5, 0)
+
+	if r := bound.Extend(NewPoint(2, 1)); !r.Equal(bound) {
+		t.Errorf("extend incorrect: %v != %v", r, bound)
+	}
+
+	answer := NewBound(6, 0, 5, -1)
+	if r := bound.Extend(NewPoint(6, -1)); !r.Equal(answer) {
 		t.Errorf("extend incorrect: %v != %v", r, answer)
 	}
 }
 
-func TestRectUnion(t *testing.T) {
-	r1 := NewRect(0, 1, 0, 1)
-	r2 := NewRect(0, 2, 0, 2)
+func TestBoundUnion(t *testing.T) {
+	r1 := NewBound(0, 1, 0, 1)
+	r2 := NewBound(0, 2, 0, 2)
 
-	expected := NewRect(0, 2, 0, 2)
+	expected := NewBound(0, 2, 0, 2)
 	if r := r1.Union(r2); !r.Equal(expected) {
 		t.Errorf("union incorrect: %v != %v", r, expected)
 	}
@@ -71,8 +71,8 @@ func TestRectUnion(t *testing.T) {
 	}
 }
 
-func TestRectContains(t *testing.T) {
-	rect := NewRect(2, -2, 1, -1)
+func TestBoundContains(t *testing.T) {
+	bound := NewBound(2, -2, 1, -1)
 
 	cases := []struct {
 		name   string
@@ -118,7 +118,7 @@ func TestRectContains(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			v := rect.Contains(tc.point)
+			v := bound.Contains(tc.point)
 			if v != tc.result {
 				t.Errorf("incorrect contains: %v != %v", v, tc.result)
 			}
@@ -126,122 +126,122 @@ func TestRectContains(t *testing.T) {
 	}
 }
 
-func TestRectIntersects(t *testing.T) {
-	rect := NewRect(0, 1, 2, 3)
+func TestBoundIntersects(t *testing.T) {
+	bound := NewBound(0, 1, 2, 3)
 
 	cases := []struct {
 		name   string
-		rect   Rect
+		bound  Bound
 		result bool
 	}{
 		{
 			name:   "outside, top right",
-			rect:   NewRect(5, 6, 7, 8),
+			bound:  NewBound(5, 6, 7, 8),
 			result: false,
 		},
 		{
 			name:   "outside, top left",
-			rect:   NewRect(-6, -5, 7, 8),
+			bound:  NewBound(-6, -5, 7, 8),
 			result: false,
 		},
 		{
 			name:   "outside, above",
-			rect:   NewRect(0, 0.5, 7, 8),
+			bound:  NewBound(0, 0.5, 7, 8),
 			result: false,
 		},
 		{
 			name:   "over the middle",
-			rect:   NewRect(0, 0.5, 1, 4),
+			bound:  NewBound(0, 0.5, 1, 4),
 			result: true,
 		},
 		{
 			name:   "over the left",
-			rect:   NewRect(-1, 2, 1, 4),
+			bound:  NewBound(-1, 2, 1, 4),
 			result: true,
 		},
 		{
 			name:   "completely inside",
-			rect:   NewRect(0.3, 0.6, 2.3, 2.6),
+			bound:  NewBound(0.3, 0.6, 2.3, 2.6),
 			result: true,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			v := rect.Intersects(tc.rect)
+			v := bound.Intersects(tc.bound)
 			if v != tc.result {
 				t.Errorf("incorrect result: %v != %v", v, tc.result)
 			}
 		})
 	}
 
-	a := NewRect(7, 8, 6, 7)
-	b := NewRect(6.1, 8.1, 6.1, 8.1)
+	a := NewBound(7, 8, 6, 7)
+	b := NewBound(6.1, 8.1, 6.1, 8.1)
 
 	if !a.Intersects(b) || !b.Intersects(a) {
 		t.Errorf("expected to intersect")
 	}
 
-	a = NewRect(1, 4, 2, 3)
-	b = NewRect(2, 3, 1, 4)
+	a = NewBound(1, 4, 2, 3)
+	b = NewBound(2, 3, 1, 4)
 
 	if !a.Intersects(b) || !b.Intersects(a) {
 		t.Errorf("expected to intersect")
 	}
 }
 
-func TestRectCentroid(t *testing.T) {
+func TestBoundCentroid(t *testing.T) {
 	var p Point
-	var r Rect
+	var r Bound
 
-	r = NewRect(0, 1, 2, 3)
+	r = NewBound(0, 1, 2, 3)
 	p = NewPoint(0.5, 2.5)
 	if c := r.Centroid(); c != p {
 		t.Errorf("incorrect centroid: %v != %v", c, p)
 	}
 
-	r = NewRect(0, 0, 2, 2)
+	r = NewBound(0, 0, 2, 2)
 	p = NewPoint(0, 2)
 	if c := r.Centroid(); c != p {
 		t.Errorf("incorrect centroid: %v != %v", c, p)
 	}
 }
 
-func TestRectIsEmpty(t *testing.T) {
+func TestBoundIsEmpty(t *testing.T) {
 	cases := []struct {
 		name   string
-		rect   Rect
+		bound  Bound
 		result bool
 	}{
 		{
-			name:   "regular rect",
-			rect:   NewRect(1, 2, 3, 4),
+			name:   "regular bound",
+			bound:  NewBound(1, 2, 3, 4),
 			result: false,
 		},
 		{
 			name:   "single point",
-			rect:   NewRect(1, 1, 2, 2),
+			bound:  NewBound(1, 1, 2, 2),
 			result: false,
 		},
 		{
 			name:   "horizontal bar",
-			rect:   NewRect(1, 1, 2, 3),
+			bound:  NewBound(1, 1, 2, 3),
 			result: false,
 		},
 		{
 			name:   "vertical bar",
-			rect:   NewRect(1, 2, 2, 2),
+			bound:  NewBound(1, 2, 2, 2),
 			result: false,
 		},
 		{
 			name:   "vertical bar",
-			rect:   NewRect(1, 2, 2, 2),
+			bound:  NewBound(1, 2, 2, 2),
 			result: false,
 		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			v := tc.rect.IsEmpty()
+			v := tc.bound.IsEmpty()
 			if v != tc.result {
 				t.Errorf("incorrect result: %v != %v", v, tc.result)
 			}
@@ -250,42 +250,42 @@ func TestRectIsEmpty(t *testing.T) {
 	}
 
 	// negative/malformed area
-	rect := NewRect(1, 1, 2, 2)
-	rect[1][0] = 0
-	if !rect.IsEmpty() {
+	bound := NewBound(1, 1, 2, 2)
+	bound[1][0] = 0
+	if !bound.IsEmpty() {
 		t.Error("expected true, got false")
 	}
 
 	// negative/malformed area
-	rect = NewRect(1, 1, 2, 2)
-	rect[0][1] = 3
-	if !rect.IsEmpty() {
+	bound = NewBound(1, 1, 2, 2)
+	bound[0][1] = 3
+	if !bound.IsEmpty() {
 		t.Error("expected true, got false")
 	}
 }
 
-func TestRectIsZero(t *testing.T) {
-	rect := NewRect(1, 1, 2, 2)
-	if rect.IsZero() {
+func TestBoundIsZero(t *testing.T) {
+	bound := NewBound(1, 1, 2, 2)
+	if bound.IsZero() {
 		t.Error("expected false, got true")
 	}
 
-	rect = NewRect(0, 0, 0, 0)
-	if !rect.IsZero() {
+	bound = NewBound(0, 0, 0, 0)
+	if !bound.IsZero() {
 		t.Error("expected true, got false")
 	}
 
-	var r Rect
+	var r Bound
 	if !r.IsZero() {
 		t.Error("expected true, got false")
 	}
 }
 
 func TestWKT(t *testing.T) {
-	rect := NewRect(1, 2, 3, 4)
+	bound := NewBound(1, 2, 3, 4)
 
 	answer := "POLYGON((1 3,1 4,2 4,2 3,1 3))"
-	if s := rect.WKT(); s != answer {
+	if s := bound.WKT(); s != answer {
 		t.Errorf("wkt expected %s, got %s", answer, s)
 	}
 }

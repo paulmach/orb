@@ -97,17 +97,17 @@ func PolygonToGeo(p planar.Polygon, proj Projection) geo.Polygon {
 	return n
 }
 
-// RectToPlanar is a helper to project a rectangle.
-func RectToPlanar(bound geo.Rect, proj Projection) planar.Rect {
-	return planar.NewRectFromPoints(
+// BoundToPlanar is a helper to project a rectangle.
+func BoundToPlanar(bound geo.Bound, proj Projection) planar.Bound {
+	return planar.NewBoundFromPoints(
 		proj.ToPlanar(bound[0]),
 		proj.ToPlanar(bound[1]),
 	)
 }
 
-// RectToGeo is a helper to project a rectangle.
-func RectToGeo(bound planar.Rect, proj Projection) geo.Rect {
-	return geo.NewRectFromPoints(
+// BoundToGeo is a helper to project a rectangle.
+func BoundToGeo(bound planar.Bound, proj Projection) geo.Bound {
+	return geo.NewBoundFromPoints(
 		proj.ToGeo(bound[0]),
 		proj.ToGeo(bound[1]),
 	)

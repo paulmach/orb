@@ -74,7 +74,7 @@ func TestNewMultiPointPreallocate(t *testing.T) {
 	}
 }
 
-func TestPathRect(t *testing.T) {
+func TestPathBound(t *testing.T) {
 	mp := append(NewMultiPoint(),
 		NewPoint(0.5, .2),
 		NewPoint(-1, 0),
@@ -82,7 +82,7 @@ func TestPathRect(t *testing.T) {
 		NewPoint(1, 8),
 	)
 
-	expected := NewRect(-1, 1, 0, 10)
+	expected := NewBound(-1, 1, 0, 10)
 	if b := mp.Bound(); !b.Equal(expected) {
 		t.Errorf("incorrect bound, %v != %v", b, expected)
 	}
