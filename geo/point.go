@@ -223,12 +223,6 @@ func (p Point) Lon() float64 {
 	return p[0]
 }
 
-// XY returns the x/horizontal and y/vertical omponents of the point.
-// This implements the orb.Pointer interface
-func (p Point) XY() (float64, float64) {
-	return p[0], p[1]
-}
-
 // GeoJSON creates a new geojson feature with a point geometry.
 func (p Point) GeoJSON() *geojson.Feature {
 	return geojson.NewPointFeature([]float64{p[0], p[1]})

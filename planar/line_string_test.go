@@ -5,17 +5,6 @@ import (
 	"testing"
 )
 
-func TestNewLineStringPreallocate(t *testing.T) {
-	ls := NewLineStringPreallocate(10, 1000)
-	if l := len(ls); l != 10 {
-		t.Errorf("length not set correctly, got %d", l)
-	}
-
-	if c := cap(ls); c != 1000 {
-		t.Errorf("capactity not set corrctly, got %d", c)
-	}
-}
-
 func TestNewLineStringFromXYData(t *testing.T) {
 	data := [][2]float64{
 		{1, 2},

@@ -20,6 +20,7 @@ var (
 	_ Geometry = MultiPoint{}
 	_ Geometry = LineString{}
 	_ Geometry = MultiLineString{}
+	_ Geometry = Bound{}
 	_ Geometry = Polygon{}
 	_ Geometry = MultiPolygon{}
 )

@@ -1,8 +1,6 @@
 package geo
 
 import (
-	"bytes"
-	"fmt"
 	"math"
 	"strings"
 
@@ -156,16 +154,27 @@ func geoHashInt2ranges(hash int64, bits int) (float64, float64, float64, float64
 	return lonMin, lonMax, latMin, latMax
 }
 
+// GeoJSONType returns the GeoJSON type for the object.
+func (b Bound) GeoJSONType() string {
+	return "Polygon"
+}
+
+// ToPolygon converts the bound into a Polygon object.
+func (b Bound) ToPolygon() Polygon {
+	return Polygon{b.ToLineString()}
+}
+
 // ToLineString converts the bound into a loop defined
 // by the boundary of the box
 func (b Bound) ToLineString() LineString {
-	return append(NewLineStringPreallocate(0, 5),
-		b[0],
-		NewPoint(b[0][0], b[1][1]),
-		b[1],
-		NewPoint(b[1][0], b[0][1]),
-		b[0],
-	)
+	ls := make(LineString, 5)
+	ls[0] = b[0]
+	ls[1] = Point{b[0][0], b[1][1]}
+	ls[2] = b[1]
+	ls[3] = Point{b[1][0], b[0][1]}
+	ls[4] = b[0]
+
+	return ls
 }
 
 // Extend grows the bound to include the new point.
@@ -294,6 +303,11 @@ func (b Bound) IsZero() bool {
 	return b == Bound{}
 }
 
+// Bound returns the the same bound.
+func (b Bound) Bound() Bound {
+	return b
+}
+
 // String returns the string respentation of the bound in WKT format.
 func (b Bound) String() string {
 	return b.WKT()
@@ -302,21 +316,7 @@ func (b Bound) String() string {
 // WKT returns the string respentation of the bound in WKT format.
 // POLYGON(west, south, west, north, east, north, east, south, west, south)
 func (b Bound) WKT() string {
-	if b.IsEmpty() {
-		return "EMPTY"
-	}
-
-	buff := bytes.NewBuffer(nil)
-	fmt.Fprintf(buff, "POLYGON(")
-	wktPoints(buff, b.ToLineString())
-	fmt.Fprintf(buff, ")")
-
-	return buff.String()
-}
-
-// Pointer is a helper for using bound in a nullable context.
-func (b Bound) Pointer() *Bound {
-	return &b
+	return b.ToPolygon().WKT()
 }
 
 // Equal returns if two bounds are equal.

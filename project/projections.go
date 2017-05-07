@@ -25,7 +25,7 @@ type (
 const mercatorPole = 20037508.34
 
 // Mercator projection, performs EPSG:3857, sometimes also described as EPSG:900913.
-var Mercator = Projection{
+var Mercator = &Projection{
 	ToPlanar: func(g geo.Point) planar.Point {
 		y := math.Log(math.Tan((90.0+g.Lat())*math.Pi/360.0)) / math.Pi * mercatorPole
 		return planar.Point{
@@ -89,7 +89,7 @@ func BuildTransverseMercator(centerLon float64) Projection {
 
 // TransverseMercator implements a default transverse Mercator projector
 // that will only work well +-10 degrees around longitude 0.
-var TransverseMercator = Projection{
+var TransverseMercator = &Projection{
 	ToPlanar: func(g geo.Point) planar.Point {
 		radLat := deg2rad(g.Lat())
 		radLon := deg2rad(g.Lon())

@@ -35,13 +35,14 @@ func NewBoundAroundPoint(center Point, distance float64) Bound {
 // ToLineString converts the bound into a loop defined
 // by the boundary of the box.
 func (b Bound) ToLineString() LineString {
-	return append(NewLineStringPreallocate(0, 5),
-		b[0],
-		NewPoint(b[0][0], b[1][1]),
-		b[1],
-		NewPoint(b[1][0], b[0][1]),
-		b[0],
-	)
+	ls := make(LineString, 5)
+	ls[0] = b[0]
+	ls[1] = Point{b[0][0], b[1][1]}
+	ls[2] = b[1]
+	ls[3] = Point{b[1][0], b[0][1]}
+	ls[4] = b[0]
+
+	return ls
 }
 
 // ToPolygon converts the bound into a rectangle Polygon object.

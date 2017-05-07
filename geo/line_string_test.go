@@ -6,17 +6,6 @@ import (
 	"testing"
 )
 
-func TestNewLineStringPreallocate(t *testing.T) {
-	ls := NewLineStringPreallocate(10, 1000)
-	if l := len(ls); l != 10 {
-		t.Errorf("length not set correctly: %v != 10", l)
-	}
-
-	if c := cap(ls); c != 1000 {
-		t.Errorf("capactity not set corrctly: %v != 1000", c)
-	}
-}
-
 func TestNewLineStringFromEncoding(t *testing.T) {
 	for loop := 0; loop < 100; loop++ {
 		ls1 := NewLineString()

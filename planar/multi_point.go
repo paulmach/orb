@@ -14,16 +14,6 @@ func NewMultiPoint() MultiPoint {
 	return MultiPoint{}
 }
 
-// NewMultiPointPreallocate creates a new MultiPoint object with points array of the given size.
-func NewMultiPointPreallocate(length, capacity int) MultiPoint {
-	if length > capacity {
-		capacity = length
-	}
-
-	mp := make([]Point, length, capacity)
-	return MultiPoint(mp)
-}
-
 // Clone returns a new copy of the MultiPoint object.
 func (mp MultiPoint) Clone() MultiPoint {
 	points := make([]Point, len(mp))

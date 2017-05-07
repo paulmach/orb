@@ -54,26 +54,6 @@ func TestNewMultiPoint(t *testing.T) {
 	}
 }
 
-func TestNewMultiPointPreallocate(t *testing.T) {
-	mp := append(NewMultiPoint(),
-		Point{-122.42558918, 37.76159786},
-		Point{-122.41486043, 37.78138826},
-		Point{-122.40206146, 37.77962363},
-	)
-
-	if l := len(mp); l != 3 {
-		t.Errorf("incorrect length of new multi point: %v", l)
-	}
-
-	if !mp[0].Equal(Point{-122.42558918, 37.76159786}) {
-		t.Errorf("incorrect first point of new multi point: %v", mp[0])
-	}
-
-	if !mp[2].Equal(Point{-122.40206146, 37.77962363}) {
-		t.Errorf("incorrect first point of new multi point: %v", mp[2])
-	}
-}
-
 func TestPathBound(t *testing.T) {
 	mp := append(NewMultiPoint(),
 		NewPoint(0.5, .2),

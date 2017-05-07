@@ -14,12 +14,7 @@ type LineString []Point
 
 // NewLineString creates a new line string.
 func NewLineString() LineString {
-	return NewLineStringPreallocate(0, 100)
-}
-
-// NewLineStringPreallocate creates a new line string with points array of the given size.
-func NewLineStringPreallocate(length, capacity int) LineString {
-	return LineString(make([]Point, length, capacity))
+	return LineString{}
 }
 
 // NewLineStringFromEncoding is the inverse of lineString.Encode. It takes a string encoding
@@ -75,7 +70,7 @@ func NewLineStringFromEncoding(encoded string, factor ...int) LineString {
 // NewLineStringFromXYData creates a line string from a slice of [2]float64 values
 // representing [horizontal, vertical] type data, for example lon/lat values from geojson.
 func NewLineStringFromXYData(data [][2]float64) LineString {
-	ls := NewLineStringPreallocate(0, len(data))
+	ls := make(LineString, 0, len(data))
 	for i := range data {
 		ls = append(ls, Point{data[i][0], data[i][1]})
 	}
@@ -86,7 +81,7 @@ func NewLineStringFromXYData(data [][2]float64) LineString {
 // NewLineStringFromYXData creates a line string from a slice of [2]float64 values
 // representing [vertical, horizontal] type data, for example typical lat/lon data.
 func NewLineStringFromYXData(data [][2]float64) LineString {
-	ls := NewLineStringPreallocate(0, len(data))
+	ls := make(LineString, 0, len(data))
 	for i := range data {
 		ls = append(ls, Point{data[i][1], data[i][0]})
 	}
@@ -98,7 +93,7 @@ func NewLineStringFromYXData(data [][2]float64) LineString {
 // The first two elements are taken to be horizontal and vertical components of each point respectively.
 // The rest of the elements of the slice are ignored. Nil slices are skipped.
 func NewLineStringFromXYSlice(data [][]float64) LineString {
-	ls := NewLineStringPreallocate(0, len(data))
+	ls := make(LineString, 0, len(data))
 	for i := range data {
 		if data[i] != nil && len(data[i]) >= 2 {
 			ls = append(ls, Point{data[i][0], data[i][1]})
@@ -112,7 +107,7 @@ func NewLineStringFromXYSlice(data [][]float64) LineString {
 // The first two elements are taken to be vertical and horizontal components of each point respectively.
 // The rest of the elements of the slice are ignored. Nil slices are skipped.
 func NewLineStringFromYXSlice(data [][]float64) LineString {
-	ls := NewLineStringPreallocate(0, len(data))
+	ls := make(LineString, 0, len(data))
 	for i := range data {
 		if data[i] != nil && len(data[i]) >= 2 {
 			ls = append(ls, Point{data[i][1], data[i][0]})
@@ -192,7 +187,7 @@ func (ls LineString) Distance(haversine ...bool) float64 {
 // Reverse changes the direction of the line string.
 // It returns a new list string.
 func (ls LineString) Reverse() LineString {
-	n := NewLineStringPreallocate(len(ls), len(ls))
+	n := make(LineString, len(ls), len(ls))
 
 	l := len(n) - 1
 	for i := 0; i <= l/2; i++ {

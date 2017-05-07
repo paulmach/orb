@@ -16,16 +16,6 @@ func NewMultiPoint() MultiPoint {
 	return MultiPoint{}
 }
 
-// NewMultiPointPreallocate creates a new MultiPoint with points array of the given size.
-func NewMultiPointPreallocate(length, capacity int) MultiPoint {
-	if length > capacity {
-		capacity = length
-	}
-
-	mp := make([]Point, length, capacity)
-	return MultiPoint(mp)
-}
-
 // GeoJSONType returns the GeoJSON type for the object.
 func (mp MultiPoint) GeoJSONType() string {
 	return "MultiPoint"
