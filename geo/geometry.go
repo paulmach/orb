@@ -23,10 +23,17 @@ var (
 	_ Geometry = Bound{}
 	_ Geometry = Polygon{}
 	_ Geometry = MultiPolygon{}
+
+	_ Geometry = Collection{}
 )
 
 // A Collection is a collection of geometries that is also a Geometry.
 type Collection []Geometry
+
+// GeoJSONType returns the geometry collection type.
+func (c Collection) GeoJSONType() string {
+	return "GeometryCollection"
+}
 
 // Bound returns the bounding box of all the Geometries combined.
 func (c Collection) Bound() Bound {

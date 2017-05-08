@@ -25,6 +25,8 @@ var (
 	_ Geometry = Bound{}
 	_ Geometry = Polygon{}
 	_ Geometry = MultiPolygon{}
+
+	_ Geometry = Collection{}
 )
 
 // A Collection is a collection of geometries that is also a Geometry.
@@ -56,12 +58,22 @@ func (c Collection) DistanceFrom(p Point) float64 {
 	return dist
 }
 
+// Centroid takes the average weighted centroid using the types with
+// the highest dimension in the collection.
+func (c Collection) Centroid() Point {
+	panic("not implemented")
+}
+
 // WKT returns the wkt of the geometry collection.
 func (c Collection) WKT() string {
 	buff := bytes.NewBuffer(nil)
 	fmt.Fprintf(buff, "GEOMETRYCOLLECTION(")
 
 	for i := range c {
+		if i != 0 {
+			buff.WriteString(",")
+		}
+
 		buff.WriteString(c[i].WKT())
 	}
 

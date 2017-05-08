@@ -20,6 +20,8 @@ func ToPlanar(g geo.Geometry, proj *Projection) planar.Geometry {
 		return PolygonToPlanar(g, proj)
 	case geo.MultiPolygon:
 		return MultiPolygonToPlanar(g, proj)
+	case geo.Collection:
+		return CollectionToPlanar(g, proj)
 	case geo.Bound:
 		return BoundToPlanar(g, proj)
 	}
@@ -42,6 +44,8 @@ func ToGeo(g planar.Geometry, proj *Projection) geo.Geometry {
 		return PolygonToGeo(g, proj)
 	case planar.MultiPolygon:
 		return MultiPolygonToGeo(g, proj)
+	case planar.Collection:
+		return CollectionToGeo(g, proj)
 	case planar.Bound:
 		return BoundToGeo(g, proj)
 	}
@@ -144,6 +148,26 @@ func MultiPolygonToGeo(mp planar.MultiPolygon, proj *Projection) geo.MultiPolygo
 	n := make(geo.MultiPolygon, len(mp))
 	for i := range mp {
 		n[i] = PolygonToGeo(mp[i], proj)
+	}
+
+	return n
+}
+
+// CollectionToPlanar is a helper to project a rectangle.
+func CollectionToPlanar(c geo.Collection, proj *Projection) planar.Collection {
+	n := make(planar.Collection, len(c))
+	for i := range c {
+		n[i] = ToPlanar(c[i], proj)
+	}
+
+	return n
+}
+
+// CollectionToGeo is a helper to project a rectangle.
+func CollectionToGeo(c planar.Collection, proj *Projection) geo.Collection {
+	n := make(geo.Collection, len(c))
+	for i := range c {
+		n[i] = ToGeo(c[i], proj)
 	}
 
 	return n
