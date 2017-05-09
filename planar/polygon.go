@@ -54,15 +54,18 @@ func (p Polygon) CentroidArea() (Point, float64) {
 		ring := p[i]
 
 		hc, ha := ring.ringCentroid()
-		holeArea += ha
+		holeArea += math.Abs(ha)
 		holeCentroid[0] += hc[0] * ha
 		holeCentroid[1] += hc[1] * ha
 	}
 
-	centroid[0] = (area*centroid[0] - holeArea*holeCentroid[0]) / (area - holeArea)
-	centroid[1] = (area*centroid[1] - holeArea*holeCentroid[1]) / (area - holeArea)
+	area = math.Abs(area)
+	totalArea := area - holeArea
 
-	return centroid, area - holeArea
+	centroid[0] = (area*centroid[0] - holeArea*holeCentroid[0]) / totalArea
+	centroid[1] = (area*centroid[1] - holeArea*holeCentroid[1]) / totalArea
+
+	return centroid, totalArea
 }
 
 func (ls LineString) ringCentroid() (Point, float64) {
@@ -96,6 +99,23 @@ func (ls LineString) ringCentroid() (Point, float64) {
 	return centroid, area
 }
 
+// Area returns a signed area for the line string. Assumes the line string
+// is a ring. Similar to `ringCentroid` above but we skip the centroid bit
+// to make it "faster".
+func (ls LineString) area() float64 {
+	area := 0.0
+
+	// implicitly move everything to near the origin to help with roundoff
+	offsetX := ls[0][0]
+	offsetY := ls[0][1]
+	for i := 1; i < len(ls)-1; i++ {
+		area += (ls[i][0]-offsetX)*(ls[i+1][1]-offsetY) -
+			(ls[i+1][0]-offsetX)*(ls[i][1]-offsetY)
+	}
+
+	return area / 2
+}
+
 // Contains checks if the point is within the polygon.
 // Points on the boundary are considered in.
 func (p Polygon) Contains(point Point) bool {
@@ -116,11 +136,15 @@ func (p Polygon) Contains(point Point) bool {
 // Area computes the positive area of the polygon minus the area
 // of the holes.
 func (p Polygon) Area() float64 {
-	area := lineStringArea(p[0])
+	if len(p) == 0 {
+		return 0
+	}
+
+	area := math.Abs(p[0].area())
 
 	for i := 1; i < len(p); i++ {
 		// minus holes
-		area -= lineStringArea(p[i])
+		area -= math.Abs(p[i].area())
 	}
 
 	return area
@@ -168,26 +192,6 @@ func (p Polygon) Clone() Polygon {
 	return Polygon(MultiLineString(p).Clone())
 }
 
-func lineStringArea(ls LineString) float64 {
-	if len(ls) == 0 {
-		return 0
-	}
-
-	area := 0.0
-	for i := 1; i < len(ls)-1; i++ {
-		area += ls[i][0] * (ls[i+1][1] - ls[i-1][1])
-	}
-
-	// for i == N-1
-	last := len(ls) - 1
-	area += ls[last][0] * (ls[0][1] - ls[last-1][1])
-
-	// for i == N
-	area += ls[0][0] * (ls[1][1] - ls[last][1])
-
-	return math.Abs(area / 2.0)
-}
-
 func lineStringContains(ls LineString, point Point) bool {
 	if !ls.Bound().Contains(point) {
 		return false
@@ -214,6 +218,7 @@ func lineStringContains(ls LineString, point Point) bool {
 
 // Original implementation: http://rosettacode.org/wiki/Ray-casting_algorithm#Go
 func rayIntersect(p, s, e Point) (intersects, on bool) {
+	// TODO: reposition to deal with roundoff
 	if s[0] > e[0] {
 		s, e = e, s
 	}
