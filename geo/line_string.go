@@ -197,6 +197,15 @@ func (ls LineString) Reverse() LineString {
 	return n
 }
 
+// InplaceReverse will reverse the line string.
+// This is done inplace, ie. it modifies the original data.
+func (ls LineString) InplaceReverse() {
+	l := len(ls) - 1
+	for i := 0; i <= l/2; i++ {
+		ls[i], ls[l-i] = ls[l-i], ls[i]
+	}
+}
+
 // Bound returns a rect around the line string. Uses rectangular coordinates.
 func (ls LineString) Bound() Bound {
 	return MultiPoint(ls).Bound()

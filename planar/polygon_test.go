@@ -279,31 +279,6 @@ func TestPolygonContains(t *testing.T) {
 }
 
 func TestPolygonArea(t *testing.T) {
-	p1 := append(NewLineString(),
-		NewPoint(0, 0),
-		NewPoint(3, 0),
-		NewPoint(3, 3),
-		NewPoint(0, 3),
-		NewPoint(0, 0),
-	).Reverse()
-
-	p2 := append(NewLineString(),
-		NewPoint(1, 1),
-		NewPoint(2, 1),
-		NewPoint(2, 2),
-		NewPoint(1, 2),
-		NewPoint(1, 1),
-	)
-
-	polygon := append(NewPolygon(), p1, p2)
-
-	expected := 8.0
-	if a := polygon.Area(); a != expected {
-		t.Errorf("incorrect area: %v != %v", a, expected)
-	}
-}
-
-func TestLineStringArea(t *testing.T) {
 	cases := []struct {
 		name   string
 		points []Point
@@ -338,12 +313,48 @@ func TestLineStringArea(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			val := lineStringArea(tc.points)
+			polygon := Polygon{LineString(tc.points)}
+			val := polygon.Area()
+			if val != tc.result {
+				t.Errorf("wrong area: %v != %v", val, tc.result)
+			}
 
+			// check that is recenters to deal with roundoff
+			for i := range tc.points {
+				tc.points[i][0] += 1e15
+				tc.points[i][1] -= 1e15
+			}
+
+			val = polygon.Area()
 			if val != tc.result {
 				t.Errorf("wrong area: %v != %v", val, tc.result)
 			}
 		})
+	}
+}
+
+func TestPolygonAreaWithHole(t *testing.T) {
+	p1 := append(NewLineString(),
+		NewPoint(0, 0),
+		NewPoint(3, 0),
+		NewPoint(3, 3),
+		NewPoint(0, 3),
+		NewPoint(0, 0),
+	).Reverse()
+
+	p2 := append(NewLineString(),
+		NewPoint(1, 1),
+		NewPoint(2, 1),
+		NewPoint(2, 2),
+		NewPoint(1, 2),
+		NewPoint(1, 1),
+	)
+
+	polygon := append(NewPolygon(), p1, p2)
+
+	expected := 8.0
+	if a := polygon.Area(); a != expected {
+		t.Errorf("incorrect area: %v != %v", a, expected)
 	}
 }
 

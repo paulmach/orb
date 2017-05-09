@@ -318,6 +318,11 @@ func TestLineStringReverse(t *testing.T) {
 			if tc.input.Equal(reversed) {
 				t.Errorf("should create new line string object")
 			}
+
+			tc.input.InplaceReverse()
+			if !tc.input.Equal(reversed) {
+				t.Errorf("should modify the original")
+			}
 		})
 	}
 }
