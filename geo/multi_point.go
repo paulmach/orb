@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-
-	"github.com/paulmach/go.geojson"
 )
 
 // A MultiPoint represents a set of points in the 2D Eucledian or Cartesian plane.
@@ -111,17 +109,6 @@ func (mp MultiPoint) Equal(multiPoint MultiPoint) bool {
 	}
 
 	return true
-}
-
-// GeoJSON creates a new geojson feature with a multipoint geometry
-// containing all the points.
-func (mp MultiPoint) GeoJSON() *geojson.Feature {
-	f := geojson.NewMultiPointFeature()
-	for _, p := range mp {
-		f.Geometry.MultiPoint = append(f.Geometry.MultiPoint, []float64{p[0], p[1]})
-	}
-
-	return f
 }
 
 // WKT returns the points in WKT format,

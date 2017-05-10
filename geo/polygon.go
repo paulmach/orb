@@ -8,7 +8,7 @@ import (
 // Polygon is a closed area. The first LineString is the outer ring.
 // The others are the holes. Each LineString is expected to be closed
 // ie. the first point matches the last.
-type Polygon []LineString
+type Polygon []Ring
 
 // NewPolygon creates a new Polygon.
 func NewPolygon() Polygon {
@@ -48,13 +48,28 @@ func (p Polygon) WKT() string {
 // Equal compares two polygons. Returns true if lengths are the same
 // and all points are Equal.
 func (p Polygon) Equal(polygon Polygon) bool {
-	return MultiLineString(p).Equal(MultiLineString(polygon))
+	if len(p) != len(polygon) {
+		return false
+	}
+
+	for i := range p {
+		if !p[i].Equal(polygon[i]) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Clone returns a new deep copy of the polygon.
 // All of the rings are also cloned.
 func (p Polygon) Clone() Polygon {
-	return Polygon(MultiLineString(p).Clone())
+	np := make(Polygon, 0, len(p))
+	for _, r := range p {
+		np = append(np, r.Clone())
+	}
+
+	return np
 }
 
 // String returns the wkt representation of the polygon.

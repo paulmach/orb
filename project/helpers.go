@@ -16,6 +16,8 @@ func ToPlanar(g geo.Geometry, proj *Projection) planar.Geometry {
 		return LineStringToPlanar(g, proj)
 	case geo.MultiLineString:
 		return MultiLineStringToPlanar(g, proj)
+	case geo.Ring:
+		return RingToPlanar(g, proj)
 	case geo.Polygon:
 		return PolygonToPlanar(g, proj)
 	case geo.MultiPolygon:
@@ -40,6 +42,8 @@ func ToGeo(g planar.Geometry, proj *Projection) geo.Geometry {
 		return LineStringToGeo(g, proj)
 	case planar.MultiLineString:
 		return MultiLineStringToGeo(g, proj)
+	case planar.Ring:
+		return RingToGeo(g, proj)
 	case planar.Polygon:
 		return PolygonToGeo(g, proj)
 	case planar.MultiPolygon:
@@ -75,22 +79,12 @@ func MultiPointToGeo(mp planar.MultiPoint, proj *Projection) geo.MultiPoint {
 
 // LineStringToPlanar is a helper to project an entire line string.
 func LineStringToPlanar(ls geo.LineString, proj *Projection) planar.LineString {
-	n := make(planar.LineString, len(ls))
-	for i := range ls {
-		n[i] = proj.ToPlanar(ls[i])
-	}
-
-	return n
+	return planar.LineString(MultiPointToPlanar(geo.MultiPoint(ls), proj))
 }
 
 // LineStringToGeo is a helper to project an entire line string.
 func LineStringToGeo(ls planar.LineString, proj *Projection) geo.LineString {
-	n := make(geo.LineString, len(ls))
-	for i := range ls {
-		n[i] = proj.ToGeo(ls[i])
-	}
-
-	return n
+	return geo.LineString(MultiPointToGeo(planar.MultiPoint(ls), proj))
 }
 
 // MultiLineStringToPlanar is a helper to project an entire multi linestring.
@@ -113,11 +107,21 @@ func MultiLineStringToGeo(mls planar.MultiLineString, proj *Projection) geo.Mult
 	return n
 }
 
+// RingToPlanar is a helper to project an entire ring.
+func RingToPlanar(r geo.Ring, proj *Projection) planar.Ring {
+	return planar.Ring(LineStringToPlanar(geo.LineString(r), proj))
+}
+
+// RingToGeo is a helper to project an entire ring.
+func RingToGeo(r planar.Ring, proj *Projection) geo.Ring {
+	return geo.Ring(LineStringToGeo(planar.LineString(r), proj))
+}
+
 // PolygonToPlanar is a helper to project an entire polygon.
 func PolygonToPlanar(p geo.Polygon, proj *Projection) planar.Polygon {
 	n := make(planar.Polygon, len(p), len(p))
 	for i := range p {
-		n[i] = planar.Ring(LineStringToPlanar(p[i], proj))
+		n[i] = RingToPlanar(p[i], proj)
 	}
 
 	return n
@@ -127,7 +131,7 @@ func PolygonToPlanar(p geo.Polygon, proj *Projection) planar.Polygon {
 func PolygonToGeo(p planar.Polygon, proj *Projection) geo.Polygon {
 	n := make(geo.Polygon, len(p), len(p))
 	for i := range p {
-		n[i] = LineStringToGeo(planar.LineString(p[i]), proj)
+		n[i] = RingToGeo(p[i], proj)
 	}
 
 	return n

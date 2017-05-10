@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"math"
-
-	"github.com/paulmach/go.geojson"
 )
 
 // LineString represents a set of points to be thought of as a polyline.
@@ -184,22 +182,9 @@ func (ls LineString) Distance(haversine ...bool) float64 {
 	return sum
 }
 
-// Reverse changes the direction of the line string.
-// It returns a new list string.
-func (ls LineString) Reverse() LineString {
-	n := make(LineString, len(ls), len(ls))
-
-	l := len(n) - 1
-	for i := 0; i <= l/2; i++ {
-		n[i], n[l-i] = ls[l-i], ls[i]
-	}
-
-	return n
-}
-
-// InplaceReverse will reverse the line string.
+// Reverse will reverse the line string.
 // This is done inplace, ie. it modifies the original data.
-func (ls LineString) InplaceReverse() {
+func (ls LineString) Reverse() {
 	l := len(ls) - 1
 	for i := 0; i <= l/2; i++ {
 		ls[i], ls[l-i] = ls[l-i], ls[i]
@@ -221,18 +206,6 @@ func (ls LineString) Equal(lineString LineString) bool {
 func (ls LineString) Clone() LineString {
 	ps := MultiPoint(ls)
 	return LineString(ps.Clone())
-}
-
-// GeoJSON creates a new geojson feature with a linestring geometry
-// containing all the points.
-func (ls LineString) GeoJSON() *geojson.Feature {
-	coords := make([][]float64, 0, len(ls))
-
-	for _, point := range ls {
-		coords = append(coords, []float64{point[0], point[1]})
-	}
-
-	return geojson.NewLineStringFeature(coords)
 }
 
 // WKT returns the line string in WKT format, eg. LINESTRING(30 10,10 30,40 40)

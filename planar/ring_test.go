@@ -247,3 +247,32 @@ func TestRingArea(t *testing.T) {
 		})
 	}
 }
+
+func TestRingOrientation(t *testing.T) {
+	cases := []struct {
+		name   string
+		points []Point
+		result int
+	}{
+		{
+			name:   "simple box, ccw",
+			points: []Point{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}},
+			result: 1,
+		},
+		{
+			name:   "simple box, cc",
+			points: []Point{{0, 0}, {0, 1}, {1, 1}, {1, 0}, {0, 0}},
+			result: -1,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			ring := Ring(tc.points)
+			val := ring.Orientation()
+			if val != tc.result {
+				t.Errorf("wrong orientation: %v != %v", val, tc.result)
+			}
+		})
+	}
+}

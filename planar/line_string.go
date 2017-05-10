@@ -197,21 +197,8 @@ func (ls LineString) CentroidDistance() (Point, float64) {
 }
 
 // Reverse changes the direction of the line string.
-// It returns a new list string.
-func (ls LineString) Reverse() LineString {
-	n := make(LineString, len(ls))
-
-	l := len(n) - 1
-	for i := 0; i <= l/2; i++ {
-		n[i], n[l-i] = ls[l-i], ls[i]
-	}
-
-	return n
-}
-
-// InplaceReverse will reverse the line string.
 // This is done inplace, ie. it modifies the original data.
-func (ls LineString) InplaceReverse() {
+func (ls LineString) Reverse() {
 	l := len(ls) - 1
 	for i := 0; i <= l/2; i++ {
 		ls[i], ls[l-i] = ls[l-i], ls[i]

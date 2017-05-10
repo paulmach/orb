@@ -39,8 +39,16 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 	}
 
 	if f.Geometry != nil {
+		var (
+			coords []byte
+			err    error
+		)
 
-		coords, err := json.Marshal(f.Geometry)
+		if ring, ok := f.Geometry.(geo.Ring); ok {
+			coords, err = json.Marshal(geo.Polygon{ring})
+		} else {
+			coords, err = json.Marshal(f.Geometry)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -86,18 +94,26 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 		p := geo.Point{}
 		err = json.Unmarshal(jf.Geometry.Coordinates, &p)
 		f.Geometry = p
-	case "LineString":
-		ls := geo.LineString{}
-		err = json.Unmarshal(jf.Geometry.Coordinates, &ls)
-		f.Geometry = ls
 	case "MultiPoint":
 		mp := geo.MultiPoint{}
 		err = json.Unmarshal(jf.Geometry.Coordinates, &mp)
 		f.Geometry = mp
+	case "LineString":
+		ls := geo.LineString{}
+		err = json.Unmarshal(jf.Geometry.Coordinates, &ls)
+		f.Geometry = ls
+	case "MultiLineString":
+		mls := geo.MultiLineString{}
+		err = json.Unmarshal(jf.Geometry.Coordinates, &mls)
+		f.Geometry = mls
 	case "Polygon":
 		p := geo.Polygon{}
 		err = json.Unmarshal(jf.Geometry.Coordinates, &p)
 		f.Geometry = p
+	case "MultiPolygon":
+		mp := geo.MultiPolygon{}
+		err = json.Unmarshal(jf.Geometry.Coordinates, &mp)
+		f.Geometry = mp
 	default:
 		return errors.New("geojson: invalid geometry")
 	}

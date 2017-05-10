@@ -108,3 +108,23 @@ func TestUnmarshalFeatureID(t *testing.T) {
 		t.Errorf("should parse id as string, got %T %s", f.ID, v)
 	}
 }
+
+func TestMarshalRing(t *testing.T) {
+	ring := append(geo.NewRing(),
+		geo.NewPoint(0, 0),
+		geo.NewPoint(1, 1),
+		geo.NewPoint(2, 1),
+		geo.NewPoint(0, 0),
+	)
+
+	f := NewFeature(ring)
+	data, err := f.MarshalJSON()
+	if err != nil {
+		t.Fatalf("should marshal, %v", err)
+	}
+
+	if !bytes.Equal(data, []byte(`{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[0,0],[1,1],[2,1],[0,0]]]},"properties":null}`)) {
+		t.Errorf("data not correct")
+		t.Logf("%v", string(data))
+	}
+}

@@ -283,7 +283,8 @@ func TestLineStringCentroid(t *testing.T) {
 func TestLineStringReverse(t *testing.T) {
 	t.Run("1 point line", func(t *testing.T) {
 		ls := append(NewLineString(), NewPoint(1, 2))
-		rs := ls.Reverse()
+		rs := ls.Clone()
+		rs.Reverse()
 
 		if !rs.Equal(ls) {
 			t.Errorf("1 point lines should be equal if reversed")
@@ -309,17 +310,13 @@ func TestLineStringReverse(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			reversed := tc.input.Reverse()
+			reversed := tc.input
+			reversed.Reverse()
 
 			if !reversed.Equal(tc.output) {
 				t.Errorf("line should be reversed: %v", reversed)
 			}
 
-			if tc.input.Equal(reversed) {
-				t.Errorf("should create new line string object")
-			}
-
-			tc.input.InplaceReverse()
 			if !tc.input.Equal(reversed) {
 				t.Errorf("should modify the original")
 			}

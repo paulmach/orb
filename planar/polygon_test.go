@@ -62,7 +62,8 @@ func TestPolygonCentroidArea(t *testing.T) {
 		NewPoint(4, 3),
 		NewPoint(0, 3),
 		NewPoint(0, 0),
-	).Reverse()
+	)
+	r1.Reverse()
 
 	r2 := append(NewRing(),
 		NewPoint(2, 1),
@@ -92,7 +93,8 @@ func TestPolygonArea(t *testing.T) {
 		NewPoint(3, 3),
 		NewPoint(0, 3),
 		NewPoint(0, 0),
-	).Reverse()
+	)
+	r1.Reverse()
 
 	r2 := append(NewRing(),
 		NewPoint(1, 1),

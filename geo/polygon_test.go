@@ -3,7 +3,7 @@ package geo
 import "testing"
 
 func TestPolygonWKT(t *testing.T) {
-	r1 := append(NewLineString(),
+	r1 := append(NewRing(),
 		NewPoint(0, 0),
 		NewPoint(1, 0),
 		NewPoint(1, 1),
@@ -17,7 +17,7 @@ func TestPolygonWKT(t *testing.T) {
 		t.Errorf("incorrect wkt: %v", w)
 	}
 
-	r2 := append(NewLineString(),
+	r2 := append(NewRing(),
 		NewPoint(0.4, 0.4),
 		NewPoint(0.6, 0.4),
 		NewPoint(0.6, 0.6),

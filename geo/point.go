@@ -9,7 +9,6 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/paulmach/go.geojson"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/internal/mercator"
 )
@@ -221,11 +220,6 @@ func (p Point) Lat() float64 {
 // Lon returns the longitude/horizontal component of the point.
 func (p Point) Lon() float64 {
 	return p[0]
-}
-
-// GeoJSON creates a new geojson feature with a point geometry.
-func (p Point) GeoJSON() *geojson.Feature {
-	return geojson.NewPointFeature([]float64{p[0], p[1]})
 }
 
 // WKT returns the point in WKT format, eg. POINT(30.5 10.5)

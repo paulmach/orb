@@ -10,16 +10,16 @@ func NewRing() Ring {
 	return Ring{}
 }
 
-// Valid will return if the ring is a real ring.
+// Valid will return true if the ring is a real ring.
 // ie. 4+ points and the first and last points match.
 // NOTE: this will not check for self-intersection.
 func (r Ring) Valid() bool {
-	if len(ring) < 4 {
+	if len(r) < 4 {
 		return false
 	}
 
 	// first must equal last
-	return ring[0] == ring[len(0)-1]
+	return r[0] == r[len(r)-1]
 }
 
 // Distance computes the total distance of the loop.
@@ -59,6 +59,23 @@ func (r Ring) Area() float64 {
 	}
 
 	return area / 2
+}
+
+// Orientation returns 1 if the the ring is in couter-clockwise order,
+// return -1 if the ring is the clockwise order and 0 if the ring is
+// degenerate and had no area.
+func (r Ring) Orientation() int {
+	area := r.Area()
+	if area > 0 {
+		return 1
+	}
+
+	if area < 0 {
+		return -1
+	}
+
+	// degenerate case, no area
+	return 0
 }
 
 // Centroid computes the centroid of the ring.
@@ -186,18 +203,12 @@ func rayIntersect(p, s, e Point) (intersects, on bool) {
 }
 
 // Reverse changes the direction of the ring.
-// It returns a new ring.
-func (r Ring) Reverse() Ring {
-	return Ring(LineString(r).Reverse())
-}
-
-// InplaceReverse will reverse the ring.
 // This is done inplace, ie. it modifies the original data.
-func (r Ring) InplaceReverse() {
-	LineString(r).InplaceReverse()
+func (r Ring) Reverse() {
+	LineString(r).Reverse()
 }
 
-// Bound returns a rectangle bound around the line string. Uses rectangular coordinates.
+// Bound returns a rectangle bound around the ring. Uses rectangular coordinates.
 func (r Ring) Bound() Bound {
 	return MultiPoint(r).Bound()
 }
@@ -208,7 +219,7 @@ func (r Ring) Equal(ring Ring) bool {
 	return MultiPoint(r).Equal(MultiPoint(ring))
 }
 
-// Clone returns a new copy of the line string.
+// Clone returns a new copy of the ring.
 func (r Ring) Clone() Ring {
 	ps := MultiPoint(r)
 	return Ring(ps.Clone())

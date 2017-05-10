@@ -161,20 +161,20 @@ func (b Bound) GeoJSONType() string {
 
 // ToPolygon converts the bound into a Polygon object.
 func (b Bound) ToPolygon() Polygon {
-	return Polygon{b.ToLineString()}
+	return Polygon{b.ToRing()}
 }
 
-// ToLineString converts the bound into a loop defined
-// by the boundary of the box
-func (b Bound) ToLineString() LineString {
-	ls := make(LineString, 5)
-	ls[0] = b[0]
-	ls[1] = Point{b[0][0], b[1][1]}
-	ls[2] = b[1]
-	ls[3] = Point{b[1][0], b[0][1]}
-	ls[4] = b[0]
+// ToRing converts the bound into a loop defined
+// by the boundary of the box.
+func (b Bound) ToRing() Ring {
+	r := make(Ring, 5)
+	r[0] = b[0]
+	r[1] = Point{b[0][0], b[1][1]}
+	r[2] = b[1]
+	r[3] = Point{b[1][0], b[0][1]}
+	r[4] = b[0]
 
-	return ls
+	return r
 }
 
 // Extend grows the bound to include the new point.
