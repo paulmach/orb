@@ -117,7 +117,7 @@ func MultiLineStringToGeo(mls planar.MultiLineString, proj *Projection) geo.Mult
 func PolygonToPlanar(p geo.Polygon, proj *Projection) planar.Polygon {
 	n := make(planar.Polygon, len(p), len(p))
 	for i := range p {
-		n[i] = LineStringToPlanar(p[i], proj)
+		n[i] = planar.Ring(LineStringToPlanar(p[i], proj))
 	}
 
 	return n
@@ -127,7 +127,7 @@ func PolygonToPlanar(p geo.Polygon, proj *Projection) planar.Polygon {
 func PolygonToGeo(p planar.Polygon, proj *Projection) geo.Polygon {
 	n := make(geo.Polygon, len(p), len(p))
 	for i := range p {
-		n[i] = LineStringToGeo(p[i], proj)
+		n[i] = LineStringToGeo(planar.LineString(p[i]), proj)
 	}
 
 	return n

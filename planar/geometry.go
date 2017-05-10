@@ -23,6 +23,7 @@ var (
 	_ Geometry = LineString{}
 	_ Geometry = MultiLineString{}
 	_ Geometry = Bound{}
+	_ Geometry = Ring{}
 	_ Geometry = Polygon{}
 	_ Geometry = MultiPolygon{}
 

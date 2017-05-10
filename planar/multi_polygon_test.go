@@ -3,7 +3,7 @@ package planar
 import "testing"
 
 func TestMultiPolygonWKT(t *testing.T) {
-	p1 := Polygon{append(NewLineString(),
+	p1 := Polygon{append(NewRing(),
 		NewPoint(0, 0),
 		NewPoint(1, 0),
 		NewPoint(1, 1),
@@ -17,13 +17,13 @@ func TestMultiPolygonWKT(t *testing.T) {
 		t.Errorf("incorrect wkt: %v", w)
 	}
 
-	p2 := Polygon{append(NewLineString(),
+	p2 := Polygon{append(NewRing(),
 		NewPoint(0.4, 0.4),
 		NewPoint(0.6, 0.4),
 		NewPoint(0.6, 0.6),
 		NewPoint(0.4, 0.6),
 		NewPoint(0.4, 0.4),
-	), append(NewLineString(),
+	), append(NewRing(),
 		NewPoint(0, 0),
 		NewPoint(1, 1),
 	)}

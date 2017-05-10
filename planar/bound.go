@@ -32,22 +32,22 @@ func NewBoundAroundPoint(center Point, distance float64) Bound {
 	return b
 }
 
-// ToLineString converts the bound into a loop defined
+// ToRing converts the bound into a ring defined
 // by the boundary of the box.
-func (b Bound) ToLineString() LineString {
-	ls := make(LineString, 5)
-	ls[0] = b[0]
-	ls[1] = Point{b[0][0], b[1][1]}
-	ls[2] = b[1]
-	ls[3] = Point{b[1][0], b[0][1]}
-	ls[4] = b[0]
+func (b Bound) ToRing() Ring {
+	r := make(Ring, 5)
+	r[0] = b[0]
+	r[1] = Point{b[0][0], b[1][1]}
+	r[2] = b[1]
+	r[3] = Point{b[1][0], b[0][1]}
+	r[4] = b[0]
 
-	return ls
+	return r
 }
 
 // ToPolygon converts the bound into a rectangle Polygon object.
 func (b Bound) ToPolygon() Polygon {
-	return Polygon{b.ToLineString()}
+	return Polygon{b.ToRing()}
 }
 
 // DistanceFrom return the distance from the bound.
@@ -57,7 +57,7 @@ func (b Bound) DistanceFrom(p Point) float64 {
 		return 0
 	}
 
-	return b.ToLineString().DistanceFrom(p)
+	return b.ToRing().DistanceFrom(p)
 }
 
 // IsZero will return true if the bound is the empty [0 0, 0 0] bound.

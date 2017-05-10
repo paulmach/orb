@@ -6,10 +6,10 @@ import (
 	"math"
 )
 
-// Polygon is a closed area. The first LineString is the outer ring.
-// The others are the holes. Each LineString is expected to be closed
+// Polygon is a closed area. The first Ring is the outer ring.
+// The others are the holes. Each Ring is expected to be closed
 // ie. the first point matches the last.
-type Polygon []LineString
+type Polygon []Ring
 
 // NewPolygon creates a new Polygon.
 func NewPolygon() Polygon {
@@ -19,16 +19,15 @@ func NewPolygon() Polygon {
 // DistanceFrom will return the distance from the point to
 // the polygon. Returns 0 if the point is within the polygon.
 func (p Polygon) DistanceFrom(point Point) float64 {
-	ring := Polygon{p[0]}
-	if !ring.Contains(point) {
-		return p[0].DistanceFrom(point)
+	dist := p[0].DistanceFrom(point)
+	if dist != 0 {
+		// outside so just return that distance.
+		return dist
 	}
 
-	// since we're within, check the holes
 	for i := 1; i < len(p); i++ {
-		hole := Polygon{p[i]}
-		if hole.Contains(point) {
-			return p[i].DistanceFrom(point)
+		if p[i].Contains(point) {
+			return LineString(p[i]).DistanceFrom(point)
 		}
 	}
 
@@ -46,20 +45,20 @@ func (p Polygon) Centroid() Point {
 // CentroidArea computes the centroid and returns the area.
 // If you need both this is faster since we need to area to compute the centroid.
 func (p Polygon) CentroidArea() (Point, float64) {
-	centroid, area := p[0].ringCentroid()
+	centroid, area := p[0].CentroidArea()
+	area = math.Abs(area)
 
 	holeArea := 0.0
 	holeCentroid := Point{}
 	for i := 1; i < len(p); i++ {
 		ring := p[i]
 
-		hc, ha := ring.ringCentroid()
+		hc, ha := ring.CentroidArea()
 		holeArea += math.Abs(ha)
 		holeCentroid[0] += hc[0] * ha
 		holeCentroid[1] += hc[1] * ha
 	}
 
-	area = math.Abs(area)
 	totalArea := area - holeArea
 
 	centroid[0] = (area*centroid[0] - holeArea*holeCentroid[0]) / totalArea
@@ -68,64 +67,16 @@ func (p Polygon) CentroidArea() (Point, float64) {
 	return centroid, totalArea
 }
 
-func (ls LineString) ringCentroid() (Point, float64) {
-	ring := ls
-	centroid := Point{}
-
-	area := 0.0
-
-	// implicitly move everything to near the origin to help with roundoff
-	offsetX := ring[0][0]
-	offsetY := ring[0][1]
-	for i := 1; i < len(ring)-1; i++ {
-		a := (ring[i][0]-offsetX)*(ring[i+1][1]-offsetY) -
-			(ring[i+1][0]-offsetX)*(ring[i][1]-offsetY)
-		area += a
-
-		centroid[0] += (ring[i][0] + ring[i+1][0] - 2*offsetX) * a
-		centroid[1] += (ring[i][1] + ring[i+1][1] - 2*offsetY) * a
-	}
-
-	// no need to deal with first and last vertex since we "moved"
-	// that point the origin (multiply by 0 == 0)
-
-	area /= 2
-	centroid[0] /= 6 * area
-	centroid[1] /= 6 * area
-
-	centroid[0] += offsetX
-	centroid[1] += offsetY
-
-	return centroid, area
-}
-
-// Area returns a signed area for the line string. Assumes the line string
-// is a ring. Similar to `ringCentroid` above but we skip the centroid bit
-// to make it "faster".
-func (ls LineString) area() float64 {
-	area := 0.0
-
-	// implicitly move everything to near the origin to help with roundoff
-	offsetX := ls[0][0]
-	offsetY := ls[0][1]
-	for i := 1; i < len(ls)-1; i++ {
-		area += (ls[i][0]-offsetX)*(ls[i+1][1]-offsetY) -
-			(ls[i+1][0]-offsetX)*(ls[i][1]-offsetY)
-	}
-
-	return area / 2
-}
-
 // Contains checks if the point is within the polygon.
 // Points on the boundary are considered in.
 func (p Polygon) Contains(point Point) bool {
-	c := lineStringContains(p[0], point)
+	c := p[0].Contains(point)
 	if !c {
 		return false
 	}
 
 	for i := 1; i < len(p); i++ {
-		if lineStringContains(p[i], point) {
+		if p[i].Contains(point) {
 			return false
 		}
 	}
@@ -140,11 +91,11 @@ func (p Polygon) Area() float64 {
 		return 0
 	}
 
-	area := math.Abs(p[0].area())
+	area := math.Abs(p[0].Area())
 
 	for i := 1; i < len(p); i++ {
 		// minus holes
-		area -= math.Abs(p[i].area())
+		area -= math.Abs(p[i].Area())
 	}
 
 	return area
@@ -183,97 +134,26 @@ func (p Polygon) String() string {
 // Equal compares two polygons. Returns true if lengths are the same
 // and all points are Equal.
 func (p Polygon) Equal(polygon Polygon) bool {
-	return MultiLineString(p).Equal(MultiLineString(polygon))
+	if len(p) != len(polygon) {
+		return false
+	}
+
+	for i, r := range p {
+		if !r.Equal(polygon[i]) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Clone returns a new deep copy of the polygon.
 // All of the rings are also cloned.
 func (p Polygon) Clone() Polygon {
-	return Polygon(MultiLineString(p).Clone())
-}
-
-func lineStringContains(ls LineString, point Point) bool {
-	if !ls.Bound().Contains(point) {
-		return false
+	np := make(Polygon, 0, len(p))
+	for _, r := range p {
+		np = append(np, r.Clone())
 	}
 
-	c, on := rayIntersect(point, ls[0], ls[len(ls)-1])
-	if on {
-		return true
-	}
-
-	for i := 0; i < len(ls)-1; i++ {
-		inter, on := rayIntersect(point, ls[i], ls[i+1])
-		if on {
-			return true
-		}
-
-		if inter {
-			c = !c
-		}
-	}
-
-	return c
-}
-
-// Original implementation: http://rosettacode.org/wiki/Ray-casting_algorithm#Go
-func rayIntersect(p, s, e Point) (intersects, on bool) {
-	// TODO: reposition to deal with roundoff
-	if s[0] > e[0] {
-		s, e = e, s
-	}
-
-	if p[0] == s[0] {
-		if p[1] == s[1] {
-			// p == start
-			return false, true
-		} else if s[0] == e[0] {
-			// vertical segment (s -> e)
-			// return true if within the line, check to see if start or end is greater.
-			if s[1] > e[1] && s[1] >= p[1] && p[1] >= e[1] {
-				return false, true
-			}
-
-			if e[1] > s[1] && e[1] >= p[1] && p[1] >= s[1] {
-				return false, true
-			}
-		}
-
-		// Move the y coordinate to deal with degenerate case
-		p[0] = math.Nextafter(p[0], math.Inf(1))
-	} else if p[0] == e[0] {
-		if p[1] == e[1] {
-			// matching the end point
-			return false, true
-		}
-
-		p[0] = math.Nextafter(p[0], math.Inf(1))
-	}
-
-	if p[0] < s[0] || p[0] > e[0] {
-		return false, false
-	}
-
-	if s[1] > e[1] {
-		if p[1] > s[1] {
-			return false, false
-		} else if p[1] < e[1] {
-			return true, false
-		}
-	} else {
-		if p[1] > e[1] {
-			return false, false
-		} else if p[1] < s[1] {
-			return true, false
-		}
-	}
-
-	rs := (p[1] - s[1]) / (p[0] - s[0])
-	ds := (e[1] - s[1]) / (e[0] - s[0])
-
-	if rs == ds {
-		return false, true
-	}
-
-	return rs <= ds, false
+	return np
 }
