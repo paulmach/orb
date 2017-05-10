@@ -1,6 +1,10 @@
 package planar
 
-import "math"
+import (
+	"math"
+
+	"github.com/paulmach/orb"
+)
 
 // Ring represents a closed loop.
 type Ring LineString
@@ -43,9 +47,14 @@ func (r Ring) DistanceFromSquared(point Point) float64 {
 	return LineString(r).DistanceFromSquared(point)
 }
 
-// Area returns the signed area of the ring.
-// Positive if the ring is counter-clockwise oriented, negative otherwise.
+// Area will return the area of the ring.
 func (r Ring) Area() float64 {
+	return math.Abs(r.SignedArea())
+}
+
+// SignedArea returns the signed area of the ring.
+// Positive if the ring is counter-clockwise oriented, negative otherwise.
+func (r Ring) SignedArea() float64 {
 	// Similar to CentroidArea below but we skip the centroid bit
 	// to make it "faster".
 	area := 0.0
@@ -61,17 +70,17 @@ func (r Ring) Area() float64 {
 	return area / 2
 }
 
-// Orientation returns 1 if the the ring is in couter-clockwise order,
-// return -1 if the ring is the clockwise order and 0 if the ring is
+// Orientation returns 1/CCW if the the ring is in couter-clockwise order,
+// return -1/CW if the ring is the clockwise order and 0 if the ring is
 // degenerate and had no area.
-func (r Ring) Orientation() int {
-	area := r.Area()
+func (r Ring) Orientation() orb.Orientation {
+	area := r.SignedArea()
 	if area > 0 {
-		return 1
+		return orb.CCW
 	}
 
 	if area < 0 {
-		return -1
+		return orb.CW
 	}
 
 	// degenerate case, no area

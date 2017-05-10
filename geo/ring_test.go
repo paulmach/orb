@@ -3,9 +3,11 @@ package geo
 import (
 	"math"
 	"testing"
+
+	"github.com/paulmach/orb"
 )
 
-func TestRingArea(t *testing.T) {
+func TestRingSignedArea(t *testing.T) {
 	area := 12392.029
 	cases := []struct {
 		name   string
@@ -42,7 +44,7 @@ func TestRingArea(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			ring := Ring(tc.points)
-			val := ring.Area()
+			val := ring.SignedArea()
 			if math.Abs(val-tc.result) > 1 {
 				t.Errorf("wrong area: %v != %v", val, tc.result)
 			}
@@ -54,17 +56,17 @@ func TestRingOrientation(t *testing.T) {
 	cases := []struct {
 		name   string
 		points []Point
-		result int
+		result orb.Orientation
 	}{
 		{
 			name:   "simple box, ccw",
 			points: []Point{{0, 0}, {0.001, 0}, {0.001, 0.001}, {0, 0.001}, {0, 0}},
-			result: 1,
+			result: orb.CCW,
 		},
 		{
-			name:   "simple box, cc",
+			name:   "simple box, cw",
 			points: []Point{{0, 0}, {0, 0.001}, {0.001, 0.001}, {0.001, 0}, {0, 0}},
-			result: -1,
+			result: orb.CW,
 		},
 	}
 

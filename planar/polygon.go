@@ -91,11 +91,11 @@ func (p Polygon) Area() float64 {
 		return 0
 	}
 
-	area := math.Abs(p[0].Area())
+	area := p[0].Area()
 
 	for i := 1; i < len(p); i++ {
 		// minus holes
-		area -= math.Abs(p[i].Area())
+		area -= p[i].Area()
 	}
 
 	return area

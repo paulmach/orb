@@ -42,10 +42,15 @@ func (r Ring) Bound() Bound {
 	return MultiPoint(r).Bound()
 }
 
-// Area calculate the approximate area of the polygon.
+// Area calculate the approximate area of the ring.
+func (r Ring) Area() float64 {
+	return math.Abs(r.SignedArea())
+}
+
+// SignedArea calculate the approximate area of the ring.
 // Area will be positive if ring is oriented counter-clockwise,
 // otherwise it will be negative.
-func (r Ring) Area() float64 {
+func (r Ring) SignedArea() float64 {
 	if !r.Valid() {
 		return 0
 	}
@@ -68,18 +73,19 @@ func (r Ring) Area() float64 {
 			hi = i + 2
 		}
 
-		area += (rad(r[lo][0]) - rad(r[hi][0])) * math.Sin(rad(r[mi][1]))
+		area += (rad(r[hi][0]) - rad(r[lo][0])) * math.Sin(rad(r[mi][1]))
 	}
 
-	return area * orb.EarthRadius * orb.EarthRadius / 2
+	return -area * orb.EarthRadius * orb.EarthRadius / 2
 }
 
 // Orientation returns 1 if the the ring is in couter-clockwise order,
 // return -1 if the ring is the clockwise order and 0 if the ring is
 // degenerate and had no area.
-func (r Ring) Orientation() int {
+func (r Ring) Orientation() orb.Orientation {
 	area := 0.0
 
+	// This is a fast planar area computation, which is okay for this use.
 	// implicitly move everything to near the origin to help with roundoff
 	offsetX := r[0][0]
 	offsetY := r[0][1]
@@ -88,14 +94,12 @@ func (r Ring) Orientation() int {
 			(r[i+1][0]-offsetX)*(r[i][1]-offsetY)
 	}
 
-	// area /= 2
-
 	if area > 0 {
-		return 1
+		return orb.CCW
 	}
 
 	if area < 0 {
-		return -1
+		return orb.CW
 	}
 
 	// degenerate case, no area

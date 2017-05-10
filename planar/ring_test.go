@@ -1,6 +1,10 @@
 package planar
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/paulmach/orb"
+)
 
 func TestRingCentroid(t *testing.T) {
 	cases := []struct {
@@ -193,7 +197,7 @@ func TestPolygonContains(t *testing.T) {
 	}
 }
 
-func TestRingArea(t *testing.T) {
+func TestRingSignedArea(t *testing.T) {
 	cases := []struct {
 		name   string
 		points []Point
@@ -229,7 +233,7 @@ func TestRingArea(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			ring := Ring(tc.points)
-			val := ring.Area()
+			val := ring.SignedArea()
 			if val != tc.result {
 				t.Errorf("wrong area: %v != %v", val, tc.result)
 			}
@@ -240,7 +244,7 @@ func TestRingArea(t *testing.T) {
 				tc.points[i][1] -= 1e15
 			}
 
-			val = ring.Area()
+			val = ring.SignedArea()
 			if val != tc.result {
 				t.Errorf("wrong area: %v != %v", val, tc.result)
 			}
@@ -252,17 +256,17 @@ func TestRingOrientation(t *testing.T) {
 	cases := []struct {
 		name   string
 		points []Point
-		result int
+		result orb.Orientation
 	}{
 		{
 			name:   "simple box, ccw",
 			points: []Point{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}},
-			result: 1,
+			result: orb.CCW,
 		},
 		{
-			name:   "simple box, cc",
+			name:   "simple box, cw",
 			points: []Point{{0, 0}, {0, 1}, {1, 1}, {1, 0}, {0, 0}},
-			result: -1,
+			result: orb.CW,
 		},
 	}
 
@@ -271,7 +275,7 @@ func TestRingOrientation(t *testing.T) {
 			ring := Ring(tc.points)
 			val := ring.Orientation()
 			if val != tc.result {
-				t.Errorf("wrong orientation: %v != %v", val, tc.result)
+				t.Errorf("wrong winding: %v != %v", val, tc.result)
 			}
 		})
 	}

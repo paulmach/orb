@@ -10,3 +10,17 @@ const EarthRadius = 6378137.0 // meters
 type Pointer interface {
 	XY() (x, y float64)
 }
+
+// Orientation defines the order of the points in a polygon
+// or closed ring.
+type Orientation int
+
+// Constants to define orientation.
+// They follow the right hand rule for orientation.
+const (
+	// CCW stands for Counter Clock Wise
+	CCW Orientation = 1
+
+	// CW stands for Clock Wise
+	CW Orientation = -1
+)
