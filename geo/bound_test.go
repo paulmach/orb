@@ -50,7 +50,7 @@ func TestBoundAroundPoint(t *testing.T) {
 }
 
 func TestNewBoundFromMapTile(t *testing.T) {
-	bound := NewBoundFromMapTile(7, 8, 9)
+	bound, _ := NewBoundFromMapTile(7, 8, 9)
 
 	level := uint64(9 + 5) // we're testing point +5 zoom, in same tile
 	factor := uint64(5)
@@ -75,8 +75,6 @@ func TestNewBoundFromMapTile(t *testing.T) {
 	if bound.Contains(NewPoint(lon, lat)) {
 		t.Errorf("should not contain point")
 	}
-
-	bound = NewBoundFromMapTile(7, 8, 35)
 }
 
 func TestBoundPad(t *testing.T) {

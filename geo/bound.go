@@ -1,6 +1,7 @@
 package geo
 
 import (
+	"errors"
 	"math"
 	"strings"
 
@@ -61,10 +62,13 @@ func NewBoundAroundPoint(center Point, distance float64) Bound {
 
 // NewBoundFromMapTile creates a bound given an online map tile index.
 // Panics if x or y is out of range for zoom level.
-func NewBoundFromMapTile(x, y, z uint64) Bound {
+func NewBoundFromMapTile(x, y, z uint64) (Bound, error) {
 	maxIndex := uint64(1) << z
-	if x < 0 || y < 0 || x >= maxIndex || y >= maxIndex {
-		panic("tile index out of range")
+	if x < 0 || x >= maxIndex {
+		return Bound{}, errors.New("geo: x index out of range for this zoom")
+	}
+	if y < 0 || y >= maxIndex {
+		return Bound{}, errors.New("geo: y index out of range for this zoom")
 	}
 
 	shift := 31 - z
@@ -78,7 +82,7 @@ func NewBoundFromMapTile(x, y, z uint64) Bound {
 	return Bound{
 		Point{math.Min(lon1, lon2), math.Min(lat1, lat2)},
 		Point{math.Max(lon1, lon2), math.Max(lat1, lat2)},
-	}
+	}, nil
 }
 
 // NewBoundFromGeoHash creates a new bound for the region defined by the GeoHash.
