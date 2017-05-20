@@ -40,10 +40,8 @@ func ScalarProject(lng, lat float64, level uint64) (x, y uint64) {
 	siny := math.Sin(lat * math.Pi / 180.0)
 
 	if siny < -0.9999 {
-		lat = 0.5 + 0.5*math.Log((1.0+siny)/(1.0-siny))/(-2*math.Pi)
 		y = 0
 	} else if siny > 0.9999 {
-		lat = 0.5 + 0.5*math.Log((1.0+siny)/(1.0-siny))/(-2*math.Pi)
 		y = factor - 1
 	} else {
 		lat = 0.5 + 0.5*math.Log((1.0+siny)/(1.0-siny))/(-2*math.Pi)

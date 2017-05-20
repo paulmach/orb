@@ -191,11 +191,8 @@ func TestBoundIntersects(t *testing.T) {
 }
 
 func TestBoundCentroid(t *testing.T) {
-	var p Point
-	var r Bound
-
-	r = NewBound(0, 1, 2, 3)
-	p = NewPoint(0.5, 2.5)
+	r := NewBound(0, 1, 2, 3)
+	p := NewPoint(0.5, 2.5)
 	if c := r.Centroid(); c != p {
 		t.Errorf("incorrect centroid: %v != %v", c, p)
 	}

@@ -55,7 +55,7 @@ func (mp *MultiPoint) Scan(value interface{}) error {
 }
 
 func unWKBMultiPoint(data []byte, littleEndian bool, length int) (MultiPoint, error) {
-	points := make([]Point, length, length)
+	points := make([]Point, length)
 	for i := 0; i < length; i++ {
 		x, y, err := wkb.ReadPoint(data[21*i:])
 		if err != nil {
@@ -86,7 +86,7 @@ func (ls *LineString) Scan(value interface{}) error {
 }
 
 func unWKBLineString(data []byte, littleEndian bool, length int) (LineString, error) {
-	points := make([]Point, length, length)
+	points := make([]Point, length)
 	for i := 0; i < length; i++ {
 		points[i] = readWKBPoint(data[16*i:], littleEndian)
 	}

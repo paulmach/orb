@@ -119,7 +119,7 @@ func RingToGeo(r planar.Ring, proj *Projection) geo.Ring {
 
 // PolygonToPlanar is a helper to project an entire polygon.
 func PolygonToPlanar(p geo.Polygon, proj *Projection) planar.Polygon {
-	n := make(planar.Polygon, len(p), len(p))
+	n := make(planar.Polygon, len(p))
 	for i := range p {
 		n[i] = RingToPlanar(p[i], proj)
 	}
@@ -129,7 +129,7 @@ func PolygonToPlanar(p geo.Polygon, proj *Projection) planar.Polygon {
 
 // PolygonToGeo is a helper to project an entire line string.
 func PolygonToGeo(p planar.Polygon, proj *Projection) geo.Polygon {
-	n := make(geo.Polygon, len(p), len(p))
+	n := make(geo.Polygon, len(p))
 	for i := range p {
 		n[i] = RingToGeo(p[i], proj)
 	}

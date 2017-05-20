@@ -64,10 +64,10 @@ func NewBoundAroundPoint(center Point, distance float64) Bound {
 // Panics if x or y is out of range for zoom level.
 func NewBoundFromMapTile(x, y, z uint64) (Bound, error) {
 	maxIndex := uint64(1) << z
-	if x < 0 || x >= maxIndex {
+	if x >= maxIndex {
 		return Bound{}, errors.New("geo: x index out of range for this zoom")
 	}
-	if y < 0 || y >= maxIndex {
+	if y >= maxIndex {
 		return Bound{}, errors.New("geo: y index out of range for this zoom")
 	}
 
