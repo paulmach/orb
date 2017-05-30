@@ -15,11 +15,11 @@ func center(r Bound) Point {
 }
 
 func TestBoundAroundPoint(t *testing.T) {
-
 	p := Point{
 		5.42553,
 		50.0359,
 	}
+
 	bound := NewBoundAroundPoint(p, 1000000)
 	if center(bound).Lat() != p.Lat() {
 		t.Errorf("should have correct center lat point")
@@ -49,8 +49,9 @@ func TestBoundAroundPoint(t *testing.T) {
 	}
 }
 
-func TestNewBoundFromMapTile(t *testing.T) {
-	bound, _ := NewBoundFromMapTile(7, 8, 9)
+func TestNewBoundFromTile(t *testing.T) {
+	b, err := NewBoundFromTile(0, 0, 0)
+	bound, _ := NewBoundFromTile(7, 8, 9)
 
 	level := uint64(9 + 5) // we're testing point +5 zoom, in same tile
 	factor := uint64(5)

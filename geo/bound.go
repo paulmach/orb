@@ -60,9 +60,9 @@ func NewBoundAroundPoint(center Point, distance float64) Bound {
 	}
 }
 
-// NewBoundFromMapTile creates a bound given an online map tile index.
+// NewBoundFromTile creates a bound given an online map tile index.
 // Panics if x or y is out of range for zoom level.
-func NewBoundFromMapTile(x, y, z uint64) (Bound, error) {
+func NewBoundFromTile(x, y, z uint64) (Bound, error) {
 	maxIndex := uint64(1) << z
 	if x >= maxIndex {
 		return Bound{}, errors.New("geo: x index out of range for this zoom")
