@@ -1,43 +1,44 @@
-package planar
+package resample
+
+import "github.com/paulmach/orb/planar"
 
 // Resample converts the line string into totalPoints-1 evenly spaced segments.
-func (ls LineString) Resample(totalPoints int) LineString {
+func Resample(ls planar.LineString, totalPoints int) planar.LineString {
 	if totalPoints <= 0 {
-		return LineString{}
+		return nil
 	}
 
-	ls, ret := ls.resampleEdgeCases(totalPoints)
+	ls, ret := resampleEdgeCases(ls, totalPoints)
 	if ret {
 		return ls
 	}
 
 	// precomputes the total distance and intermediate distances
 	total, dists := precomputeDistances(ls)
-	return ls.resample(dists, total, totalPoints)
+	return resample(ls, dists, total, totalPoints)
 }
 
-// ResampleWithInterval coverts the line string into evenly spaced points of
-// about the given distance. The total distance is computed using euclidean
-// geometry and then divided by the given distance to get the number of segments.
-func (ls LineString) ResampleWithInterval(dist float64) LineString {
+// ToInterval coverts the line string into evenly spaced points of
+// about the given distance.
+func ToInterval(ls planar.LineString, dist float64) planar.LineString {
 	if dist <= 0 {
-		return LineString{}
+		return nil
 	}
 
 	// precomputes the total distance and intermediate distances
 	total, dists := precomputeDistances(ls)
 
 	totalPoints := int(total/dist) + 1
-	ls, ret := ls.resampleEdgeCases(totalPoints)
+	ls, ret := resampleEdgeCases(ls, totalPoints)
 	if ret {
 		return ls
 	}
 
-	return ls.resample(dists, total, totalPoints)
+	return resample(ls, dists, total, totalPoints)
 }
 
-func (ls LineString) resample(dists []float64, totalDistance float64, totalPoints int) LineString {
-	points := make([]Point, 1, totalPoints)
+func resample(ls planar.LineString, dists []float64, totalDistance float64, totalPoints int) planar.LineString {
+	points := make([]planar.Point, 1, totalPoints)
 	points[0] = ls[0] // start stays the same
 
 	step := 1
@@ -45,7 +46,7 @@ func (ls LineString) resample(dists []float64, totalDistance float64, totalPoint
 
 	currentDistance := totalDistance / float64(totalPoints-1)
 	// declare here and update had nice performance benefits need to retest
-	currentSeg := Segment{}
+	currentSeg := [2]planar.Point{}
 	for i := 0; i < len(ls)-1; i++ {
 		currentSeg[0] = ls[i]
 		currentSeg[1] = ls[i+1]
@@ -56,7 +57,7 @@ func (ls LineString) resample(dists []float64, totalDistance float64, totalPoint
 		for currentDistance <= nextDistance {
 			// need to add a point
 			percent := (currentDistance - dist) / currentSegDistance
-			points = append(points, Point{
+			points = append(points, planar.Point{
 				currentSeg[0][0] + percent*(currentSeg[1][0]-currentSeg[0][0]),
 				currentSeg[0][1] + percent*(currentSeg[1][1]-currentSeg[0][1]),
 			})
@@ -78,14 +79,14 @@ func (ls LineString) resample(dists []float64, totalDistance float64, totalPoint
 		points[totalPoints-1] = ls[len(ls)-1]
 	}
 
-	return LineString(points)
+	return planar.LineString(points)
 }
 
 // resampleEdgeCases is used to handle edge case for
 // resampling like not enough points and the line string is all the same point.
 // will return nil if there are no edge cases. If return true if
 // one of these edge cases was found and handled.
-func (ls LineString) resampleEdgeCases(totalPoints int) (LineString, bool) {
+func resampleEdgeCases(ls planar.LineString, totalPoints int) (planar.LineString, bool) {
 	// degenerate case
 	if len(ls) <= 1 {
 		return ls, true
@@ -119,7 +120,7 @@ func (ls LineString) resampleEdgeCases(totalPoints int) (LineString, bool) {
 }
 
 // precomputeDistances precomputes the total distance and intermediate distances.
-func precomputeDistances(ls LineString) (float64, []float64) {
+func precomputeDistances(ls planar.LineString) (float64, []float64) {
 	total := 0.0
 	dists := make([]float64, len(ls)-1)
 	for i := 0; i < len(ls)-1; i++ {
