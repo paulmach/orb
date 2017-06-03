@@ -50,7 +50,6 @@ func TestBoundAroundPoint(t *testing.T) {
 }
 
 func TestNewBoundFromTile(t *testing.T) {
-	b, err := NewBoundFromTile(0, 0, 0)
 	bound, _ := NewBoundFromTile(7, 8, 9)
 
 	level := uint64(9 + 5) // we're testing point +5 zoom, in same tile
@@ -99,13 +98,13 @@ func TestBoundPad(t *testing.T) {
 }
 
 func TestBoundExtend(t *testing.T) {
-	bound := NewBound(3, 0, 5, 0)
+	bound := NewBound(0, 3, 0, 5)
 
 	if r := bound.Extend(NewPoint(2, 1)); !r.Equal(bound) {
 		t.Errorf("extend incorrect: %v != %v", r, bound)
 	}
 
-	answer := NewBound(6, 0, 5, -1)
+	answer := NewBound(0, 6, -1, 5)
 	if r := bound.Extend(NewPoint(6, -1)); !r.Equal(answer) {
 		t.Errorf("extend incorrect: %v != %v", r, answer)
 	}
@@ -126,7 +125,7 @@ func TestBoundUnion(t *testing.T) {
 }
 
 func TestBoundContains(t *testing.T) {
-	bound := NewBound(2, -2, 1, -1)
+	bound := NewBound(-2, 2, -1, 1)
 
 	cases := []struct {
 		name   string

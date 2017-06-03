@@ -77,7 +77,7 @@ func (mp MultiPoint) Bound() Bound {
 		maxY = math.Max(maxY, v.Y())
 	}
 
-	return NewBound(maxX, minX, maxY, minY)
+	return NewBound(minX, maxX, minY, maxY)
 }
 
 // Equal compares two sets of points. Returns true if lengths are the same

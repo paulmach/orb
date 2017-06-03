@@ -8,8 +8,8 @@ type Bound [2]Point
 // NewBound creates a new bound given the parameters.
 func NewBound(left, right, bottom, top float64) Bound {
 	return Bound{
-		Point{math.Min(left, right), math.Min(bottom, top)},
-		Point{math.Max(left, right), math.Max(bottom, top)},
+		Point{left, bottom},
+		Point{right, top},
 	}
 }
 
@@ -144,12 +144,12 @@ func (b Bound) Pad(amount float64) Bound {
 	return b
 }
 
-// Height returns just the difference in the point's Y/Latitude.
+// Height returns just the difference in the point's Y.
 func (b Bound) Height() float64 {
 	return b[1].Y() - b[0].Y()
 }
 
-// Width returns just the difference in the point's X/Longitude.
+// Width returns just the difference in the point's X.
 func (b Bound) Width() float64 {
 	return b[1].X() - b[0].X()
 }

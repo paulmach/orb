@@ -16,8 +16,8 @@ type Bound [2]Point
 // NewBound creates a new bound given the parameters.
 func NewBound(west, east, south, north float64) Bound {
 	return Bound{
-		Point{math.Min(west, east), math.Min(south, north)},
-		Point{math.Max(west, east), math.Max(south, north)},
+		Point{west, south},
+		Point{east, north},
 	}
 }
 

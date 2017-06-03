@@ -3,7 +3,7 @@ package planar
 import "testing"
 
 func TestNewBound(t *testing.T) {
-	bound := NewBound(5, 0, 3, 0)
+	bound := NewBound(0, 5, 0, 3)
 	if bound[0] != NewPoint(0, 0) {
 		t.Errorf("incorrect sw: %v != %v", bound[0], NewPoint(0, 0))
 	}
@@ -45,13 +45,13 @@ func TestBoundPad(t *testing.T) {
 }
 
 func TestBoundExtend(t *testing.T) {
-	bound := NewBound(3, 0, 5, 0)
+	bound := NewBound(0, 3, 0, 5)
 
 	if r := bound.Extend(NewPoint(2, 1)); !r.Equal(bound) {
 		t.Errorf("extend incorrect: %v != %v", r, bound)
 	}
 
-	answer := NewBound(6, 0, 5, -1)
+	answer := NewBound(0, 6, -1, 5)
 	if r := bound.Extend(NewPoint(6, -1)); !r.Equal(answer) {
 		t.Errorf("extend incorrect: %v != %v", r, answer)
 	}
@@ -72,7 +72,7 @@ func TestBoundUnion(t *testing.T) {
 }
 
 func TestBoundContains(t *testing.T) {
-	bound := NewBound(2, -2, 1, -1)
+	bound := NewBound(-2, 2, -1, 1)
 
 	cases := []struct {
 		name   string
