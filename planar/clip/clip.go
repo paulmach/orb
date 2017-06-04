@@ -1,6 +1,7 @@
 package clip
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/paulmach/orb/internal/clip"
@@ -18,22 +19,57 @@ func Clip(b planar.Bound, g planar.Geometry) planar.Geometry {
 	case planar.Point:
 		return g // Intersect check above
 	case planar.MultiPoint:
-		return MultiPoint(b, g)
+		mp := MultiPoint(b, g)
+		if mp == nil {
+			return nil
+		}
+
+		return mp
 	case planar.LineString:
 		mls := LineString(b, g)
 		if len(mls) == 1 {
 			return mls[0]
 		}
+
+		if mls == nil {
+			return nil
+		}
+		return mls
 	case planar.MultiLineString:
-		return MultiLineString(b, g)
+		mls := MultiLineString(b, g)
+		if mls == nil {
+			return nil
+		}
+
+		return mls
 	case planar.Ring:
-		return Ring(b, g)
+		r := Ring(b, g)
+		if r == nil {
+			return nil
+		}
+
+		return r
 	case planar.Polygon:
-		return Polygon(b, g)
+		p := Polygon(b, g)
+		if p == nil {
+			return p
+		}
+
+		return p
 	case planar.MultiPolygon:
-		return MultiPolygon(b, g)
+		mp := MultiPolygon(b, g)
+		if mp == nil {
+			return nil
+		}
+
+		return mp
 	case planar.Collection:
-		return Collection(b, g)
+		c := Collection(b, g)
+		if c == nil {
+			return nil
+		}
+
+		return c
 	case planar.Bound:
 		b = Bound(b, g)
 		if b.IsEmpty() {
@@ -43,7 +79,7 @@ func Clip(b planar.Bound, g planar.Geometry) planar.Geometry {
 		return b
 	}
 
-	panic("geometry type not supported")
+	panic(fmt.Sprintf("geometry type not supported: %T", g))
 }
 
 // MultiPoint returns a new set with the points outside the bound removed.
@@ -73,9 +109,12 @@ func LineString(b planar.Bound, ls planar.LineString) planar.MultiLineString {
 // MultiLineString clips the linestrings to the bounding box
 // and returns a linestring union.
 func MultiLineString(b planar.Bound, mls planar.MultiLineString) planar.MultiLineString {
-	result := planar.MultiLineString{}
+	var result planar.MultiLineString
 	for _, ls := range mls {
-		result = append(result, LineString(b, ls)...)
+		r := LineString(b, ls)
+		if r != nil {
+			result = append(result, r...)
+		}
 	}
 	return result
 }
@@ -173,7 +212,7 @@ func (ls *lineString) Len() int {
 }
 
 func (ls *lineString) Get(i int) (x, y float64) {
-	return ls.ls[i][0], ls.ls[i][0]
+	return ls.ls[i][0], ls.ls[i][1]
 }
 
 func (ls *lineString) Append(x, y float64) {
