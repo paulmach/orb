@@ -25,38 +25,15 @@ func readWKBPoint(data []byte, littleEndian bool) Point {
 }
 
 // Scan implements the sql.Scanner interface allowing
-// line structs to be passed into rows.Scan(...interface{})
-// The column must be of type LineString and contain 2 points,
-// or an error will be returned. Data must be fetched in WKB format.
-// Will attempt to parse MySQL's SRID+WKB format if the data is of the right size.
-// If the column is empty (not null) an empty line [(0, 0), (0, 0)] will be returned.
-func (s *Segment) Scan(value interface{}) error {
-	data, littleEndian, err := wkb.ValidateSegment(value)
-	if err != nil || data == nil {
-		return err
-	}
-
-	*s, err = unWKBSegment(data, littleEndian)
-	return err
-}
-
-func unWKBSegment(data []byte, littleEndian bool) (Segment, error) {
-	return Segment{
-		readWKBPoint(data[:16], littleEndian),
-		readWKBPoint(data[16:], littleEndian),
-	}, nil
-}
-
-// Scan implements the sql.Scanner interface allowing
 // bound to be read in as the bound of a two point line string.
 func (b *Bound) Scan(value interface{}) error {
-	s := Segment{}
-	err := s.Scan(value)
+	var ls LineString
+	err := ls.Scan(value)
 	if err != nil {
 		return err
 	}
 
-	*b = s.Bound()
+	*b = ls.Bound()
 	return nil
 }
 

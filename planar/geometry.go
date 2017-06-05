@@ -18,7 +18,6 @@ type Geometry interface {
 // compile time checks
 var (
 	_ Geometry = Point{}
-	_ Geometry = Segment{}
 	_ Geometry = MultiPoint{}
 	_ Geometry = LineString{}
 	_ Geometry = MultiLineString{}

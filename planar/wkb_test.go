@@ -27,23 +27,6 @@ func TestPointScan(t *testing.T) {
 	}
 }
 
-func TestSegmentScan(t *testing.T) {
-	s := Segment{}
-	for i, test := range wkb.SegmentTestCases {
-		err := s.Scan(test.Data)
-		if err != nil {
-			if err != test.Err {
-				t.Errorf("test %d, incorrect error: %v", i, err)
-			}
-			continue
-		}
-
-		if !s.Equal(pointsToSegment(test.Points)) {
-			t.Errorf("test %d, incorrect line: %v", i, s)
-		}
-	}
-}
-
 func TestBoundScan(t *testing.T) {
 	b := Bound{}
 	for i, test := range wkb.SegmentTestCases {
@@ -55,7 +38,7 @@ func TestBoundScan(t *testing.T) {
 			continue
 		}
 
-		if !b.Equal(pointsToSegment(test.Points).Bound()) {
+		if !b.Equal(pointsToLineString(test.Points).Bound()) {
 			t.Errorf("test %d, incorrect rectangle: %v", i, b)
 		}
 	}
@@ -93,10 +76,6 @@ func TestLineStringScan(t *testing.T) {
 			t.Errorf("test %d, incorrect line string: %v", i, p)
 		}
 	}
-}
-
-func pointsToSegment(p [][2]float64) Segment {
-	return NewSegment(Point(p[0]), Point(p[1]))
 }
 
 func pointsToMultiPoint(points [][2]float64) MultiPoint {

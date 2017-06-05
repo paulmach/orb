@@ -177,7 +177,7 @@ func TestPolygonContains(t *testing.T) {
 
 	// on all the segments should be in.
 	for i := 1; i < len(ring); i++ {
-		c := NewSegment(ring[i], ring[i-1]).Centroid()
+		c := newSegment(ring[i], ring[i-1]).Centroid()
 		if !ring.Contains(c) {
 			t.Errorf("index %d centroid: should be inside", i)
 		}
@@ -185,12 +185,12 @@ func TestPolygonContains(t *testing.T) {
 
 	// colinear with segments but outside
 	for i := 1; i < len(ring); i++ {
-		p := NewSegment(ring[i], ring[i-1]).Interpolate(5)
+		p := newSegment(ring[i], ring[i-1]).Interpolate(5)
 		if ring.Contains(p) {
 			t.Errorf("index %d centroid: should not be inside", i)
 		}
 
-		p = NewSegment(ring[i], ring[i-1]).Interpolate(-5)
+		p = newSegment(ring[i], ring[i-1]).Interpolate(-5)
 		if ring.Contains(p) {
 			t.Errorf("index %d centroid: should not be inside", i)
 		}
