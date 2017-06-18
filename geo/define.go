@@ -3,8 +3,8 @@ package geo
 import "math"
 
 // UseHaversineGeoDistanceByDefault indicates if the more complicated
-// Haversine formula should be used for geo distances.
-var UseHaversineGeoDistanceByDefault = false
+// Haversine formula should be used for distances.
+var UseHaversineDistanceByDefault = false
 
 //MinLatitude is the minimum possible latitude
 var minLatitude = deg2rad(-90)
@@ -22,7 +22,7 @@ var maxLongitude = deg2rad(180)
 var GeoHashPrecision = 12
 
 func yesHaversine(haversine []bool) bool {
-	return (len(haversine) != 0 && haversine[0]) || (UseHaversineGeoDistanceByDefault && len(haversine) == 0)
+	return (len(haversine) != 0 && haversine[0]) || (UseHaversineDistanceByDefault && len(haversine) == 0)
 }
 
 func deg2rad(d float64) float64 {

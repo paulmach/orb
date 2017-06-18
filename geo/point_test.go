@@ -18,11 +18,11 @@ var citiesGeoHash = [][3]interface{}{
 func TestNewPoint(t *testing.T) {
 	p := NewPoint(1, 2)
 	if p.Lon() != 1 {
-		t.Errorf("point, expected 1, got %f", p.Lon())
+		t.Errorf("incorrect lon: %v != 1", p.Lon())
 	}
 
 	if p.Lat() != 2 {
-		t.Errorf("point, expected 2, got %f", p.Lat())
+		t.Errorf("incorrect lat: %v != 2", p.Lat())
 	}
 }
 
@@ -33,7 +33,7 @@ func TestPointQuadkey(t *testing.T) {
 	}
 
 	if k := p.Quadkey(15); k != 212521785 {
-		t.Errorf("point quadkey, incorrect got %d", k)
+		t.Errorf("incorrect quadkey: %v != 212521785", k)
 	}
 
 	// default level
@@ -48,11 +48,11 @@ func TestPointQuadkey(t *testing.T) {
 		p = NewPointFromQuadkey(key, level)
 
 		if math.Abs(p.Lat()-city[0]) > epsilon {
-			t.Errorf("point quadkey, latitude miss match: %f != %f", p.Lat(), city[0])
+			t.Errorf("latitude miss match: %f != %f", p.Lat(), city[0])
 		}
 
 		if math.Abs(p.Lon()-city[1]) > epsilon {
-			t.Errorf("point quadkey, longitude miss match: %f != %f", p.Lon(), city[1])
+			t.Errorf("longitude miss match: %f != %f", p.Lon(), city[1])
 		}
 	}
 }
@@ -64,7 +64,7 @@ func TestPointQuadkeyString(t *testing.T) {
 	}
 
 	if k := p.QuadkeyString(15); k != "030222231030321" {
-		t.Errorf("point quadkey string, incorrect got %s", k)
+		t.Errorf("incorrect string: %s", k)
 	}
 
 	// default level
@@ -79,11 +79,11 @@ func TestPointQuadkeyString(t *testing.T) {
 
 		p = NewPointFromQuadkeyString(key)
 		if math.Abs(p.Lat()-city[0]) > epsilon {
-			t.Errorf("point quadkey, latitude miss match: %f != %f", p.Lat(), city[0])
+			t.Errorf("latitude miss match: %f != %f", p.Lat(), city[0])
 		}
 
 		if math.Abs(p.Lon()-city[1]) > epsilon {
-			t.Errorf("point quadkey, longitude miss match: %f != %f", p.Lon(), city[1])
+			t.Errorf("longitude miss match: %f != %f", p.Lon(), city[1])
 		}
 	}
 }
@@ -92,7 +92,7 @@ func TestNewPointFromGeoHash(t *testing.T) {
 	for _, c := range citiesGeoHash {
 		p := NewPointFromGeoHash(c[2].(string))
 		if d := p.DistanceFrom(NewPoint(c[1].(float64), c[0].(float64))); d > 10 {
-			t.Errorf("point, new from geohash expected distance %f", d)
+			t.Errorf("new from geohash expected distance %f", d)
 		}
 	}
 }
@@ -116,11 +116,11 @@ func TestPointDistanceFrom(t *testing.T) {
 	p2 := NewPoint(0.1406, 52.2047)
 
 	if d := p1.DistanceFrom(p2, true); math.Abs(d-170389.801924) > epsilon {
-		t.Errorf("incorrect geodistance, got %v", d)
+		t.Errorf("incorrect distance, got %v", d)
 	}
 
 	if d := p1.DistanceFrom(p2, false); math.Abs(d-170400.503437) > epsilon {
-		t.Errorf("incorrect geodistance, got %v", d)
+		t.Errorf("incorrect distance, got %v", d)
 	}
 
 	p1 = NewPoint(0.5, 30)
@@ -133,11 +133,11 @@ func TestPointDistanceFrom(t *testing.T) {
 	p2 = NewPoint(-179.5, 30)
 
 	if d := p1.DistanceFrom(p2, false); math.Abs(d-dFast) > epsilon {
-		t.Errorf("incorrect geodistance, got %v", d)
+		t.Errorf("incorrect distance, got %v", d)
 	}
 
 	if d := p1.DistanceFrom(p2, true); math.Abs(d-dHav) > epsilon {
-		t.Errorf("incorrect geodistance, got %v", d)
+		t.Errorf("incorrect distance, got %v", d)
 	}
 }
 
@@ -146,22 +146,22 @@ func TestPointBearingTo(t *testing.T) {
 	p2 := NewPoint(0, 1)
 
 	if d := p1.BearingTo(p2); d != 0 {
-		t.Errorf("point, bearingTo expected 0, got %f", d)
+		t.Errorf("expected 0, got %f", d)
 	}
 
 	if d := p2.BearingTo(p1); d != 180 {
-		t.Errorf("point, bearingTo expected 180, got %f", d)
+		t.Errorf("expected 180, got %f", d)
 	}
 
 	p1 = NewPoint(0, 0)
 	p2 = NewPoint(1, 0)
 
 	if d := p1.BearingTo(p2); d != 90 {
-		t.Errorf("point, bearingTo expected 90, got %f", d)
+		t.Errorf("expected 90, got %f", d)
 	}
 
 	if d := p2.BearingTo(p1); d != -90 {
-		t.Errorf("point, bearingTo expected -90, got %f", d)
+		t.Errorf("expected -90, got %f", d)
 	}
 
 	p1 = NewPoint(-1.8444, 53.1506)
@@ -177,7 +177,7 @@ func TestPointMidpoint(t *testing.T) {
 	m := NewPoint(-1.8444, 53.1506).Midpoint(NewPoint(0.1406, 52.2047))
 
 	if d := m.DistanceFrom(answer); d > 1 {
-		t.Errorf("line, midpoint expected %v, got %v", answer, m)
+		t.Errorf("expected %v, got %v", answer, m)
 	}
 }
 
@@ -185,14 +185,14 @@ func TestPointGeoHash(t *testing.T) {
 	for _, c := range citiesGeoHash {
 		hash := NewPoint(c[1].(float64), c[0].(float64)).GeoHash(12)
 		if !strings.HasPrefix(hash, c[2].(string)) {
-			t.Errorf("point, geohash expected %s, got %s", c[2].(string), hash)
+			t.Errorf("expected %s, got %s", c[2].(string), hash)
 		}
 	}
 
 	for _, c := range citiesGeoHash {
 		hash := NewPoint(c[1].(float64), c[0].(float64)).GeoHash(len(c[2].(string)))
 		if hash != c[2].(string) {
-			t.Errorf("point, geohash expected %s, got %s", c[2].(string), hash)
+			t.Errorf("expected %s, got %s", c[2].(string), hash)
 		}
 	}
 }
@@ -205,15 +205,15 @@ func TestPointEqual(t *testing.T) {
 	p4 := NewPoint(2, 4)
 
 	if !p1.Equal(p2) {
-		t.Errorf("point, equals expect %v == %v", p1, p2)
+		t.Errorf("expected: %v == %v", p1, p2)
 	}
 
 	if p2.Equal(p3) {
-		t.Errorf("point, equals expect %v != %v", p2, p3)
+		t.Errorf("expected: %v != %v", p2, p3)
 	}
 
 	if p3.Equal(p4) {
-		t.Errorf("point, equals expect %v != %v", p3, p4)
+		t.Errorf("expected: %v != %v", p3, p4)
 	}
 }
 
@@ -222,7 +222,7 @@ func TestPointWKT(t *testing.T) {
 
 	answer := "POINT(1 2.5)"
 	if s := p.WKT(); s != answer {
-		t.Errorf("point, string expected %s, got %s", answer, s)
+		t.Errorf("expected %s, got %s", answer, s)
 	}
 }
 
@@ -231,6 +231,6 @@ func TestPointString(t *testing.T) {
 
 	answer := "POINT(1 2.5)"
 	if s := p.String(); s != answer {
-		t.Errorf("point, string expected %s, got %s", answer, s)
+		t.Errorf("expected %s, got %s", answer, s)
 	}
 }

@@ -1,7 +1,3 @@
-/*
-Package geo is a geometry/geography library in Go. Its purpose is to allow for
-basic point, line and path operations in the context of online mapping.
-*/
 package geo
 
 import (
@@ -13,12 +9,12 @@ import (
 	"github.com/paulmach/orb/internal/mercator"
 )
 
-// A Point is a simple X/Y or Lon/Lat 2d point. [X, Y] or [Lon, Lat]
+// A Point is a Lon/Lat 2d point.
 type Point [2]float64
 
-// NewPoint creates a new point
-func NewPoint(x, y float64) Point {
-	return Point{x, y}
+// NewPoint creates a new point.
+func NewPoint(lon, lat float64) Point {
+	return Point{lon, lat}
 }
 
 // NewPointFromQuadkey creates a new point from a quadkey.
