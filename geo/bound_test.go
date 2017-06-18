@@ -3,8 +3,6 @@ package geo
 import (
 	"math"
 	"testing"
-
-	"github.com/paulmach/orb/internal/mercator"
 )
 
 func center(r Bound) Point {
@@ -46,34 +44,6 @@ func TestBoundAroundPoint(t *testing.T) {
 	//Given point is 968.9 km away from center
 	if bound.Contains(Point{3.412, 58.3838}) {
 		t.Errorf("should not have point included in bound")
-	}
-}
-
-func TestNewBoundFromTile(t *testing.T) {
-	bound, _ := NewBoundFromTile(7, 8, 9)
-
-	level := uint64(9 + 5) // we're testing point +5 zoom, in same tile
-	factor := uint64(5)
-
-	// edges should be within the bound
-	lon, lat := mercator.ScalarInverse(7<<factor+1, 8<<factor+1, level)
-	if !bound.Contains(NewPoint(lon, lat)) {
-		t.Errorf("should contain point")
-	}
-
-	lon, lat = mercator.ScalarInverse(7<<factor-1, 8<<factor-1, level)
-	if bound.Contains(NewPoint(lon, lat)) {
-		t.Errorf("should not contain point")
-	}
-
-	lon, lat = mercator.ScalarInverse(8<<factor-1, 9<<factor-1, level)
-	if !bound.Contains(NewPoint(lon, lat)) {
-		t.Errorf("should contain point")
-	}
-
-	lon, lat = mercator.ScalarInverse(8<<factor+1, 9<<factor+1, level)
-	if bound.Contains(NewPoint(lon, lat)) {
-		t.Errorf("should not contain point")
 	}
 }
 

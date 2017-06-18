@@ -22,6 +22,10 @@ corner point represent? Some methods provided:
 * `Contains(t Tile)`
 * `Covering(zoom uint64) Tiles` - returns the set of tiles at the give zoom that cover the bound.
 
+### tilecover sub-package
+
+Still a work in progress but the goal is to provide geometry -> covering tile functions.
+
 #### Similar libraries in other languages:
 
 * [mercantile](https://github.com/mapbox/mercantile) - Python

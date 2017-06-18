@@ -2,6 +2,7 @@ package tile
 
 import (
 	"github.com/paulmach/orb/geo"
+	"github.com/paulmach/orb/internal/mercator"
 	"github.com/paulmach/orb/project"
 )
 
@@ -33,6 +34,28 @@ func FromQuadkey(k uint64, z uint64) Tile {
 	return t
 }
 
+// Valid returns if the tile's x/y are within the range for the tile's zoom.
+func (t Tile) Valid() bool {
+	maxIndex := uint64(1) << t.Z
+	return t.X < maxIndex && t.Z < maxIndex
+}
+
+// GeoBound returns the geo bound for the tile.
+func (t Tile) GeoBound() geo.Bound {
+	lon1, lat1 := mercator.ScalarInverse(t.X, t.Y, t.Z)
+	lon2, lat2 := mercator.ScalarInverse(t.X+1, t.Y+1, t.Z)
+
+	return geo.Bound{
+		geo.Point{lon1, lat2},
+		geo.Point{lon2, lat1},
+	}
+}
+
+// Center returns the center of the tile.
+func (t Tile) Center() geo.Point {
+	return t.GeoBound().Center()
+}
+
 // Contains returns if the given tile is fully contained (or equal to) the give tile.
 func (t Tile) Contains(tile Tile) bool {
 	if tile.Z < t.Z {
@@ -53,6 +76,36 @@ func (t Tile) Parent() Tile {
 		Y: t.Y >> 1,
 		Z: t.Z - 1,
 	}
+}
+
+// SharedParent returns the tile that contains both the tiles.
+func (t Tile) SharedParent(tile Tile) Tile {
+	// bring both tiles to the lowest zoom.
+	if t.Z < tile.Z {
+		tile = tile.toZoom(t.Z)
+	} else {
+		t = t.toZoom(tile.Z)
+	}
+
+	if t == tile {
+		return t
+	}
+
+	// move from most significant to least until there isn't a match.
+	// TODO: this can be improved using the go1.9 bits package.
+	for i := t.Z; i > 0; i-- {
+		if t.X&(1<<i) != tile.X&(1<<i) ||
+			t.Y&(1<<i) != tile.Y&(1<<i) {
+			return Tile{
+				t.X >> (t.Z - i),
+				t.Y >> (t.Z - i),
+				i,
+			}
+		}
+	}
+
+	// if we reach here the tiles are the same, which was checked above.
+	panic("unreachable")
 }
 
 // Children returns the 4 children of the tile.

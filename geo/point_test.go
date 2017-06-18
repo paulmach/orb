@@ -1,19 +1,15 @@
-package geo
+package geo_test
 
 import (
 	"math"
-	"strings"
 	"testing"
 
+	. "github.com/paulmach/orb/geo"
 	"github.com/paulmach/orb/internal/mercator"
+	"github.com/paulmach/orb/tile"
 )
 
-var citiesGeoHash = [][3]interface{}{
-	{57.09700, 9.85000, "u4phb4hw"},
-	{49.03000, -122.32000, "c29nbt9k3q"},
-	{39.23500, -76.17490, "dqcz4we0k"},
-	{-34.7666, 138.53670, "r1fd0qzmg"},
-}
+var epsilon = 1e-6
 
 func TestNewPoint(t *testing.T) {
 	p := NewPoint(1, 2)
@@ -37,7 +33,7 @@ func TestPointQuadkey(t *testing.T) {
 	}
 
 	// default level
-	level := 30
+	level := uint64(30)
 	for _, city := range mercator.Cities {
 		p := Point{
 			city[1],
@@ -45,7 +41,7 @@ func TestPointQuadkey(t *testing.T) {
 		}
 		key := p.Quadkey(level)
 
-		p = NewPointFromQuadkey(key, level)
+		p = tile.FromQuadkey(key, level).Center()
 
 		if math.Abs(p.Lat()-city[0]) > epsilon {
 			t.Errorf("latitude miss match: %f != %f", p.Lat(), city[0])
@@ -57,60 +53,6 @@ func TestPointQuadkey(t *testing.T) {
 	}
 }
 
-func TestPointQuadkeyString(t *testing.T) {
-	p := Point{
-		-87.65005229999997,
-		41.850033,
-	}
-
-	if k := p.QuadkeyString(15); k != "030222231030321" {
-		t.Errorf("incorrect string: %s", k)
-	}
-
-	// default level
-	level := 30
-	for _, city := range mercator.Cities {
-		p := Point{
-			city[1],
-			city[0],
-		}
-
-		key := p.QuadkeyString(level)
-
-		p = NewPointFromQuadkeyString(key)
-		if math.Abs(p.Lat()-city[0]) > epsilon {
-			t.Errorf("latitude miss match: %f != %f", p.Lat(), city[0])
-		}
-
-		if math.Abs(p.Lon()-city[1]) > epsilon {
-			t.Errorf("longitude miss match: %f != %f", p.Lon(), city[1])
-		}
-	}
-}
-
-func TestNewPointFromGeoHash(t *testing.T) {
-	for _, c := range citiesGeoHash {
-		p := NewPointFromGeoHash(c[2].(string))
-		if d := p.DistanceFrom(NewPoint(c[1].(float64), c[0].(float64))); d > 10 {
-			t.Errorf("new from geohash expected distance %f", d)
-		}
-	}
-}
-
-func TestNewPointFromGeoHashInt64(t *testing.T) {
-	for _, c := range citiesGeoHash {
-		var hash int64
-		for _, r := range c[2].(string) {
-			hash <<= 5
-			hash |= int64(strings.Index("0123456789bcdefghjkmnpqrstuvwxyz", string(r)))
-		}
-
-		p := NewPointFromGeoHashInt64(hash, 5*len(c[2].(string)))
-		if d := p.DistanceFrom(NewPoint(c[1].(float64), c[0].(float64))); d > 10 {
-			t.Errorf("point, new from geohash expected distance %f", d)
-		}
-	}
-}
 func TestPointDistanceFrom(t *testing.T) {
 	p1 := NewPoint(-1.8444, 53.1506)
 	p2 := NewPoint(0.1406, 52.2047)
@@ -178,22 +120,6 @@ func TestPointMidpoint(t *testing.T) {
 
 	if d := m.DistanceFrom(answer); d > 1 {
 		t.Errorf("expected %v, got %v", answer, m)
-	}
-}
-
-func TestPointGeoHash(t *testing.T) {
-	for _, c := range citiesGeoHash {
-		hash := NewPoint(c[1].(float64), c[0].(float64)).GeoHash(12)
-		if !strings.HasPrefix(hash, c[2].(string)) {
-			t.Errorf("expected %s, got %s", c[2].(string), hash)
-		}
-	}
-
-	for _, c := range citiesGeoHash {
-		hash := NewPoint(c[1].(float64), c[0].(float64)).GeoHash(len(c[2].(string)))
-		if hash != c[2].(string) {
-			t.Errorf("expected %s, got %s", c[2].(string), hash)
-		}
 	}
 }
 

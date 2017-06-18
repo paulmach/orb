@@ -1,12 +1,9 @@
 package geo
 
 import (
-	"errors"
 	"math"
-	"strings"
 
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/internal/mercator"
 )
 
 // A Bound represents an enclosed "box" on the sphere.
@@ -58,104 +55,6 @@ func NewBoundAroundPoint(center Point, distance float64) Bound {
 		Point{rad2deg(minLon), rad2deg(minLat)},
 		Point{rad2deg(maxLon), rad2deg(maxLat)},
 	}
-}
-
-// NewBoundFromTile creates a bound given an online map tile index.
-// Panics if x or y is out of range for zoom level.
-func NewBoundFromTile(x, y, z uint64) (Bound, error) {
-	maxIndex := uint64(1) << z
-	if x >= maxIndex {
-		return Bound{}, errors.New("geo: x index out of range for this zoom")
-	}
-	if y >= maxIndex {
-		return Bound{}, errors.New("geo: y index out of range for this zoom")
-	}
-
-	shift := 31 - z
-	if z > 31 {
-		shift = 0
-	}
-
-	lon1, lat1 := mercator.ScalarInverse(x<<shift, y<<shift, 31)
-	lon2, lat2 := mercator.ScalarInverse((x+1)<<shift, (y+1)<<shift, 31)
-
-	return Bound{
-		Point{math.Min(lon1, lon2), math.Min(lat1, lat2)},
-		Point{math.Max(lon1, lon2), math.Max(lat1, lat2)},
-	}, nil
-}
-
-// NewBoundFromGeoHash creates a new bound for the region defined by the GeoHash.
-func NewBoundFromGeoHash(hash string) Bound {
-	west, east, south, north := geoHash2ranges(hash)
-	return NewBound(west, east, south, north)
-}
-
-// NewBoundFromGeoHashInt64 creates a new bound from the region defined by the GeoHesh.
-// bits indicates the precision of the hash.
-func NewBoundFromGeoHashInt64(hash int64, bits int) Bound {
-	west, east, south, north := geoHashInt2ranges(hash, bits)
-	return NewBound(west, east, south, north)
-}
-
-func geoHash2ranges(hash string) (float64, float64, float64, float64) {
-	latMin, latMax := -90.0, 90.0
-	lonMin, lonMax := -180.0, 180.0
-	even := true
-
-	for _, b := range hash {
-		// TODO: index step could probably be done better
-		i := strings.Index("0123456789bcdefghjkmnpqrstuvwxyz", string(b))
-		for j := 0x10; j != 0; j >>= 1 {
-			if even {
-				mid := (lonMin + lonMax) / 2.0
-				if i&j == 0 {
-					lonMax = mid
-				} else {
-					lonMin = mid
-				}
-			} else {
-				mid := (latMin + latMax) / 2.0
-				if i&j == 0 {
-					latMax = mid
-				} else {
-					latMin = mid
-				}
-			}
-			even = !even
-		}
-	}
-
-	return lonMin, lonMax, latMin, latMax
-}
-
-func geoHashInt2ranges(hash int64, bits int) (float64, float64, float64, float64) {
-	latMin, latMax := -90.0, 90.0
-	lonMin, lonMax := -180.0, 180.0
-
-	var i int64
-	i = 1 << uint(bits)
-
-	for i != 0 {
-		i >>= 1
-
-		mid := (lonMin + lonMax) / 2.0
-		if hash&i == 0 {
-			lonMax = mid
-		} else {
-			lonMin = mid
-		}
-
-		i >>= 1
-		mid = (latMin + latMax) / 2.0
-		if hash&i == 0 {
-			latMax = mid
-		} else {
-			latMin = mid
-		}
-	}
-
-	return lonMin, lonMax, latMin, latMax
 }
 
 // GeoJSONType returns the GeoJSON type for the object.
@@ -247,6 +146,14 @@ func (b Bound) Pad(meters float64) Bound {
 	b[1][1] += dy
 
 	return b
+}
+
+// Center returns the center of the bounds by "averaging" the x and y coords.
+func (b Bound) Center() Point {
+	return Point{
+		(b[0][0] + b[1][0]) / 2.0,
+		(b[0][1] + b[1][1]) / 2.0,
+	}
 }
 
 // Height returns the approximate height in meters.

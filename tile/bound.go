@@ -2,40 +2,10 @@ package tile
 
 import "github.com/paulmach/orb/geo"
 
-// Interval represents a closed interval of values.
-// Used to devine a bound.
-type Interval struct {
-	Lo, Hi uint64
-}
-
-// Contains checks if the interval contains (inclusive) the value.
-func (i Interval) Contains(v uint64) bool {
-	return !(v < i.Lo || i.Hi < v)
-}
-
-// ContainsInterval check is the interval full contains the provided interval.
-func (i Interval) ContainsInterval(i2 Interval) bool {
-	return !(i2.Hi < i.Lo || i.Hi < i2.Lo)
-}
-
 // Bound represents a rectangle of tiles tiles.
 type Bound struct {
-	X, Y Interval
+	X, Y interval
 	Z    uint64
-}
-
-func newInterval(tx, tz, z uint64) Interval {
-	if z > tz {
-		return Interval{
-			Lo: tx << (z - tz),
-			Hi: ((tx + 1) << (z - tz)) - 1,
-		}
-	}
-
-	return Interval{
-		Lo: tx >> (tz - z),
-		Hi: tx >> (tz - z),
-	}
 }
 
 // Bound converts the tile into a bound at the given zoom.
@@ -54,8 +24,8 @@ func NewBound(lo, hi geo.Point, z uint64) Bound {
 	hit := New(hi, z)
 
 	return Bound{
-		X: Interval{lot.X, hit.X},
-		Y: Interval{hit.Y, lot.Y},
+		X: interval{lot.X, hit.X},
+		Y: interval{hit.Y, lot.Y},
 		Z: z,
 	}
 }
@@ -94,4 +64,34 @@ func (b Bound) Covering(z uint64) Tiles {
 	}
 
 	return result
+}
+
+// interval represents a closed interval of values.
+// Used to devine a bound.
+type interval struct {
+	Lo, Hi uint64
+}
+
+func newInterval(tx, tz, z uint64) interval {
+	if z > tz {
+		return interval{
+			Lo: tx << (z - tz),
+			Hi: ((tx + 1) << (z - tz)) - 1,
+		}
+	}
+
+	return interval{
+		Lo: tx >> (tz - z),
+		Hi: tx >> (tz - z),
+	}
+}
+
+// Contains checks if the interval contains (inclusive) the value.
+func (i interval) Contains(v uint64) bool {
+	return !(v < i.Lo || i.Hi < v)
+}
+
+// ContainsInterval check is the interval full contains the provided interval.
+func (i interval) ContainsInterval(i2 interval) bool {
+	return !(i2.Hi < i.Lo || i.Hi < i2.Lo)
 }

@@ -3,7 +3,6 @@ package geo
 import (
 	"fmt"
 	"math"
-	"strconv"
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/internal/mercator"
@@ -15,41 +14,6 @@ type Point [2]float64
 // NewPoint creates a new point.
 func NewPoint(lon, lat float64) Point {
 	return Point{lon, lat}
-}
-
-// NewPointFromQuadkey creates a new point from a quadkey.
-// See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
-// about this coordinate system.
-func NewPointFromQuadkey(key uint64, level int) Point {
-	var x, y uint64
-
-	var i uint
-	for i = 0; i < uint(level); i++ {
-		x |= (key & (1 << (2 * i))) >> i
-		y |= (key & (1 << (2*i + 1))) >> (i + 1)
-	}
-
-	lon, lat := mercator.ScalarInverse(x, y, uint64(level))
-	return Point{lon, lat}
-}
-
-// NewPointFromQuadkeyString creates a new point from a quadkey string.
-func NewPointFromQuadkeyString(key string) Point {
-	i, _ := strconv.ParseUint(key, 4, 64)
-	return NewPointFromQuadkey(i, len(key))
-}
-
-// NewPointFromGeoHash creates a new point at the center of the geohash range.
-func NewPointFromGeoHash(hash string) Point {
-	west, east, south, north := geoHash2ranges(hash)
-	return NewPoint((west+east)/2.0, (north+south)/2.0)
-}
-
-// NewPointFromGeoHashInt64 creates a new point at the center of the
-// integer version of a geohash range. bits indicates the precision of the hash.
-func NewPointFromGeoHashInt64(hash int64, bits int) Point {
-	west, east, south, north := geoHashInt2ranges(hash, bits)
-	return NewPoint((west+east)/2.0, (north+south)/2.0)
 }
 
 // GeoJSONType returns the GeoJSON type for the object.
@@ -125,82 +89,16 @@ func (p Point) Midpoint(p2 Point) Point {
 // Quadkey returns the quad key for the given point at the provided level.
 // See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
 // about this coordinate system.
-func (p Point) Quadkey(level int) uint64 {
-	x, y := mercator.ScalarProject(p.Lon(), p.Lat(), uint64(level))
+func (p Point) Quadkey(level uint64) uint64 {
+	x, y := mercator.ScalarProject(p.Lon(), p.Lat(), level)
 
-	var i uint
-	var result uint64
-	for i = 0; i < uint(level); i++ {
+	var i, result uint64
+	for i = 0; i < level; i++ {
 		result |= (x & (1 << i)) << i
 		result |= (y & (1 << i)) << (i + 1)
 	}
 
 	return result
-}
-
-// QuadkeyString returns the quad key for the given point at the provided level in string form
-// See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
-// about this coordinate system.
-func (p Point) QuadkeyString(level int) string {
-	s := strconv.FormatUint(p.Quadkey(level), 4)
-
-	// for zero padding
-	zeros := "000000000000000000000000000000"
-	return zeros[:((level+1)-len(s))/2] + s
-}
-
-const base32 = "0123456789bcdefghjkmnpqrstuvwxyz"
-
-// GeoHash returns the geohash string of a point representing a lon/lat location.
-// The resulting hash will be `GeoHashPrecision` characters long, default is 12.
-// Optionally one can include their required number of chars precision.
-func (p Point) GeoHash(precision int) string {
-	// 15 must be greater than GeoHashPrecision. If not, panic!!
-	var result [15]byte
-
-	hash := p.GeoHashInt64(5 * precision)
-	for i := 1; i <= precision; i++ {
-		result[precision-i] = base32[hash&0x1F]
-		hash >>= 5
-	}
-
-	return string(result[:precision])
-}
-
-// GeoHashInt64 returns the integer version of the geohash
-// down to the given number of bits.
-// The main usecase for this function is to be able to do integer based ordering of points.
-// In that case the number of bits should be the same for all encodings.
-func (p Point) GeoHashInt64(bits int) (hash int64) {
-	// This code was inspired by https://github.com/broady/gogeohash
-
-	latMin, latMax := -90.0, 90.0
-	lonMin, lonMax := -180.0, 180.0
-
-	for i := 0; i < bits; i++ {
-		hash <<= 1
-
-		// interleave bits
-		if i%2 == 0 {
-			mid := (lonMin + lonMax) / 2.0
-			if p[0] > mid {
-				lonMin = mid
-				hash |= 1
-			} else {
-				lonMax = mid
-			}
-		} else {
-			mid := (latMin + latMax) / 2.0
-			if p[1] > mid {
-				latMin = mid
-				hash |= 1
-			} else {
-				latMax = mid
-			}
-		}
-	}
-
-	return
 }
 
 // Equal checks if the point represents the same point or vector.

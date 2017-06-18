@@ -34,36 +34,6 @@ func BenchmarkPointQuadKey(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		p.Quadkey(60)
-	}
-}
-
-func BenchmarkPointQuadKeyString(b *testing.B) {
-	p := geo.NewPoint(-122.4167, 37.7833)
-
-	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		p.QuadkeyString(60)
-	}
-}
-
-func BenchmarkPointGeoHash(b *testing.B) {
-	p := geo.NewPoint(-122.4167, 37.7833)
-
-	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		p.GeoHash(12)
-	}
-}
-
-func BenchmarkPointGeoHashInt64(b *testing.B) {
-	p := geo.NewPoint(-122.4167, 37.7833)
-
-	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		p.GeoHashInt64(60)
+		p.Quadkey(30)
 	}
 }
