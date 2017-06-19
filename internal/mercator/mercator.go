@@ -27,12 +27,12 @@ var (
 )
 
 // ScalarProject converts the point to geo work coordinates at the given live.
-func ScalarProject(lng, lat float64, level uint64) (x, y uint64) {
-	factor := uint64(1 << level)
+func ScalarProject(lng, lat float64, level uint32) (x, y uint32) {
+	factor := uint32(1 << level)
 	maxtiles := float64(factor)
 
 	lng = lng/360.0 + 0.5
-	x = uint64(lng * maxtiles)
+	x = uint32(lng * maxtiles)
 
 	// bound it because we have a top of the world problem
 	siny := math.Sin(lat * math.Pi / 180.0)
@@ -43,15 +43,15 @@ func ScalarProject(lng, lat float64, level uint64) (x, y uint64) {
 		y = factor - 1
 	} else {
 		lat = 0.5 + 0.5*math.Log((1.0+siny)/(1.0-siny))/(-2*math.Pi)
-		y = uint64(lat * maxtiles)
+		y = uint32(lat * maxtiles)
 	}
 
 	return
 }
 
 // ScalarInverse projects work coordinates back to geo coordinates.
-func ScalarInverse(x, y, level uint64) (lng, lat float64) {
-	factor := uint64(1 << level)
+func ScalarInverse(x, y, level uint32) (lng, lat float64) {
+	factor := uint32(1 << level)
 	maxtiles := float64(factor)
 
 	lng = 360.0 * (float64(x)/maxtiles - 0.5)

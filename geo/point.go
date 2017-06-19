@@ -89,13 +89,13 @@ func (p Point) Midpoint(p2 Point) Point {
 // Quadkey returns the quad key for the given point at the provided level.
 // See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
 // about this coordinate system.
-func (p Point) Quadkey(level uint64) uint64 {
+func (p Point) Quadkey(level uint32) uint64 {
 	x, y := mercator.ScalarProject(p.Lon(), p.Lat(), level)
 
 	var i, result uint64
-	for i = 0; i < level; i++ {
-		result |= (x & (1 << i)) << i
-		result |= (y & (1 << i)) << (i + 1)
+	for i = 0; i < uint64(level); i++ {
+		result |= (uint64(x) & (1 << i)) << i
+		result |= (uint64(y) & (1 << i)) << (i + 1)
 	}
 
 	return result

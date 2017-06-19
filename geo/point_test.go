@@ -33,7 +33,7 @@ func TestPointQuadkey(t *testing.T) {
 	}
 
 	// default level
-	level := uint64(30)
+	level := uint32(30)
 	for _, city := range mercator.Cities {
 		p := Point{
 			city[1],

@@ -12,7 +12,7 @@ var epsilon = 1e-6
 
 func TestTileQuadkey(t *testing.T) {
 	// default level
-	level := uint64(30)
+	level := uint32(30)
 	for _, city := range mercator.Cities {
 		tile := New(geo.Point{city[1], city[0]}, level)
 		p := tile.Center()
@@ -30,8 +30,8 @@ func TestTileQuadkey(t *testing.T) {
 func TestTileGeoBound(t *testing.T) {
 	bound := Tile{7, 8, 9}.GeoBound()
 
-	level := uint64(9 + 5) // we're testing point +5 zoom, in same tile
-	factor := uint64(5)
+	level := uint32(9 + 5) // we're testing point +5 zoom, in same tile
+	factor := uint32(5)
 
 	// edges should be within the bound
 	p := Tile{7<<factor + 1, 8<<factor + 1, level}.Center()

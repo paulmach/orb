@@ -2,7 +2,7 @@ package geo
 
 import "math"
 
-// UseHaversineGeoDistanceByDefault indicates if the more complicated
+// UseHaversineDistanceByDefault indicates if the more complicated
 // Haversine formula should be used for distances.
 var UseHaversineDistanceByDefault = false
 
