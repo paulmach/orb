@@ -82,7 +82,7 @@ func (t Tile) Parent() Tile {
 }
 
 // Fraction returns the precise tile fraction at the given zoom.
-func (t Tile) Fraction(ll geo.Point, z uint32) planar.Point {
+func Fraction(ll geo.Point, z uint32) planar.Point {
 	var p planar.Point
 
 	factor := uint32(1 << z)
