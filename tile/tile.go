@@ -2,11 +2,11 @@ package tile
 
 import (
 	"math"
+	"math/bits"
 
 	"github.com/paulmach/orb/geo"
 	"github.com/paulmach/orb/internal/mercator"
 	"github.com/paulmach/orb/planar"
-	"github.com/paulmach/orb/project"
 )
 
 // Tiles is a set of tiles, later we can add methods to this.
@@ -18,9 +18,21 @@ type Tile struct {
 }
 
 // New creates a tile for the point at the given zoom.
+// Will create a valid tile for the zoom. Points outside
+// the range lat [-85.0511, 85.0511] will be snapped to the
+// max or min tile as appropriate.
 func New(ll geo.Point, z uint32) Tile {
-	t := Tile{Z: z}
-	t.X, t.Y = project.ScalarMercator.ToPlanar(ll, z)
+	f := Fraction(ll, z)
+	t := Tile{
+		X: uint32(f[0]),
+		Y: uint32(f[1]),
+		Z: z,
+	}
+
+	// things
+	if t.Y >= 1<<z {
+		t.Y = (1 << z) - 1
+	}
 
 	return t
 }
@@ -43,10 +55,10 @@ func (t Tile) Valid() bool {
 	return t.X < maxIndex && t.Z < maxIndex
 }
 
-// GeoBound returns the geo bound for the tile.
-func (t Tile) GeoBound() geo.Bound {
-	lon1, lat1 := mercator.ScalarInverse(t.X, t.Y, t.Z)
-	lon2, lat2 := mercator.ScalarInverse(t.X+1, t.Y+1, t.Z)
+// Bound returns the geo bound for the tile.
+func (t Tile) Bound() geo.Bound {
+	lon1, lat1 := mercator.ToGeo(t.X, t.Y, t.Z)
+	lon2, lat2 := mercator.ToGeo(t.X+1, t.Y+1, t.Z)
 
 	return geo.Bound{
 		geo.Point{lon1, lat2},
@@ -56,7 +68,7 @@ func (t Tile) GeoBound() geo.Bound {
 
 // Center returns the center of the tile.
 func (t Tile) Center() geo.Point {
-	return t.GeoBound().Center()
+	return t.Bound().Center()
 }
 
 // Contains returns if the given tile is fully contained (or equal to) the give tile.
@@ -82,23 +94,32 @@ func (t Tile) Parent() Tile {
 }
 
 // Fraction returns the precise tile fraction at the given zoom.
+// Returns the range y range of [0, 2^zoom]. Will return 2^zoom if
+// the point is below 85.0511 S.
 func Fraction(ll geo.Point, z uint32) planar.Point {
 	var p planar.Point
 
 	factor := uint32(1 << z)
 	maxtiles := float64(factor)
 
+	for ll[0] >= 180 {
+		ll[0] -= 360.0
+	}
+
+	for ll[0] < -180 {
+		ll[0] += 360.0
+	}
+
 	lng := ll[0]/360.0 + 0.5
 	p[0] = lng * maxtiles
 
 	// bound it because we have a top of the world problem
-	siny := math.Sin(ll[1] * math.Pi / 180.0)
-
-	if siny < -0.9999 {
-		p[1] = 0
-	} else if siny > 0.9999 {
+	if ll[1] < -85.0511 {
 		p[1] = maxtiles
+	} else if ll[1] > 85.0511 {
+		p[1] = 0
 	} else {
+		siny := math.Sin(ll[1] * math.Pi / 180.0)
 		lat := 0.5 + 0.5*math.Log((1.0+siny)/(1.0-siny))/(-2*math.Pi)
 		p[1] = lat * maxtiles
 	}

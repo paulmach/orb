@@ -11,7 +11,7 @@ It defines a tile as:
 
 Functions are provided to create tiles from lon/lat points as well as
 [quadkeys](https://msdn.microsoft.com/en-us/library/bb259689.aspx).
-The tile define helper methods such as `Parent()`, `Children()`, `Siblings()`, etc.
+The tile defines helper methods such as `Parent()`, `Children()`, `Siblings()`, etc.
 
 ### tilecover sub-package
 

@@ -90,7 +90,7 @@ func (p Point) Midpoint(p2 Point) Point {
 // See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
 // about this coordinate system.
 func (p Point) Quadkey(level uint32) uint64 {
-	x, y := mercator.ScalarProject(p.Lon(), p.Lat(), level)
+	x, y := mercator.ToPlanar(p.Lon(), p.Lat(), level)
 
 	var i, result uint64
 	for i = 0; i < uint64(level); i++ {

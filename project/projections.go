@@ -6,7 +6,6 @@ import (
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/geo"
-	"github.com/paulmach/orb/internal/mercator"
 	"github.com/paulmach/orb/planar"
 )
 
@@ -112,32 +111,4 @@ var TransverseMercator = &Projection{
 			rad2deg(lat),
 		}
 	},
-}
-
-// ScalarMercator converts from lon/lat float64 to x,y uint32.
-// This is the same as Google's world coordinates.
-var ScalarMercator struct {
-	Level    uint32
-	ToPlanar func(g geo.Point, level ...uint32) (x, y uint32)
-	ToGeo    func(x, y uint32, level ...uint32) geo.Point
-}
-
-func init() {
-	ScalarMercator.Level = 31
-	ScalarMercator.ToPlanar = func(g geo.Point, level ...uint32) (x, y uint32) {
-		l := ScalarMercator.Level
-		if len(level) != 0 {
-			l = level[0]
-		}
-		return mercator.ScalarProject(g.Lon(), g.Lat(), l)
-	}
-	ScalarMercator.ToGeo = func(x, y uint32, level ...uint32) geo.Point {
-		l := ScalarMercator.Level
-		if len(level) != 0 {
-			l = level[0]
-		}
-
-		lon, lat := mercator.ScalarInverse(x, y, l)
-		return geo.Point{lon, lat}
-	}
 }

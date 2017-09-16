@@ -26,8 +26,8 @@ var (
 		{41.66700, -72.83300}, {35.45000, 139.45000}}
 )
 
-// ScalarProject converts the point to geo work coordinates at the given live.
-func ScalarProject(lng, lat float64, level uint32) (x, y uint32) {
+// ToPlanar converts the point to geo world coordinates at the given live.
+func ToPlanar(lng, lat float64, level uint32) (x, y uint32) {
 	factor := uint32(1 << level)
 	maxtiles := float64(factor)
 
@@ -49,8 +49,8 @@ func ScalarProject(lng, lat float64, level uint32) (x, y uint32) {
 	return
 }
 
-// ScalarInverse projects work coordinates back to geo coordinates.
-func ScalarInverse(x, y, level uint32) (lng, lat float64) {
+// ToGeo projects world coordinates back to geo coordinates.
+func ToGeo(x, y, level uint32) (lng, lat float64) {
 	factor := uint32(1 << level)
 	maxtiles := float64(factor)
 
