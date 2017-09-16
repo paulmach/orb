@@ -90,3 +90,84 @@ func TestTileBound(t *testing.T) {
 		t.Errorf("should not contain point")
 	}
 }
+
+func TestFraction(t *testing.T) {
+	p := Fraction(geo.NewPoint(-180, 0), 30)
+	if p[0] != 0 {
+		t.Errorf("should have left at zero: %f", p[0])
+	}
+
+	p = Fraction(geo.NewPoint(180, 0), 30)
+	if p[0] != 0 {
+		t.Errorf("should have right at zero: %f", p[0])
+	}
+
+	p = Fraction(geo.NewPoint(360, 0), 30)
+	if p[0] != 1<<29 {
+		t.Errorf("should have center: %f", p[0])
+	}
+}
+
+func TestSharedParent(t *testing.T) {
+	p := geo.NewPoint(-122.2711, 37.8044)
+	one := New(p, 15)
+	two := New(p, 15)
+
+	expected := one
+
+	one.Z = 25
+	one.X = (one.X << 10) | 0x25A
+	one.Y = (one.Y << 10) | 0x14B
+
+	two.Z = 25
+	two.X = (two.X << 10) | 0x15B
+	two.Y = (two.Y << 10) | 0x26A
+
+	if tile := one.SharedParent(two); tile != expected {
+		t.Errorf("incorrect shared: %v != %v", tile, expected)
+	}
+
+	if tile := two.SharedParent(one); tile != expected {
+		t.Errorf("incorrect shared: %v != %v", tile, expected)
+	}
+}
+
+func BenchmarkSharedParent_SameZoom(b *testing.B) {
+	p := geo.NewPoint(-122.2711, 37.8044)
+	one := New(p, 10)
+	two := New(p, 10)
+
+	one.Z = 20
+	one.X = (one.X << 10) | 0x25A
+	one.Y = (one.X << 10) | 0x14B
+
+	two.Z = 20
+	two.X = (two.X << 10) | 0x15B
+	two.Y = (two.X << 10) | 0x26A
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		one.SharedParent(two)
+	}
+}
+
+func BenchmarkSharedParent_DifferentZoom(b *testing.B) {
+	p := geo.NewPoint(-122.2711, 37.8044)
+	one := New(p, 10)
+	two := New(p, 10)
+
+	one.Z = 20
+	one.X = (one.X << 10) | 0x25A
+	one.Y = (one.X << 10) | 0x14B
+
+	two.Z = 18
+	two.X = (two.X << 8) | 0x03B
+	two.Y = (two.X << 8) | 0x0CA
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		one.SharedParent(two)
+	}
+}

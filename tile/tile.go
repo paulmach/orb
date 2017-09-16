@@ -130,31 +130,54 @@ func Fraction(ll geo.Point, z uint32) planar.Point {
 // SharedParent returns the tile that contains both the tiles.
 func (t Tile) SharedParent(tile Tile) Tile {
 	// bring both tiles to the lowest zoom.
-	if t.Z < tile.Z {
-		tile = tile.toZoom(t.Z)
-	} else {
-		t = t.toZoom(tile.Z)
+	if t.Z != tile.Z {
+		if t.Z < tile.Z {
+			tile = tile.toZoom(t.Z)
+		} else {
+			t = t.toZoom(tile.Z)
+		}
 	}
 
 	if t == tile {
 		return t
 	}
 
+	// go version < 1.9
+	// bit package usage was about 10% faster
+	//
+	// TODO: use build flags to support older versions of go.
+	//
 	// move from most significant to least until there isn't a match.
-	// TODO: this can be improved using the go1.9 bits package.
-	for i := t.Z; i > 0; i-- {
-		if t.X&(1<<i) != tile.X&(1<<i) ||
-			t.Y&(1<<i) != tile.Y&(1<<i) {
-			return Tile{
-				t.X >> (t.Z - i),
-				t.Y >> (t.Z - i),
-				i,
-			}
-		}
+	// for i := t.Z - 1; i >= 0; i-- {
+	// 	if t.X&(1<<i) != tile.X&(1<<i) ||
+	// 		t.Y&(1<<i) != tile.Y&(1<<i) {
+	// 		return Tile{
+	// 			t.X >> (i + 1),
+	// 			t.Y >> (i + 1),
+	// 			t.Z - (i + 1),
+	// 		}
+	// 	}
+	// }
+	//
+	// if we reach here the tiles are the same, which was checked above.
+	// panic("unreachable")
+
+	// bits different for x and y
+	xc := uint32(32 - bits.LeadingZeros32(t.X^tile.X))
+	yc := uint32(32 - bits.LeadingZeros32(t.Y^tile.Y))
+
+	// max of xc, yc
+	maxc := xc
+	if yc > maxc {
+		maxc = yc
+
 	}
 
-	// if we reach here the tiles are the same, which was checked above.
-	panic("unreachable")
+	return Tile{
+		X: t.X >> maxc,
+		Y: t.Y >> maxc,
+		Z: t.Z - maxc,
+	}
 }
 
 // Children returns the 4 children of the tile.
