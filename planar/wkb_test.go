@@ -44,23 +44,6 @@ func TestBoundScan(t *testing.T) {
 	}
 }
 
-func TestMultiPointScan(t *testing.T) {
-	p := MultiPoint{}
-	for i, test := range wkb.MultiPointTestCases {
-		err := p.Scan(test.Data)
-		if err != nil {
-			if err != test.Err {
-				t.Errorf("test %d, incorrect error: %v", i, err)
-			}
-			continue
-		}
-
-		if !p.Equal(pointsToMultiPoint(test.Points)) {
-			t.Errorf("test %d, incorrect multi point: %v", i, p)
-		}
-	}
-}
-
 func TestLineStringScan(t *testing.T) {
 	p := LineString{}
 	for i, test := range wkb.LineStringTestCases {
@@ -78,12 +61,71 @@ func TestLineStringScan(t *testing.T) {
 	}
 }
 
-func pointsToMultiPoint(points [][2]float64) MultiPoint {
-	p := NewMultiPoint()
-	for _, point := range points {
-		p = append(p, Point(point))
+func TestPolygonScan(t *testing.T) {
+	p := Polygon{}
+	for i, test := range wkb.PolygonTestCases {
+		err := p.Scan(test.Data)
+		if err != nil {
+			if err != test.Err {
+				t.Errorf("test %d, incorrect error: %v", i, err)
+			}
+			continue
+		}
+
+		if !p.Equal(pointsToPolygon(test.Points)) {
+			t.Errorf("test %d, incorrect polygon: %v", i, p)
+		}
 	}
-	return p
+}
+
+func TestMultiPointScan(t *testing.T) {
+	p := MultiPoint{}
+	for i, test := range wkb.MultiPointTestCases {
+		err := p.Scan(test.Data)
+		if err != nil {
+			if err != test.Err {
+				t.Errorf("test %d, incorrect error: %v", i, err)
+			}
+			continue
+		}
+
+		if !p.Equal(pointsToMultiPoint(test.Points)) {
+			t.Errorf("test %d, incorrect multi point: %v", i, p)
+		}
+	}
+}
+
+func TestMultiLineStringScan(t *testing.T) {
+	p := MultiLineString{}
+	for i, test := range wkb.MultiLineStringTestCases {
+		err := p.Scan(test.Data)
+		if err != nil {
+			if err != test.Err {
+				t.Errorf("test %d, incorrect error: %v", i, err)
+			}
+			continue
+		}
+
+		if !p.Equal(pointsToMultiLineString(test.Points)) {
+			t.Errorf("test %d, incorrect multi linestring: %v", i, p)
+		}
+	}
+}
+func TestMultiPolygonScan(t *testing.T) {
+	p := MultiPolygon{}
+	for i, test := range wkb.MultiPolygonTestCases {
+		err := p.Scan(test.Data)
+		if err != nil {
+			if err != test.Err {
+				t.Errorf("test %d, incorrect error: %v", i, err)
+			}
+			continue
+		}
+
+		if !p.Equal(pointsToMultiPolygon(test.Points)) {
+			t.Errorf("test %d, incorrect multi polygon: \n%v\n%v", i, p, pointsToMultiPolygon(test.Points))
+		}
+	}
 }
 
 func pointsToLineString(points [][2]float64) LineString {
@@ -92,4 +134,37 @@ func pointsToLineString(points [][2]float64) LineString {
 		ls = append(ls, Point(point))
 	}
 	return ls
+}
+
+func pointsToPolygon(points [][][2]float64) Polygon {
+	p := NewPolygon()
+	for _, ring := range points {
+		p = append(p, Ring(pointsToLineString(ring)))
+	}
+
+	return p
+}
+
+func pointsToMultiPoint(points [][2]float64) MultiPoint {
+	p := NewMultiPoint()
+	for _, point := range points {
+		p = append(p, Point(point))
+	}
+	return p
+}
+
+func pointsToMultiLineString(points [][][2]float64) MultiLineString {
+	mls := NewMultiLineString()
+	for _, line := range points {
+		mls = append(mls, pointsToLineString(line))
+	}
+	return mls
+}
+
+func pointsToMultiPolygon(points [][][][2]float64) MultiPolygon {
+	mp := NewMultiPolygon()
+	for _, poly := range points {
+		mp = append(mp, pointsToPolygon(poly))
+	}
+	return mp
 }

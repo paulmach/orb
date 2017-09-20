@@ -151,7 +151,6 @@ func (r Ring) Contains(point Point) bool {
 
 // Original implementation: http://rosettacode.org/wiki/Ray-casting_algorithm#Go
 func rayIntersect(p, s, e Point) (intersects, on bool) {
-	// TODO: reposition to deal with roundoff
 	if s[0] > e[0] {
 		s, e = e, s
 	}

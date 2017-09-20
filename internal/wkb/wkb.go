@@ -6,10 +6,16 @@ import (
 	"github.com/paulmach/orb"
 )
 
+// source of information
+// https://www.ibm.com/support/knowledgecenter/en/SS6NHC/com.ibm.db2.luw.spatial.topics.doc/doc/rsbp4121.html
+
 const (
-	wkbPoint      = 1
-	wkbLineString = 2
-	wkbMultiPoint = 4
+	wkbPoint           = 1
+	wkbLineString      = 2
+	wkbPolygon         = 3
+	wkbMultiPoint      = 4
+	wkbMultiLineString = 5
+	wkbMultiPolygon    = 6
 )
 
 // ValidatePoint checks the wkb input and returns x, y, isnull, err.
@@ -59,37 +65,32 @@ func ReadPoint(data []byte) (float64, float64, error) {
 		nil
 }
 
-// ValidateSegment checks the wkb input for a two point line string.
-func ValidateSegment(value interface{}) ([]byte, bool, error) {
-	data, littleEndian, length, err := ValidateLineString(value)
-	if err != nil {
-		return data, littleEndian, err
+// ValidateLineString checks the wkb for a linestring geometry.
+func ValidateLineString(value interface{}) ([]byte, bool, int, error) {
+	data, littleEndian, err := validateSet(value, wkbLineString)
+	if err != nil || data == nil {
+		return nil, false, 0, err
 	}
 
-	if length != 2 {
-		return nil, false, orb.ErrIncorrectGeometry
+	length := ReadUint32(data[5:9], littleEndian)
+	return data[9:], littleEndian, int(length), nil
+}
+
+// ValidatePolygon checks the wkb for a polygon geometry.
+func ValidatePolygon(value interface{}) ([]byte, bool, int, error) {
+	data, littleEndian, err := validateSet(value, wkbPolygon)
+	if err != nil || data == nil {
+		return nil, false, 0, err
 	}
 
-	return data, littleEndian, err
+	length := ReadUint32(data[5:9], littleEndian)
+	return data[9:], littleEndian, int(length), nil
 }
 
 // ValidateMultiPoint checks wkb for a multipoint geometry.
 func ValidateMultiPoint(value interface{}) ([]byte, bool, int, error) {
-	data, ok := value.([]byte)
-	if !ok {
-		return nil, false, 0, orb.ErrUnsupportedDataType
-	}
-
-	if len(data) == 0 {
-		return nil, false, 0, nil
-	}
-
-	if len(data) < 6 {
-		return nil, false, 0, orb.ErrNotWKB
-	}
-
-	data, littleEndian, err := validateSet(data, wkbMultiPoint)
-	if err != nil {
+	data, littleEndian, err := validateSet(value, wkbMultiPoint)
+	if err != nil || data == nil {
 		return nil, false, 0, err
 	}
 
@@ -101,19 +102,10 @@ func ValidateMultiPoint(value interface{}) ([]byte, bool, int, error) {
 	return data[9:], littleEndian, length, nil
 }
 
-// ValidateLineString checks the wkb for a linestring geometry.
-func ValidateLineString(value interface{}) ([]byte, bool, int, error) {
-	data, ok := value.([]byte)
-	if !ok {
-		return nil, false, 0, orb.ErrUnsupportedDataType
-	}
-
-	if len(data) == 0 {
-		return nil, false, 0, nil
-	}
-
-	data, littleEndian, err := validateSet(data, wkbLineString)
-	if err != nil {
+// ValidateMultiLineString checks the wkb for a multilinestring geometry.
+func ValidateMultiLineString(value interface{}) ([]byte, bool, int, error) {
+	data, littleEndian, err := validateSet(value, wkbMultiLineString)
+	if err != nil || data == nil {
 		return nil, false, 0, err
 	}
 
@@ -121,7 +113,31 @@ func ValidateLineString(value interface{}) ([]byte, bool, int, error) {
 	return data[9:], littleEndian, int(length), nil
 }
 
-func validateSet(data []byte, t uint32) ([]byte, bool, error) {
+// ValidateMultiPolygon checks the wkb for a multipolygon geometry.
+func ValidateMultiPolygon(value interface{}) ([]byte, bool, int, error) {
+	data, littleEndian, err := validateSet(value, wkbMultiPolygon)
+	if err != nil || data == nil {
+		return nil, false, 0, err
+	}
+
+	length := ReadUint32(data[5:9], littleEndian)
+	return data[9:], littleEndian, int(length), nil
+}
+
+func validateSet(value interface{}, t uint32) ([]byte, bool, error) {
+	data, ok := value.([]byte)
+	if !ok {
+		return nil, false, orb.ErrUnsupportedDataType
+	}
+
+	if len(data) == 0 {
+		return nil, false, nil
+	}
+
+	if len(data) < 6 {
+		return nil, false, orb.ErrNotWKB
+	}
+
 	var (
 		littleEndian bool
 		typeCode     uint32
