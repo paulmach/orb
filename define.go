@@ -13,7 +13,7 @@ type Pointer interface {
 
 // Orientation defines the order of the points in a polygon
 // or closed ring.
-type Orientation int
+type Orientation int8
 
 // Constants to define orientation.
 // They follow the right hand rule for orientation.
