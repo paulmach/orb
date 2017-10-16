@@ -37,9 +37,9 @@ func NewBoundAroundPoint(center Point, distance float64) Bound {
 func (b Bound) ToRing() Ring {
 	r := make(Ring, 5)
 	r[0] = b[0]
-	r[1] = Point{b[0][0], b[1][1]}
+	r[1] = Point{b[1][0], b[0][1]}
 	r[2] = b[1]
-	r[3] = Point{b[1][0], b[0][1]}
+	r[3] = Point{b[0][0], b[1][1]}
 	r[4] = b[0]
 
 	return r

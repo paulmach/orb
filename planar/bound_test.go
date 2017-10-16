@@ -1,6 +1,10 @@
 package planar
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/paulmach/orb"
+)
 
 func TestNewBound(t *testing.T) {
 	bound := NewBound(0, 5, 0, 3)
@@ -278,10 +282,18 @@ func TestBoundIsZero(t *testing.T) {
 	}
 }
 
+func TestBoundToRing(t *testing.T) {
+	bound := NewBound(1, 2, 1, 2)
+
+	if bound.ToRing().Orientation() != orb.CCW {
+		t.Errorf("orientation should be ccw")
+	}
+}
+
 func TestWKT(t *testing.T) {
 	bound := NewBound(1, 2, 3, 4)
 
-	answer := "POLYGON((1 3,1 4,2 4,2 3,1 3))"
+	answer := "POLYGON((1 3,2 3,2 4,1 4,1 3))"
 	if s := bound.WKT(); s != answer {
 		t.Errorf("wkt expected %s, got %s", answer, s)
 	}
