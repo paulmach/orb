@@ -112,13 +112,11 @@ func Ring(box Bound, in LineString, out LineString) {
 	}
 }
 
-// bit code reflects the point position relative to the bbox:
-
+// bitCode returns the point position relative to the bbox:
 //         left  mid  right
 //    top  1001  1000  1010
 //    mid  0001  0000  0010
 // bottom  0101  0100  0110
-
 func (b Bound) bitCode(x, y float64) int {
 	code := 0
 	if x < b.Left {
@@ -137,7 +135,6 @@ func (b Bound) bitCode(x, y float64) int {
 }
 
 // intersect a segment against one of the 4 lines that make up the bbox
-
 func (b Bound) intersect(edge int, ax, ay, bx, by float64) (x, y float64) {
 	if edge&8 != 0 {
 		// top
@@ -154,6 +151,30 @@ func (b Bound) intersect(edge int, ax, ay, bx, by float64) (x, y float64) {
 	}
 
 	panic("no edge??")
+}
+
+// pointFor returns a representative point for the side of the given bitCode.
+func (b Bound) pointFor(code int) (x, y float64) {
+	switch code {
+	case 1:
+		return b.Left, (b.Top + b.Bottom) / 2
+	case 2:
+		return b.Right, (b.Top + b.Bottom) / 2
+	case 4:
+		return (b.Right + b.Left) / 2, b.Bottom
+	case 5:
+		return b.Left, b.Bottom
+	case 6:
+		return b.Right, b.Bottom
+	case 8:
+		return (b.Right + b.Left) / 2, b.Top
+	case 9:
+		return b.Left, b.Top
+	case 10:
+		return b.Right, b.Top
+	}
+
+	panic("invalid code")
 }
 
 type lineString [][2]float64
