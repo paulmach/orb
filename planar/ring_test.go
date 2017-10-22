@@ -248,6 +248,13 @@ func TestRingSignedArea(t *testing.T) {
 			if val != tc.result {
 				t.Errorf("wrong area: %v != %v", val, tc.result)
 			}
+
+			// check that are rendant last point is implicit
+			ring = ring[:len(ring)-1]
+			val = ring.SignedArea()
+			if val != tc.result {
+				t.Errorf("wrong area: %v != %v", val, tc.result)
+			}
 		})
 	}
 }

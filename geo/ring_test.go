@@ -30,6 +30,11 @@ func TestRingSignedArea(t *testing.T) {
 			result: area,
 		},
 		{
+			name:   "3 points",
+			points: []Point{{0, 0}, {0.001, 0}, {0.001, 0.001}},
+			result: area / 2.0,
+		},
+		{
 			name:   "4 points",
 			points: []Point{{0, 0}, {0.001, 0}, {0.001, 0.001}, {0, 0}},
 			result: area / 2.0,
@@ -47,6 +52,15 @@ func TestRingSignedArea(t *testing.T) {
 			val := ring.SignedArea()
 			if math.Abs(val-tc.result) > 1 {
 				t.Errorf("wrong area: %v != %v", val, tc.result)
+			}
+
+			// should work without redudant last point.
+			if ring[0] == ring[len(ring)-1] {
+				ring = ring[:len(ring)-1]
+				val = ring.SignedArea()
+				if math.Abs(val-tc.result) > 1 {
+					t.Errorf("wrong area: %v != %v", val, tc.result)
+				}
 			}
 		})
 	}
@@ -74,6 +88,13 @@ func TestRingOrientation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ring := Ring(tc.points)
 			val := ring.Orientation()
+			if val != tc.result {
+				t.Errorf("wrong orientation: %v != %v", val, tc.result)
+			}
+
+			// should work without redudant last point.
+			ring = ring[:len(ring)-1]
+			val = ring.Orientation()
 			if val != tc.result {
 				t.Errorf("wrong orientation: %v != %v", val, tc.result)
 			}
