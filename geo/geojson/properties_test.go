@@ -7,8 +7,17 @@ import (
 func propertiesTestFeature() *Feature {
 	rawJSON := `
 	  { "type": "Feature",
-	    "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
-	    "properties": {"bool":true,"falsebool":false,"int": 1,"float64": 1.2,"string":"text"}
+	    "geometry": {
+	      "type": "Point",
+	      "coordinates": [102.0, 0.5]
+	    },
+	    "properties": {
+	      "bool":true,
+	      "falsebool":false,
+	      "int": 1,
+	      "float64": 1.2,
+	      "string":"text"
+	    }
 	  }`
 
 	f, _ := UnmarshalFeature([]byte(rawJSON))
@@ -18,18 +27,15 @@ func propertiesTestFeature() *Feature {
 func TestPropertiesMustBool(t *testing.T) {
 	f := propertiesTestFeature()
 
-	b := f.Properties.MustBool("random", true)
-	if b != true {
+	if !f.Properties.MustBool("random", true) {
 		t.Errorf("should return default if property doesn't exist")
 	}
 
-	b = f.Properties.MustBool("falsebool", true)
-	if b != false {
+	if f.Properties.MustBool("falsebool", true) {
 		t.Errorf("should return proper property, with default")
 	}
 
-	b = f.Properties.MustBool("falsebool")
-	if b != false {
+	if f.Properties.MustBool("falsebool") {
 		t.Errorf("should return proper property, without default")
 	}
 }
