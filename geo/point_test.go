@@ -33,13 +33,13 @@ func TestPointQuadkey(t *testing.T) {
 	}
 
 	// default level
-	level := uint32(30)
+	level := tile.Zoom(30)
 	for _, city := range mercator.Cities {
 		p := Point{
 			city[1],
 			city[0],
 		}
-		key := p.Quadkey(level)
+		key := p.Quadkey(uint32(level))
 
 		p = tile.FromQuadkey(key, level).Center()
 

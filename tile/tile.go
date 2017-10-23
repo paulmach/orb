@@ -14,14 +14,23 @@ type Tiles []Tile
 
 // Tile is an x, y, z web mercator tile.
 type Tile struct {
-	X, Y, Z uint32
+	X, Y uint32
+	Z    Zoom
 }
 
-// New creates a tile for the point at the given zoom.
+// A Zoom is a strict type for a tile zoom level.
+type Zoom uint32
+
+// New creates a new tile with the given coordinates.
+func New(x, y uint32, z Zoom) Tile {
+	return Tile{x, y, z}
+}
+
+// At creates a tile for the point at the given zoom.
 // Will create a valid tile for the zoom. Points outside
 // the range lat [-85.0511, 85.0511] will be snapped to the
 // max or min tile as appropriate.
-func New(ll geo.Point, z uint32) Tile {
+func At(ll geo.Point, z Zoom) Tile {
 	f := Fraction(ll, z)
 	t := Tile{
 		X: uint32(f[0]),
@@ -38,10 +47,10 @@ func New(ll geo.Point, z uint32) Tile {
 }
 
 // FromQuadkey creates the tile from the quadkey.
-func FromQuadkey(k uint64, z uint32) Tile {
+func FromQuadkey(k uint64, z Zoom) Tile {
 	t := Tile{Z: z}
 
-	for i := uint32(0); i < z; i++ {
+	for i := Zoom(0); i < z; i++ {
 		t.X |= uint32((k & (1 << (2 * i))) >> i)
 		t.Y |= uint32((k & (1 << (2*i + 1))) >> (i + 1))
 	}
@@ -51,14 +60,14 @@ func FromQuadkey(k uint64, z uint32) Tile {
 
 // Valid returns if the tile's x/y are within the range for the tile's zoom.
 func (t Tile) Valid() bool {
-	maxIndex := uint32(1) << t.Z
-	return t.X < maxIndex && t.Z < maxIndex
+	maxIndex := uint32(1) << uint32(t.Z)
+	return t.X < maxIndex && t.Y < maxIndex
 }
 
 // Bound returns the geo bound for the tile.
 func (t Tile) Bound() geo.Bound {
-	lon1, lat1 := mercator.ToGeo(t.X, t.Y, t.Z)
-	lon2, lat2 := mercator.ToGeo(t.X+1, t.Y+1, t.Z)
+	lon1, lat1 := mercator.ToGeo(t.X, t.Y, uint32(t.Z))
+	lon2, lat2 := mercator.ToGeo(t.X+1, t.Y+1, uint32(t.Z))
 
 	return geo.Bound{
 		geo.Point{lon1, lat2},
@@ -96,7 +105,7 @@ func (t Tile) Parent() Tile {
 // Fraction returns the precise tile fraction at the given zoom.
 // Returns the range y range of [0, 2^zoom]. Will return 2^zoom if
 // the point is below 85.0511 S.
-func Fraction(ll geo.Point, z uint32) planar.Point {
+func Fraction(ll geo.Point, z Zoom) planar.Point {
 	var p planar.Point
 
 	factor := uint32(1 << z)
@@ -176,7 +185,7 @@ func (t Tile) SharedParent(tile Tile) Tile {
 	return Tile{
 		X: t.X >> maxc,
 		Y: t.Y >> maxc,
-		Z: t.Z - maxc,
+		Z: t.Z - Zoom(maxc),
 	}
 }
 
@@ -208,7 +217,7 @@ func (t Tile) Quadkey() uint64 {
 
 // Range returns the min and max tile "range" to cover the tile
 // at the given zoom.
-func (t Tile) Range(z uint32) (min, max Tile) {
+func (t Tile) Range(z Zoom) (min, max Tile) {
 	if z < t.Z {
 		t = t.toZoom(z)
 		return t, t
@@ -226,7 +235,7 @@ func (t Tile) Range(z uint32) (min, max Tile) {
 		}
 }
 
-func (t Tile) toZoom(z uint32) Tile {
+func (t Tile) toZoom(z Zoom) Tile {
 	if z > t.Z {
 		return Tile{
 			X: t.X << (z - t.Z),

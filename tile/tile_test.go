@@ -8,23 +8,23 @@ import (
 	"github.com/paulmach/orb/internal/mercator"
 )
 
-func TestNew(t *testing.T) {
-	tile := New(geo.NewPoint(0, 0), 28)
+func TestAt(t *testing.T) {
+	tile := At(geo.NewPoint(0, 0), 28)
 	if b := tile.Bound(); b.North() != 0 || b.West() != 0 {
 		t.Errorf("incorrect tile bound: %v", b)
 	}
 
 	// specific case
-	if tile := New(geo.NewPoint(-87.65005229999997, 41.850033), 20); tile.X != 268988 || tile.Y != 389836 {
+	if tile := At(geo.NewPoint(-87.65005229999997, 41.850033), 20); tile.X != 268988 || tile.Y != 389836 {
 		t.Errorf("projection incorrect: %v", tile)
 	}
 
-	if tile := New(geo.NewPoint(-87.65005229999997, 41.850033), 28); tile.X != 68861112 || tile.Y != 99798110 {
+	if tile := At(geo.NewPoint(-87.65005229999997, 41.850033), 28); tile.X != 68861112 || tile.Y != 99798110 {
 		t.Errorf("projection incorrect: %v", tile)
 	}
 
 	for _, city := range mercator.Cities {
-		tile := New(geo.Point{city[1], city[0]}, 31)
+		tile := At(geo.Point{city[1], city[0]}, 31)
 		c := tile.Center()
 
 		if math.Abs(c.Lat()-city[0]) > mercator.Epsilon {
@@ -37,20 +37,20 @@ func TestNew(t *testing.T) {
 	}
 
 	// test polar regions
-	if tile := New(geo.NewPoint(0, 89.9), 30); tile.Y != 0 {
+	if tile := At(geo.NewPoint(0, 89.9), 30); tile.Y != 0 {
 		t.Errorf("top of the world error: %d != %d", tile.Y, 0)
 	}
 
-	if tile := New(geo.NewPoint(0, -89.9), 30); tile.Y != (1<<30)-1 {
+	if tile := At(geo.NewPoint(0, -89.9), 30); tile.Y != (1<<30)-1 {
 		t.Errorf("bottom of the world error: %d != %d", tile.Y, (1<<30)-1)
 	}
 }
 
 func TestTileQuadkey(t *testing.T) {
 	// default level
-	level := uint32(30)
+	level := Zoom(30)
 	for _, city := range mercator.Cities {
-		tile := New(geo.Point{city[1], city[0]}, level)
+		tile := At(geo.Point{city[1], city[0]}, level)
 		p := tile.Center()
 
 		if math.Abs(p.Lat()-city[0]) > mercator.Epsilon {
@@ -66,7 +66,7 @@ func TestTileQuadkey(t *testing.T) {
 func TestTileBound(t *testing.T) {
 	bound := Tile{7, 8, 9}.Bound()
 
-	level := uint32(9 + 5) // we're testing point +5 zoom, in same tile
+	level := Zoom(9 + 5) // we're testing point +5 zoom, in same tile
 	factor := uint32(5)
 
 	// edges should be within the bound
@@ -110,8 +110,8 @@ func TestFraction(t *testing.T) {
 
 func TestSharedParent(t *testing.T) {
 	p := geo.NewPoint(-122.2711, 37.8044)
-	one := New(p, 15)
-	two := New(p, 15)
+	one := At(p, 15)
+	two := At(p, 15)
 
 	expected := one
 
@@ -134,8 +134,8 @@ func TestSharedParent(t *testing.T) {
 
 func BenchmarkSharedParent_SameZoom(b *testing.B) {
 	p := geo.NewPoint(-122.2711, 37.8044)
-	one := New(p, 10)
-	two := New(p, 10)
+	one := At(p, 10)
+	two := At(p, 10)
 
 	one.Z = 20
 	one.X = (one.X << 10) | 0x25A
@@ -154,8 +154,8 @@ func BenchmarkSharedParent_SameZoom(b *testing.B) {
 
 func BenchmarkSharedParent_DifferentZoom(b *testing.B) {
 	p := geo.NewPoint(-122.2711, 37.8044)
-	one := New(p, 10)
-	two := New(p, 10)
+	one := At(p, 10)
+	two := At(p, 10)
 
 	one.Z = 20
 	one.X = (one.X << 10) | 0x25A
