@@ -18,12 +18,12 @@ func TestScalarMercator(t *testing.T) {
 	}
 
 	// specific case
-	if x, y := ToPlanar(-87.65005229999997, 41.850033, 20); x != 268988 || y != 389836 {
-		t.Errorf("Scalar Mercator, projection incorrect, got %d %d", x, y)
+	if x, y := ToPlanar(-87.65005229999997, 41.850033, 20); math.Floor(x) != 268988 || math.Floor(y) != 389836 {
+		t.Errorf("Scalar Mercator, projection incorrect, got %v %v", x, y)
 	}
 
-	if x, y := ToPlanar(-87.65005229999997, 41.850033, 28); x != 68861112 || y != 99798110 {
-		t.Errorf("Scalar Mercator, projection incorrect, got %d %d", x, y)
+	if x, y := ToPlanar(-87.65005229999997, 41.850033, 28); math.Floor(x) != 68861112 || math.Floor(y) != 99798110 {
+		t.Errorf("Scalar Mercator, projection incorrect, got %v %v", x, y)
 	}
 
 	// default level
@@ -42,10 +42,10 @@ func TestScalarMercator(t *testing.T) {
 
 	// test polar regions
 	if _, y := ToPlanar(0, 89.9, 31); y != (1<<31)-1 {
-		t.Errorf("Scalar Mercator, top of the world error, got %d", y)
+		t.Errorf("Scalar Mercator, top of the world error, got %v", y)
 	}
 
 	if _, y := ToPlanar(0, -89.9, 31); y != 0 {
-		t.Errorf("Scalar Mercator, bottom of the world error, got %d", y)
+		t.Errorf("Scalar Mercator, bottom of the world error, got %v", y)
 	}
 }

@@ -65,9 +65,42 @@ func (t Tile) Valid() bool {
 }
 
 // Bound returns the geo bound for the tile.
-func (t Tile) Bound() geo.Bound {
-	lon1, lat1 := mercator.ToGeo(t.X, t.Y, uint32(t.Z))
-	lon2, lat2 := mercator.ToGeo(t.X+1, t.Y+1, uint32(t.Z))
+// An optional tileBuffer parameter can be passes to create a buffer
+// around the bound in tile dimension. e.g. a tileBuffer of 1 would create
+// a bound 9x the size of the tile, centered around the provided tile.
+func (t Tile) Bound(tileBuffer ...float64) geo.Bound {
+	buffer := 0.0
+	if len(tileBuffer) > 0 {
+		buffer = tileBuffer[0]
+	}
+
+	x := float64(t.X)
+	y := float64(t.Y)
+
+	minx := x - buffer
+	if minx < 0 {
+		minx = 0
+	}
+
+	miny := y - buffer
+	if miny < 0 {
+		miny = 0
+	}
+
+	lon1, lat1 := mercator.ToGeo(minx, miny, uint32(t.Z))
+
+	maxtiles := float64(uint32(1 << t.Z))
+	maxx := x + 1 + buffer
+	if maxx > maxtiles {
+		maxx = maxtiles
+	}
+
+	maxy := y + 1 + buffer
+	if maxy > maxtiles {
+		maxy = maxtiles
+	}
+
+	lon2, lat2 := mercator.ToGeo(maxx, maxy, uint32(t.Z))
 
 	return geo.Bound{
 		geo.Point{lon1, lat2},
@@ -77,7 +110,7 @@ func (t Tile) Bound() geo.Bound {
 
 // Center returns the center of the tile.
 func (t Tile) Center() geo.Point {
-	return t.Bound().Center()
+	return t.Bound(0).Center()
 }
 
 // Contains returns if the given tile is fully contained (or equal to) the give tile.

@@ -89,6 +89,10 @@ func TestTileBound(t *testing.T) {
 	if bound.Contains(p) {
 		t.Errorf("should not contain point")
 	}
+
+	if b := New(0, 0, 0).Bound(10); b != geo.NewBound(-180, 180, -85.05112877980659, 85.05112877980659) {
+		t.Errorf("should be full earth, got %v", b)
+	}
 }
 
 func TestFraction(t *testing.T) {
