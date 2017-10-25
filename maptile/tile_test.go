@@ -1,4 +1,4 @@
-package tile
+package maptile
 
 import (
 	"math"
@@ -88,6 +88,10 @@ func TestTileBound(t *testing.T) {
 	p = Tile{8<<factor + 1, 9<<factor + 1, level}.Center()
 	if bound.Contains(p) {
 		t.Errorf("should not contain point")
+	}
+
+	if b := New(0, 0, 0).Bound(); b != geo.NewBound(-180, 180, -85.05112877980659, 85.05112877980659) {
+		t.Errorf("should be full earth, got %v", b)
 	}
 
 	if b := New(0, 0, 0).Bound(10); b != geo.NewBound(-180, 180, -85.05112877980659, 85.05112877980659) {

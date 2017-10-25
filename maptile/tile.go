@@ -1,4 +1,4 @@
-package tile
+package maptile
 
 import (
 	"math"

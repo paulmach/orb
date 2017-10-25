@@ -6,7 +6,7 @@ import (
 
 	. "github.com/paulmach/orb/geo"
 	"github.com/paulmach/orb/internal/mercator"
-	"github.com/paulmach/orb/tile"
+	"github.com/paulmach/orb/maptile"
 )
 
 var epsilon = 1e-6
@@ -33,7 +33,7 @@ func TestPointQuadkey(t *testing.T) {
 	}
 
 	// default level
-	level := tile.Zoom(30)
+	level := maptile.Zoom(30)
 	for _, city := range mercator.Cities {
 		p := Point{
 			city[1],
@@ -41,7 +41,7 @@ func TestPointQuadkey(t *testing.T) {
 		}
 		key := p.Quadkey(uint32(level))
 
-		p = tile.FromQuadkey(key, level).Center()
+		p = maptile.FromQuadkey(key, level).Center()
 
 		if math.Abs(p.Lat()-city[0]) > epsilon {
 			t.Errorf("latitude miss match: %f != %f", p.Lat(), city[0])

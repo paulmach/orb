@@ -1,7 +1,7 @@
-orb/tile [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/tile?status.png)](https://godoc.org/github.com/paulmach/orb/tile)
+orb/tile [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/maptile?status.png)](https://godoc.org/github.com/paulmach/orb/maptile)
 ========
 
-Package orb/tile provides types and methods for working with
+Package orb/maptile provides types and methods for working with
 [web mercator map tiles](https://www.google.com/search?q=web+mercator+map+tiles).
 It defines a tile as:
 
