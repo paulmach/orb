@@ -6,6 +6,44 @@ import (
 	"github.com/paulmach/orb/planar"
 )
 
+func TestRing(t *testing.T) {
+	cases := []struct {
+		name   string
+		bound  planar.Bound
+		input  planar.Ring
+		output planar.Ring
+	}{
+		{
+			name:  "bound to the top",
+			bound: planar.NewBound(-1, 3, 3, 4),
+			input: planar.Ring{
+				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
+			},
+			output: planar.Ring{},
+		},
+		{
+			name:  "bound in lower left",
+			bound: planar.NewBound(-1, 0, -1, 0),
+			input: planar.Ring{
+				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
+			},
+			output: planar.Ring{},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := Ring(tc.bound, tc.input)
+
+			if !result.Equal(tc.output) {
+				t.Errorf("not equal")
+				t.Logf("%v", result)
+				t.Logf("%v", tc.output)
+			}
+		})
+	}
+}
+
 func TestBound(t *testing.T) {
 	cases := []struct {
 		name string

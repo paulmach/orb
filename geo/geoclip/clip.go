@@ -10,6 +10,8 @@ import (
 
 // Clip will clip the geometry to the bounding box using the
 // correct functions for the type.
+// This operation will modify the input of '2d geometry' by using as a
+// scratch space so clone if necessary.
 func Clip(b geo.Bound, g geo.Geometry) geo.Geometry {
 	if !b.Intersects(g.Bound()) {
 		return nil
@@ -52,7 +54,7 @@ func Clip(b geo.Bound, g geo.Geometry) geo.Geometry {
 	case geo.Polygon:
 		p := Polygon(b, g)
 		if p == nil {
-			return p
+			return nil
 		}
 
 		return p
@@ -120,9 +122,11 @@ func MultiLineString(b geo.Bound, mls geo.MultiLineString) geo.MultiLineString {
 }
 
 // Ring clips the ring to the bounding box and returns another ring.
+// This operation will modify the input by using as a scratch space
+// so clone if necessary.
 func Ring(b geo.Bound, r geo.Ring) geo.Ring {
 	result := &lineString{}
-	clip.Ring(mapBound(b), &lineString{ls: geo.LineString(r)}, result)
+	result = clip.Ring(mapBound(b), &lineString{ls: geo.LineString(r)}, result).(*lineString)
 
 	if len(result.ls) == 0 {
 		return nil
@@ -133,6 +137,8 @@ func Ring(b geo.Bound, r geo.Ring) geo.Ring {
 
 // Polygon clips the polygon to the bounding box excluding the inner rings
 // if they do not intersect the bounding box.
+// This operation will modify the input by using as a scratch space
+// so clone if necessary.
 func Polygon(b geo.Bound, p geo.Polygon) geo.Polygon {
 	r := Ring(b, p[0])
 	if r == nil {
@@ -152,6 +158,8 @@ func Polygon(b geo.Bound, p geo.Polygon) geo.Polygon {
 
 // MultiPolygon clips the multi polygon to the bounding box excluding
 // any polygons if they don't intersect the bounding box.
+// This operation will modify the input by using as a scratch space
+// so clone if necessary.
 func MultiPolygon(b geo.Bound, mp geo.MultiPolygon) geo.MultiPolygon {
 	var result geo.MultiPolygon
 	for _, polygon := range mp {
@@ -166,6 +174,8 @@ func MultiPolygon(b geo.Bound, mp geo.MultiPolygon) geo.MultiPolygon {
 
 // Collection clips each element in the collection to the bounding box.
 // It will exclude elements if they don't intersect the bounding box.
+// This operation will modify the input of '2d geometry' by using as a
+// scratch space so clone if necessary.
 func Collection(b geo.Bound, c geo.Collection) geo.Collection {
 	var result geo.Collection
 	for _, g := range c {

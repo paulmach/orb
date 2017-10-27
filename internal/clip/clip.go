@@ -70,19 +70,32 @@ func Line(box Bound, in LineString, out MultiLineString) {
 }
 
 // Ring will clip the Ring into a smaller ring around the bounding box boundary.
-func Ring(box Bound, in LineString, out LineString) {
-	if in.Len() == 0 {
-		return
+func Ring(box Bound, in LineString, out LineString) LineString {
+	l := in.Len()
+	if l == 0 {
+		return in
 	}
 
-	cache := out
-	out = &lineString{}
+	fX, fY := in.Get(0)
+	lX, lY := in.Get(l - 1)
 
-	for edge := 1; edge <= 8; edge *= 2 {
+	initClosed := false
+	if fX == lX && fY == lY {
+		initClosed = true
+	}
+
+	for edge := 1; edge <= 8; edge <<= 1 {
 		out.Clear()
 
 		loopTo := in.Len()
-		prevX, prevY := in.Get(loopTo - 1)
+
+		// if we're not a nice closed ring, don't implicitly close it.
+		prev := loopTo - 1
+		if !initClosed {
+			prev = 0
+		}
+
+		prevX, prevY := in.Get(prev)
 		prevInside := box.bitCode(prevX, prevY)&edge == 0
 
 		for i := 0; i < loopTo; i++ {
@@ -104,12 +117,26 @@ func Ring(box Bound, in LineString, out LineString) {
 		}
 
 		if out.Len() == 0 {
-			return
+			return out
 		}
 
-		in = out
-		cache, out = out, cache
+		in, out = out, in
 	}
+	in, out = out, in // swap back
+
+	if initClosed {
+		// need to make sure our output is also closed.
+		if l := out.Len(); l != 0 {
+			fX, fY := out.Get(0)
+			lX, lY := out.Get(l - 1)
+
+			if fX != lX || fY != lY {
+				out.Append(fX, fY)
+			}
+		}
+	}
+
+	return out
 }
 
 // bitCode returns the point position relative to the bbox:

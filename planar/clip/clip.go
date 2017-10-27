@@ -10,6 +10,8 @@ import (
 
 // Clip will clip the geometry to the bounding box using the
 // correct functions for the type.
+// This operation will modify the input of '2d geometry' by using as a
+// scratch space so clone if necessary.
 func Clip(b planar.Bound, g planar.Geometry) planar.Geometry {
 	if !b.Intersects(g.Bound()) {
 		return nil
@@ -52,7 +54,7 @@ func Clip(b planar.Bound, g planar.Geometry) planar.Geometry {
 	case planar.Polygon:
 		p := Polygon(b, g)
 		if p == nil {
-			return p
+			return nil
 		}
 
 		return p
@@ -120,9 +122,11 @@ func MultiLineString(b planar.Bound, mls planar.MultiLineString) planar.MultiLin
 }
 
 // Ring clips the ring to the bounding box and returns another ring.
+// This operation will modify the input by using as a scratch space
+// so clone if necessary.
 func Ring(b planar.Bound, r planar.Ring) planar.Ring {
 	result := &lineString{}
-	clip.Ring(mapBound(b), &lineString{ls: planar.LineString(r)}, result)
+	result = clip.Ring(mapBound(b), &lineString{ls: planar.LineString(r)}, result).(*lineString)
 
 	if len(result.ls) == 0 {
 		return nil
@@ -133,6 +137,8 @@ func Ring(b planar.Bound, r planar.Ring) planar.Ring {
 
 // Polygon clips the polygon to the bounding box excluding the inner rings
 // if they do not intersect the bounding box.
+// This operation will modify the input by using as a scratch space
+// so clone if necessary.
 func Polygon(b planar.Bound, p planar.Polygon) planar.Polygon {
 	r := Ring(b, p[0])
 	if r == nil {
@@ -152,6 +158,8 @@ func Polygon(b planar.Bound, p planar.Polygon) planar.Polygon {
 
 // MultiPolygon clips the multi polygon to the bounding box excluding
 // any polygons if they don't intersect the bounding box.
+// This operation will modify the input by using as a scratch space
+// so clone if necessary.
 func MultiPolygon(b planar.Bound, mp planar.MultiPolygon) planar.MultiPolygon {
 	var result planar.MultiPolygon
 	for _, polygon := range mp {
@@ -166,6 +174,8 @@ func MultiPolygon(b planar.Bound, mp planar.MultiPolygon) planar.MultiPolygon {
 
 // Collection clips each element in the collection to the bounding box.
 // It will exclude elements if they don't intersect the bounding box.
+// This operation will modify the input of '2d geometry' by using as a
+// scratch space so clone if necessary.
 func Collection(b planar.Bound, c planar.Collection) planar.Collection {
 	var result planar.Collection
 	for _, g := range c {

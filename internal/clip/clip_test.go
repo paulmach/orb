@@ -102,6 +102,8 @@ func TestRing(t *testing.T) {
 				{10, -10}, {20, -10}, {20, 10}, {40, 10}, {40, 20},
 				{20, 20}, {20, 40}, {10, 40}, {10, 20}, {5, 20},
 				{-10, 20}},
+			// note: we allow duplicate points if polygon endpoints are
+			// on the box boundary.
 			output: &lineString{
 				{0, 10}, {0, 10}, {10, 10}, {10, 5}, {10, 0},
 				{20, 0}, {20, 10}, {30, 10}, {30, 20}, {20, 20},
@@ -119,10 +121,120 @@ func TestRing(t *testing.T) {
 			},
 		},
 		{
-			name:  "completely outside bound",
-			bound: Bound{0, 2, 0, 2},
+			name:  "completely around bound",
+			bound: Bound{1, 2, 1, 2},
 			input: &lineString{
-				{3, 3}, {5, 3}, {5, 5}, {3, 5}, {3, 3},
+				{0, 0}, {3, 0}, {3, 3}, {0, 3}, {0, 0},
+			},
+			output: &lineString{{1, 2}, {1, 1}, {2, 1}, {2, 2}, {1, 2}},
+		},
+		{
+			name:  "completely around touching corners",
+			bound: Bound{1, 3, 1, 3},
+			input: &lineString{
+				{0, 2}, {2, 0}, {4, 2}, {2, 4}, {0, 2},
+			},
+			output: &lineString{{1, 1}, {1, 1}, {3, 1}, {3, 1}, {3, 3}, {3, 3}, {1, 3}, {1, 3}, {1, 1}},
+		},
+		{
+			name:  "around but cut corners",
+			bound: Bound{0.5, 3.5, 0.5, 3.5},
+			input: &lineString{
+				{0, 2}, {2, 4}, {4, 2}, {2, 0}, {0, 2},
+			},
+			output: &lineString{{0.5, 2.5}, {1.5, 3.5}, {2.5, 3.5}, {3.5, 2.5}, {3.5, 1.5}, {2.5, 0.5}, {1.5, 0.5}, {0.5, 1.5}, {0.5, 2.5}},
+		},
+		{
+			name:  "unclosed ring",
+			bound: Bound{1, 4, 1, 4},
+			input: &lineString{
+				{2, 0}, {3, 0}, {3, 5}, {2, 5},
+			},
+			output: &lineString{{3, 1}, {3, 4}},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := &lineString{}
+			result = Ring(tc.bound, tc.input, result).(*lineString)
+			if !reflect.DeepEqual(result, tc.output) {
+				t.Errorf("incorrect clip")
+				t.Logf("%v", result)
+				t.Logf("%v", tc.output)
+			}
+		})
+	}
+}
+
+func TestRing_CompletelyOutside(t *testing.T) {
+	cases := []struct {
+		name   string
+		bound  Bound
+		input  *lineString
+		output *lineString
+	}{
+		{
+			name:  "bound in lower left",
+			bound: Bound{-1, 0, -1, 0},
+			input: &lineString{
+				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
+			},
+			output: &lineString{},
+		},
+		{
+			name:  "bound in lower right",
+			bound: Bound{3, 4, -1, 0},
+			input: &lineString{
+				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
+			},
+			output: &lineString{},
+		},
+		{
+			name:  "bound in upper right",
+			bound: Bound{3, 4, 3, 4},
+			input: &lineString{
+				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
+			},
+			output: &lineString{},
+		},
+		{
+			name:  "bound in upper left",
+			bound: Bound{-1, 0, 3, 4},
+			input: &lineString{
+				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
+			},
+			output: &lineString{},
+		},
+		{
+			name:  "bound to the left",
+			bound: Bound{-1, 0, -1, 3},
+			input: &lineString{
+				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
+			},
+			output: &lineString{},
+		},
+		{
+			name:  "bound to the right",
+			bound: Bound{3, 4, -1, 3},
+			input: &lineString{
+				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
+			},
+			output: &lineString{},
+		},
+		{
+			name:  "bound to the top",
+			bound: Bound{-1, 3, 3, 4},
+			input: &lineString{
+				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
+			},
+			output: &lineString{},
+		},
+		{
+			name:  "bound to the bottom",
+			bound: Bound{-1, 3, -1, 0},
+			input: &lineString{
+				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
 			output: &lineString{},
 		},
@@ -131,7 +243,7 @@ func TestRing(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			result := &lineString{}
-			Ring(tc.bound, tc.input, result)
+			result = Ring(tc.bound, tc.input, result).(*lineString)
 			if !reflect.DeepEqual(result, tc.output) {
 				t.Errorf("incorrect clip")
 				t.Logf("%v", result)
