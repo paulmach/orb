@@ -133,6 +133,10 @@ func (r Ring) Clone() Ring {
 // WKT returns the ring in WKT format, eg. POLYGON((30 10,10 30,40 40))
 // For empty rings the result will be 'EMPTY'.
 func (r Ring) WKT() string {
+	if len(r) == 0 {
+		return "EMPTY"
+	}
+
 	polygon := Polygon{r}
 	return polygon.WKT()
 }

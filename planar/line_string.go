@@ -242,8 +242,12 @@ func (ls LineString) String() string {
 }
 
 func wktPoints(w io.Writer, ps []Point) {
-	fmt.Fprintf(w, "(%g %g", ps[0][0], ps[0][1])
+	if len(ps) == 0 {
+		w.Write([]byte(`EMPTY`))
+		return
+	}
 
+	fmt.Fprintf(w, "(%g %g", ps[0][0], ps[0][1])
 	for i := 1; i < len(ps); i++ {
 		fmt.Fprintf(w, ",%g %g", ps[i][0], ps[i][1])
 	}
