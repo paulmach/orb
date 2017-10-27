@@ -6,8 +6,9 @@ import (
 	"github.com/paulmach/orb"
 )
 
-// AroundBound TODO
-// Will modify the input by appending points to the end.
+// AroundBound will connect the endpoints of the linestring provided
+// by wrapping the line around the bounds in the direction provided.
+// Will append to the input.
 func AroundBound(
 	box Bound,
 	in LineString,
@@ -16,7 +17,7 @@ func AroundBound(
 ) (LineString, error) {
 	next, ok := nexts[o]
 	if !ok {
-		return nil, errors.New("clip: invalid orientation")
+		return nil, errors.New("wrap: invalid orientation")
 	}
 
 	fX, fY := in.Get(0)
@@ -26,11 +27,11 @@ func AroundBound(
 		return in, nil // endpoints match
 	}
 
-	target := box.bitCode(fX, fY)
-	current := box.bitCode(lX, lY)
+	target := box.bitCodeOpen(fX, fY)
+	current := box.bitCodeOpen(lX, lY)
 
 	if target == 0 || current == 0 {
-		return in, errors.New("clip: endpoints must be outside bound")
+		return in, errors.New("wrap: endpoints must be outside bound")
 	}
 
 	if current == target && orientation(in) == o {
@@ -54,6 +55,24 @@ func AroundBound(
 //    top  1001  1000  1010
 //    mid  0001  0000  0010
 // bottom  0101  0100  0110
+
+// on the boundary is outside
+func (b Bound) bitCodeOpen(x, y float64) int {
+	code := 0
+	if x <= b.Left {
+		code |= 1
+	} else if x >= b.Right {
+		code |= 2
+	}
+
+	if y <= b.Bottom {
+		code |= 4
+	} else if y >= b.Top {
+		code |= 8
+	}
+
+	return code
+}
 
 //         left  mid  right
 //    top     9     8    10

@@ -34,7 +34,11 @@ func TestRing(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			out := Ring(tc.bound, tc.input, tc.orient)
+			out, err := Ring(tc.bound, tc.input, tc.orient)
+			if err != nil {
+				t.Fatalf("ring error: %v", err)
+			}
+
 			if !reflect.DeepEqual(out, tc.output) {
 				t.Errorf("does not match")
 				t.Logf("%v", out)
