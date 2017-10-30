@@ -114,3 +114,30 @@ func TestFeatureCollectionMarshalJSON(t *testing.T) {
 		t.Errorf("json should set features object to at least empty array")
 	}
 }
+func TestFeatureCollectionMarshal(t *testing.T) {
+	fc := NewFeatureCollection()
+	blob, err := json.Marshal(fc)
+	fc.Features = nil
+
+	if err != nil {
+		t.Fatalf("should marshal to json just fine but got %v", err)
+	}
+
+	if !bytes.Contains(blob, []byte(`"features":[]`)) {
+		t.Errorf("json should set features object to at least empty array")
+	}
+}
+
+func TestFeatureCollectionMarshalValue(t *testing.T) {
+	fc := NewFeatureCollection()
+	fc.Features = nil
+	blob, err := json.Marshal(*fc)
+
+	if err != nil {
+		t.Fatalf("should marshal to json just fine but got %v", err)
+	}
+
+	if !bytes.Contains(blob, []byte(`"features":[]`)) {
+		t.Errorf("json should set features object to at least empty array")
+	}
+}

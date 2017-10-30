@@ -2,6 +2,7 @@ package geojson
 
 import (
 	"bytes"
+	"encoding/json"
 	"testing"
 
 	"github.com/paulmach/orb/geo"
@@ -21,6 +22,32 @@ func TestFeatureMarshalJSON(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("error marshalling to json: %v", err)
+	}
+
+	if !bytes.Contains(blob, []byte(`"properties":null`)) {
+		t.Errorf("json should set properties to null if there are none")
+	}
+}
+
+func TestFeatureMarshal(t *testing.T) {
+	f := NewFeature(geo.NewPoint(1, 2))
+	blob, err := json.Marshal(f)
+
+	if err != nil {
+		t.Fatalf("should marshal to json just fine but got %v", err)
+	}
+
+	if !bytes.Contains(blob, []byte(`"properties":null`)) {
+		t.Errorf("json should set properties to null if there are none")
+	}
+}
+
+func TestFeatureMarshalValue(t *testing.T) {
+	f := NewFeature(geo.NewPoint(1, 2))
+	blob, err := json.Marshal(*f)
+
+	if err != nil {
+		t.Fatalf("should marshal to json just fine but got %v", err)
 	}
 
 	if !bytes.Contains(blob, []byte(`"properties":null`)) {

@@ -32,12 +32,18 @@ func (fc *FeatureCollection) Append(feature *Feature) *FeatureCollection {
 // MarshalJSON converts the feature collection object into the proper JSON.
 // It will handle the encoding of all the child features and geometries.
 // Alternately one can call json.Marshal(fc) directly for the same result.
-func (fc *FeatureCollection) MarshalJSON() ([]byte, error) {
-	fc.Type = "FeatureCollection"
-	if fc.Features == nil {
-		fc.Features = []*Feature{}
+func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
+	type featureCollection FeatureCollection
+
+	c := featureCollection{
+		Type:     "FeatureCollection",
+		Features: fc.Features,
 	}
-	return json.Marshal(*fc)
+
+	if c.Features == nil {
+		c.Features = []*Feature{}
+	}
+	return json.Marshal(c)
 }
 
 // UnmarshalFeatureCollection decodes the data into a GeoJSON feature collection.
