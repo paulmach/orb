@@ -21,6 +21,11 @@ func (p Point) GeoJSONType() string {
 	return "Point"
 }
 
+// Dimensions returns 0 because a point is a 0d object.
+func (p Point) Dimensions() int {
+	return 0
+}
+
 // Bound returns a single point bound of the point.
 func (p Point) Bound() Bound {
 	return NewBound(p[0], p[0], p[1], p[1])

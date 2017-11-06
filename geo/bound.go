@@ -62,6 +62,11 @@ func (b Bound) GeoJSONType() string {
 	return "Polygon"
 }
 
+// Dimensions returns 2 because a Bound is a 2d object.
+func (b Bound) Dimensions() int {
+	return 2
+}
+
 // ToPolygon converts the bound into a Polygon object.
 func (b Bound) ToPolygon() Polygon {
 	return Polygon{b.ToRing()}

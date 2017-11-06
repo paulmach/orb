@@ -9,6 +9,7 @@ import (
 // of a geometry.
 type Geometry interface {
 	GeoJSONType() string
+	Dimensions() int // e.g. 0d, 1d, 2d
 
 	Bound() Bound
 	WKT() string
@@ -34,6 +35,18 @@ type Collection []Geometry
 // GeoJSONType returns the geometry collection type.
 func (c Collection) GeoJSONType() string {
 	return "GeometryCollection"
+}
+
+// Dimensions returns the max of the dimensions of the collection.
+func (c Collection) Dimensions() int {
+	max := -1
+	for _, g := range c {
+		if d := g.Dimensions(); d > max {
+			max = d
+		}
+	}
+
+	return max
 }
 
 // Bound returns the bounding box of all the Geometries combined.

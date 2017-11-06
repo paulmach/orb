@@ -19,6 +19,11 @@ func (r Ring) GeoJSONType() string {
 	return "Polygon"
 }
 
+// Dimensions returns 2 because a Ring is a 2d object.
+func (r Ring) Dimensions() int {
+	return 2
+}
+
 // Valid will return true if the ring is a real ring.
 // ie. 4+ points and the first and last points match.
 // NOTE: this will not check for self-intersection.

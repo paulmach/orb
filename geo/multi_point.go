@@ -19,6 +19,11 @@ func (mp MultiPoint) GeoJSONType() string {
 	return "MultiPoint"
 }
 
+// Dimensions returns 0 because a MultiPoint is a 0d object.
+func (mp MultiPoint) Dimensions() int {
+	return 2
+}
+
 // Clone returns a new copy of the points.
 func (mp MultiPoint) Clone() MultiPoint {
 	points := make([]Point, len(mp))

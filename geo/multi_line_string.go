@@ -18,6 +18,11 @@ func (mls MultiLineString) GeoJSONType() string {
 	return "MultiLineString"
 }
 
+// Dimensions returns 1 because a MultiLineString is a 2d object.
+func (mls MultiLineString) Dimensions() int {
+	return 2
+}
+
 // Bound returns a bound around all the line strings.
 func (mls MultiLineString) Bound() Bound {
 	bound := mls[0].Bound()

@@ -120,6 +120,11 @@ func (ls LineString) GeoJSONType() string {
 	return "LineString"
 }
 
+// Dimensions returns 1 because a LineString is a 1d object.
+func (ls LineString) Dimensions() int {
+	return 1
+}
+
 // Encode converts the line string to a string using the Google Maps Polyline Encoding method.
 // Factor defaults to 1.0e5, the same used by Google for polyline encoding.
 func (ls LineString) Encode(factor ...int) string {

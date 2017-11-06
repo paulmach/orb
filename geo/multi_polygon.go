@@ -18,6 +18,11 @@ func (mp MultiPolygon) GeoJSONType() string {
 	return "MultiPolygon"
 }
 
+// Dimensions returns 2 because a MultiPolygon is a 2d object.
+func (mp MultiPolygon) Dimensions() int {
+	return 2
+}
+
 // Bound returns a bound around the multi-polygon.
 func (mp MultiPolygon) Bound() Bound {
 	bound := mp[0].Bound()

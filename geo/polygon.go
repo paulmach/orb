@@ -20,6 +20,11 @@ func (p Polygon) GeoJSONType() string {
 	return "Polygon"
 }
 
+// Dimensions returns 2 because a Polygon is a 2d object.
+func (p Polygon) Dimensions() int {
+	return 2
+}
+
 // Bound returns a bound around the polygon.
 func (p Polygon) Bound() Bound {
 	return p[0].Bound()
