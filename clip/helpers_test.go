@@ -1,33 +1,33 @@
-package geoclip
+package clip
 
 import (
 	"testing"
 
-	"github.com/paulmach/orb/geo"
+	"github.com/paulmach/orb"
 )
 
 func TestRing(t *testing.T) {
 	cases := []struct {
 		name   string
-		bound  geo.Bound
-		input  geo.Ring
-		output geo.Ring
+		bound  orb.Bound
+		input  orb.Ring
+		output orb.Ring
 	}{
 		{
 			name:  "bound to the top",
-			bound: geo.NewBound(-1, 3, 3, 4),
-			input: geo.Ring{
+			bound: orb.NewBound(-1, 3, 3, 4),
+			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
-			output: geo.Ring{},
+			output: orb.Ring{},
 		},
 		{
 			name:  "bound in lower left",
-			bound: geo.NewBound(-1, 0, -1, 0),
-			input: geo.Ring{
+			bound: orb.NewBound(-1, 0, -1, 0),
+			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
-			output: geo.Ring{},
+			output: orb.Ring{},
 		},
 	}
 
@@ -38,7 +38,7 @@ func TestRing(t *testing.T) {
 			if !result.Equal(tc.output) {
 				t.Errorf("not equal")
 				t.Logf("%v", result)
-				t.Logf("%v", tc.output.String())
+				t.Logf("%v", tc.output)
 			}
 		})
 	}
@@ -47,45 +47,45 @@ func TestRing(t *testing.T) {
 func TestBound(t *testing.T) {
 	cases := []struct {
 		name string
-		b1   geo.Bound
-		b2   geo.Bound
-		rs   geo.Bound
+		b1   orb.Bound
+		b2   orb.Bound
+		rs   orb.Bound
 	}{
 		{
 			name: "normal intersection",
-			b1:   geo.NewBound(0, 3, 1, 4),
-			b2:   geo.NewBound(1, 4, 2, 5),
-			rs:   geo.NewBound(1, 3, 2, 4),
+			b1:   orb.NewBound(0, 3, 1, 4),
+			b2:   orb.NewBound(1, 4, 2, 5),
+			rs:   orb.NewBound(1, 3, 2, 4),
 		},
 		{
 			name: "1 contains 2",
-			b1:   geo.NewBound(0, 3, 1, 4),
-			b2:   geo.NewBound(1, 2, 2, 3),
-			rs:   geo.NewBound(1, 2, 2, 3),
+			b1:   orb.NewBound(0, 3, 1, 4),
+			b2:   orb.NewBound(1, 2, 2, 3),
+			rs:   orb.NewBound(1, 2, 2, 3),
 		},
 		{
 			name: "no overlap",
-			b1:   geo.NewBound(0, 3, 1, 4),
-			b2:   geo.NewBound(4, 5, 5, 6),
-			rs:   geo.NewBound(1, 0, 1, 0), // empty
+			b1:   orb.NewBound(0, 3, 1, 4),
+			b2:   orb.NewBound(4, 5, 5, 6),
+			rs:   orb.NewBound(1, 0, 1, 0), // empty
 		},
 		{
 			name: "same bound",
-			b1:   geo.NewBound(0, 3, 1, 4),
-			b2:   geo.NewBound(0, 3, 1, 4),
-			rs:   geo.NewBound(0, 3, 1, 4),
+			b1:   orb.NewBound(0, 3, 1, 4),
+			b2:   orb.NewBound(0, 3, 1, 4),
+			rs:   orb.NewBound(0, 3, 1, 4),
 		},
 		{
 			name: "1 is empty",
-			b1:   geo.NewBound(1, 0, 1, 0),
-			b2:   geo.NewBound(0, 3, 1, 4),
-			rs:   geo.NewBound(0, 3, 1, 4),
+			b1:   orb.NewBound(1, 0, 1, 0),
+			b2:   orb.NewBound(0, 3, 1, 4),
+			rs:   orb.NewBound(0, 3, 1, 4),
 		},
 		{
 			name: "both are empty",
-			b1:   geo.NewBound(1, 0, 1, 0),
-			b2:   geo.NewBound(1, 0, 1, 0),
-			rs:   geo.NewBound(1, 0, 1, 0),
+			b1:   orb.NewBound(1, 0, 1, 0),
+			b2:   orb.NewBound(1, 0, 1, 0),
+			rs:   orb.NewBound(1, 0, 1, 0),
 		},
 	}
 
