@@ -17,3 +17,6 @@ const (
 	// CW stands for Clock Wise
 	CW Orientation = -1
 )
+
+// A Distance is a function that computes the distance between two points.
+type Distance func(Point, Point) float64

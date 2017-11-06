@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/bits"
 
-	"github.com/paulmach/orb/geo"
+	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/internal/mercator"
 )
 
@@ -29,7 +29,7 @@ func New(x, y uint32, z Zoom) Tile {
 // Will create a valid tile for the zoom. Points outside
 // the range lat [-85.0511, 85.0511] will be snapped to the
 // max or min tile as appropriate.
-func At(ll geo.Point, z Zoom) Tile {
+func At(ll orb.Point, z Zoom) Tile {
 	f := Fraction(ll, z)
 	t := Tile{
 		X: uint32(f[0]),
@@ -67,7 +67,7 @@ func (t Tile) Valid() bool {
 // An optional tileBuffer parameter can be passes to create a buffer
 // around the bound in tile dimension. e.g. a tileBuffer of 1 would create
 // a bound 9x the size of the tile, centered around the provided tile.
-func (t Tile) Bound(tileBuffer ...float64) geo.Bound {
+func (t Tile) Bound(tileBuffer ...float64) orb.Bound {
 	buffer := 0.0
 	if len(tileBuffer) > 0 {
 		buffer = tileBuffer[0]
@@ -101,14 +101,14 @@ func (t Tile) Bound(tileBuffer ...float64) geo.Bound {
 
 	lon2, lat2 := mercator.ToGeo(maxx, maxy, uint32(t.Z))
 
-	return geo.Bound{
-		geo.Point{lon1, lat2},
-		geo.Point{lon2, lat1},
+	return orb.Bound{
+		orb.Point{lon1, lat2},
+		orb.Point{lon2, lat1},
 	}
 }
 
 // Center returns the center of the tile.
-func (t Tile) Center() geo.Point {
+func (t Tile) Center() orb.Point {
 	return t.Bound(0).Center()
 }
 
@@ -137,8 +137,8 @@ func (t Tile) Parent() Tile {
 // Fraction returns the precise tile fraction at the given zoom.
 // Returns the range y range of [0, 2^zoom]. Will return 2^zoom if
 // the point is below 85.0511 S.
-func Fraction(ll geo.Point, z Zoom) geo.Point {
-	var p geo.Point
+func Fraction(ll orb.Point, z Zoom) orb.Point {
+	var p orb.Point
 
 	factor := uint32(1 << z)
 	maxtiles := float64(factor)

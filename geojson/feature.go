@@ -4,19 +4,19 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/paulmach/orb/geo"
+	"github.com/paulmach/orb"
 )
 
 // A Feature corresponds to GeoJSON feature object
 type Feature struct {
 	ID         interface{}  `json:"id,omitempty"`
 	Type       string       `json:"type"`
-	Geometry   geo.Geometry `json:"geometry"`
+	Geometry   orb.Geometry `json:"geometry"`
 	Properties Properties   `json:"properties"`
 }
 
 // NewFeature creates and initializes a GeoJSON feature given the required attributes.
-func NewFeature(geometry geo.Geometry) *Feature {
+func NewFeature(geometry orb.Geometry) *Feature {
 	return &Feature{
 		Type:       "Feature",
 		Geometry:   geometry,
@@ -44,8 +44,8 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 			err    error
 		)
 
-		if ring, ok := f.Geometry.(geo.Ring); ok {
-			coords, err = json.Marshal(geo.Polygon{ring})
+		if ring, ok := f.Geometry.(orb.Ring); ok {
+			coords, err = json.Marshal(orb.Polygon{ring})
 		} else {
 			coords, err = json.Marshal(f.Geometry)
 		}
@@ -75,7 +75,7 @@ func UnmarshalFeature(data []byte) (*Feature, error) {
 }
 
 // UnmarshalJSON handles the correct unmarshalling of the data
-// into the geo.Geometry types.
+// into the orb.Geometry types.
 func (f *Feature) UnmarshalJSON(data []byte) error {
 	jf := &jsonFeature{}
 	err := json.Unmarshal(data, &jf)
@@ -91,27 +91,27 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 
 	switch jf.Geometry.Type {
 	case "Point":
-		p := geo.Point{}
+		p := orb.Point{}
 		err = json.Unmarshal(jf.Geometry.Coordinates, &p)
 		f.Geometry = p
 	case "MultiPoint":
-		mp := geo.MultiPoint{}
+		mp := orb.MultiPoint{}
 		err = json.Unmarshal(jf.Geometry.Coordinates, &mp)
 		f.Geometry = mp
 	case "LineString":
-		ls := geo.LineString{}
+		ls := orb.LineString{}
 		err = json.Unmarshal(jf.Geometry.Coordinates, &ls)
 		f.Geometry = ls
 	case "MultiLineString":
-		mls := geo.MultiLineString{}
+		mls := orb.MultiLineString{}
 		err = json.Unmarshal(jf.Geometry.Coordinates, &mls)
 		f.Geometry = mls
 	case "Polygon":
-		p := geo.Polygon{}
+		p := orb.Polygon{}
 		err = json.Unmarshal(jf.Geometry.Coordinates, &p)
 		f.Geometry = p
 	case "MultiPolygon":
-		mp := geo.MultiPolygon{}
+		mp := orb.MultiPolygon{}
 		err = json.Unmarshal(jf.Geometry.Coordinates, &mp)
 		f.Geometry = mp
 	default:

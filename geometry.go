@@ -1,18 +1,13 @@
-package geo
-
-import (
-	"bytes"
-	"fmt"
-)
+package orb
 
 // Geometry is an interface that represents the shared attributes
 // of a geometry.
 type Geometry interface {
 	GeoJSONType() string
 	Dimensions() int // e.g. 0d, 1d, 2d
-
 	Bound() Bound
-	WKT() string
+
+	private()
 }
 
 // compile time checks
@@ -21,13 +16,23 @@ var (
 	_ Geometry = MultiPoint{}
 	_ Geometry = LineString{}
 	_ Geometry = MultiLineString{}
-	_ Geometry = Bound{}
 	_ Geometry = Ring{}
 	_ Geometry = Polygon{}
 	_ Geometry = MultiPolygon{}
+	_ Geometry = Bound{}
 
 	_ Geometry = Collection{}
 )
+
+func (p Point) private()             {}
+func (mp MultiPoint) private()       {}
+func (ls LineString) private()       {}
+func (mls MultiLineString) private() {}
+func (r Ring) private()              {}
+func (p Polygon) private()           {}
+func (mp MultiPolygon) private()     {}
+func (b Bound) private()             {}
+func (c Collection) private()        {}
 
 // A Collection is a collection of geometries that is also a Geometry.
 type Collection []Geometry
@@ -57,17 +62,4 @@ func (c Collection) Bound() Bound {
 	}
 
 	return r
-}
-
-// WKT returns the wkt of the geometry collection.
-func (c Collection) WKT() string {
-	buff := bytes.NewBuffer(nil)
-	fmt.Fprintf(buff, "GEOMETRYCOLLECTION(")
-
-	for i := range c {
-		buff.WriteString(c[i].WKT())
-	}
-
-	fmt.Fprintf(buff, ")")
-	return buff.String()
 }

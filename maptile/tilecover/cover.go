@@ -1,13 +1,13 @@
 package tilecover
 
 import (
-	"github.com/paulmach/orb/geo"
+	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/maptile"
 )
 
 // ForBound creates a tile cover for the bound. i.e. all the tiles
 // that intersect the bound.
-func ForBound(b geo.Bound, z maptile.Zoom) maptile.Tiles {
+func ForBound(b orb.Bound, z maptile.Zoom) maptile.Tiles {
 	lo := maptile.At(b[0], z)
 	hi := maptile.At(b[1], z)
 
@@ -24,6 +24,6 @@ func ForBound(b geo.Bound, z maptile.Zoom) maptile.Tiles {
 
 // ForPoint creates a tile cover for the point, i.e. just the tile
 // containing the point.
-func ForPoint(ll geo.Point, z maptile.Zoom) maptile.Tiles {
+func ForPoint(ll orb.Point, z maptile.Zoom) maptile.Tiles {
 	return maptile.Tiles{maptile.At(ll, z)}
 }

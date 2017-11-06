@@ -1,12 +1,11 @@
 package resample
 
 import (
-	"github.com/paulmach/orb/geo"
-	"github.com/paulmach/orb/planar"
+	"github.com/paulmach/orb"
 )
 
 // Resample converts the line string into totalPoints-1 evenly spaced segments.
-func Resample(ls geo.LineString, totalPoints int) geo.LineString {
+func Resample(df orb.Distance, ls orb.LineString, totalPoints int) orb.LineString {
 	if totalPoints <= 0 {
 		return nil
 	}
@@ -17,19 +16,19 @@ func Resample(ls geo.LineString, totalPoints int) geo.LineString {
 	}
 
 	// precomputes the total distance and intermediate distances
-	total, dists := precomputeDistances(ls)
+	total, dists := precomputeDistances(ls, df)
 	return resample(ls, dists, total, totalPoints)
 }
 
 // ToInterval coverts the line string into evenly spaced points of
 // about the given distance.
-func ToInterval(ls geo.LineString, dist float64) geo.LineString {
+func ToInterval(df orb.Distance, ls orb.LineString, dist float64) orb.LineString {
 	if dist <= 0 {
 		return nil
 	}
 
 	// precomputes the total distance and intermediate distances
-	total, dists := precomputeDistances(ls)
+	total, dists := precomputeDistances(ls, df)
 
 	totalPoints := int(total/dist) + 1
 	ls, ret := resampleEdgeCases(ls, totalPoints)
@@ -40,8 +39,8 @@ func ToInterval(ls geo.LineString, dist float64) geo.LineString {
 	return resample(ls, dists, total, totalPoints)
 }
 
-func resample(ls geo.LineString, dists []float64, totalDistance float64, totalPoints int) geo.LineString {
-	points := make([]geo.Point, 1, totalPoints)
+func resample(ls orb.LineString, dists []float64, totalDistance float64, totalPoints int) orb.LineString {
+	points := make([]orb.Point, 1, totalPoints)
 	points[0] = ls[0] // start stays the same
 
 	step := 1
@@ -49,7 +48,7 @@ func resample(ls geo.LineString, dists []float64, totalDistance float64, totalPo
 
 	currentDistance := totalDistance / float64(totalPoints-1)
 	// declare here and update had nice performance benefits need to retest
-	currentSeg := [2]geo.Point{}
+	currentSeg := [2]orb.Point{}
 	for i := 0; i < len(ls)-1; i++ {
 		currentSeg[0] = ls[i]
 		currentSeg[1] = ls[i+1]
@@ -60,7 +59,7 @@ func resample(ls geo.LineString, dists []float64, totalDistance float64, totalPo
 		for currentDistance <= nextDistance {
 			// need to add a point
 			percent := (currentDistance - dist) / currentSegDistance
-			points = append(points, geo.Point{
+			points = append(points, orb.Point{
 				currentSeg[0][0] + percent*(currentSeg[1][0]-currentSeg[0][0]),
 				currentSeg[0][1] + percent*(currentSeg[1][1]-currentSeg[0][1]),
 			})
@@ -82,14 +81,14 @@ func resample(ls geo.LineString, dists []float64, totalDistance float64, totalPo
 		points[totalPoints-1] = ls[len(ls)-1]
 	}
 
-	return geo.LineString(points)
+	return orb.LineString(points)
 }
 
 // resampleEdgeCases is used to handle edge case for
 // resampling like not enough points and the line string is all the same point.
 // will return nil if there are no edge cases. If return true if
 // one of these edge cases was found and handled.
-func resampleEdgeCases(ls geo.LineString, totalPoints int) (geo.LineString, bool) {
+func resampleEdgeCases(ls orb.LineString, totalPoints int) (orb.LineString, bool) {
 	// degenerate case
 	if len(ls) <= 1 {
 		return ls, true
@@ -123,11 +122,11 @@ func resampleEdgeCases(ls geo.LineString, totalPoints int) (geo.LineString, bool
 }
 
 // precomputeDistances precomputes the total distance and intermediate distances.
-func precomputeDistances(ls geo.LineString) (float64, []float64) {
+func precomputeDistances(ls orb.LineString, df orb.Distance) (float64, []float64) {
 	total := 0.0
 	dists := make([]float64, len(ls)-1)
 	for i := 0; i < len(ls)-1; i++ {
-		dists[i] = planar.Distance(ls[i], ls[i+1])
+		dists[i] = df(ls[i], ls[i+1])
 		total += dists[i]
 	}
 

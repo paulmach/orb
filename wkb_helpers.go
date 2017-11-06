@@ -1,9 +1,7 @@
-package wkb
+package orb
 
 import (
 	"math"
-
-	"github.com/paulmach/orb"
 )
 
 // source of information
@@ -18,11 +16,11 @@ const (
 	wkbMultiPolygon    = 6
 )
 
-// ValidatePoint checks the wkb input and returns x, y, isnull, err.
-func ValidatePoint(value interface{}) (float64, float64, bool, error) {
+// validatePoint checks the wkb input and returns x, y, isnull, err.
+func validatePoint(value interface{}) (float64, float64, bool, error) {
 	data, ok := value.([]byte)
 	if !ok {
-		return 0, 0, false, orb.ErrUnsupportedDataType
+		return 0, 0, false, ErrUnsupportedDataType
 	}
 
 	switch len(data) {
@@ -38,96 +36,96 @@ func ValidatePoint(value interface{}) (float64, float64, bool, error) {
 		// But those would be invalid for parsing a point.
 		data = data[4:]
 	default:
-		return 0, 0, false, orb.ErrIncorrectGeometry
+		return 0, 0, false, ErrIncorrectGeometry
 	}
 
-	x, y, err := ReadPoint(data)
+	x, y, err := readPoint(data)
 	return x, y, false, err
 }
 
-// ReadPoint reads the beginning of the data to find the wkb point.
-func ReadPoint(data []byte) (float64, float64, error) {
+// readPoint reads the beginning of the data to find the wkb point.
+func readPoint(data []byte) (float64, float64, error) {
 	if len(data) < 21 {
-		return 0, 0, orb.ErrIncorrectGeometry
+		return 0, 0, ErrIncorrectGeometry
 	}
 
-	littleEndian, typeCode, err := ReadHeader(data)
+	littleEndian, typeCode, err := readHeader(data)
 	if err != nil {
 		return 0, 0, err
 	}
 
 	if typeCode != wkbPoint {
-		return 0, 0, orb.ErrIncorrectGeometry
+		return 0, 0, ErrIncorrectGeometry
 	}
 
-	return ReadFloat64(data[5:13], littleEndian),
-		ReadFloat64(data[13:], littleEndian),
+	return readFloat64(data[5:13], littleEndian),
+		readFloat64(data[13:], littleEndian),
 		nil
 }
 
-// ValidateLineString checks the wkb for a linestring geometry.
-func ValidateLineString(value interface{}) ([]byte, bool, int, error) {
+// validateLineString checks the wkb for a linestring geometry.
+func validateLineString(value interface{}) ([]byte, bool, int, error) {
 	data, littleEndian, err := validateSet(value, wkbLineString)
 	if err != nil || data == nil {
 		return nil, false, 0, err
 	}
 
-	length := ReadUint32(data[5:9], littleEndian)
+	length := readUint32(data[5:9], littleEndian)
 	return data[9:], littleEndian, int(length), nil
 }
 
-// ValidatePolygon checks the wkb for a polygon geometry.
-func ValidatePolygon(value interface{}) ([]byte, bool, int, error) {
+// validatePolygon checks the wkb for a polygon geometry.
+func validatePolygon(value interface{}) ([]byte, bool, int, error) {
 	data, littleEndian, err := validateSet(value, wkbPolygon)
 	if err != nil || data == nil {
 		return nil, false, 0, err
 	}
 
-	length := ReadUint32(data[5:9], littleEndian)
+	length := readUint32(data[5:9], littleEndian)
 	return data[9:], littleEndian, int(length), nil
 }
 
-// ValidateMultiPoint checks wkb for a multipoint geometry.
-func ValidateMultiPoint(value interface{}) ([]byte, bool, int, error) {
+// validateMultiPoint checks wkb for a multipoint geometry.
+func validateMultiPoint(value interface{}) ([]byte, bool, int, error) {
 	data, littleEndian, err := validateSet(value, wkbMultiPoint)
 	if err != nil || data == nil {
 		return nil, false, 0, err
 	}
 
-	length := int(ReadUint32(data[5:9], littleEndian))
+	length := int(readUint32(data[5:9], littleEndian))
 	if len(data) != 9+21*length {
-		return nil, false, 0, orb.ErrNotWKB
+		return nil, false, 0, ErrNotWKB
 	}
 
 	return data[9:], littleEndian, length, nil
 }
 
-// ValidateMultiLineString checks the wkb for a multilinestring geometry.
-func ValidateMultiLineString(value interface{}) ([]byte, bool, int, error) {
+// validateMultiLineString checks the wkb for a multilinestring geometry.
+func validateMultiLineString(value interface{}) ([]byte, bool, int, error) {
 	data, littleEndian, err := validateSet(value, wkbMultiLineString)
 	if err != nil || data == nil {
 		return nil, false, 0, err
 	}
 
-	length := ReadUint32(data[5:9], littleEndian)
+	length := readUint32(data[5:9], littleEndian)
 	return data[9:], littleEndian, int(length), nil
 }
 
-// ValidateMultiPolygon checks the wkb for a multipolygon geometry.
-func ValidateMultiPolygon(value interface{}) ([]byte, bool, int, error) {
+// validateMultiPolygon checks the wkb for a multipolygon geometry.
+func validateMultiPolygon(value interface{}) ([]byte, bool, int, error) {
 	data, littleEndian, err := validateSet(value, wkbMultiPolygon)
 	if err != nil || data == nil {
 		return nil, false, 0, err
 	}
 
-	length := ReadUint32(data[5:9], littleEndian)
+	length := readUint32(data[5:9], littleEndian)
 	return data[9:], littleEndian, int(length), nil
 }
 
 func validateSet(value interface{}, t uint32) ([]byte, bool, error) {
 	data, ok := value.([]byte)
 	if !ok {
-		return nil, false, orb.ErrUnsupportedDataType
+		return nil, false, ErrUnsupportedDataType
 	}
 
 	if len(data) == 0 {
@@ -135,7 +133,7 @@ func validateSet(value interface{}, t uint32) ([]byte, bool, error) {
 	}
 
 	if len(data) < 6 {
-		return nil, false, orb.ErrNotWKB
+		return nil, false, ErrNotWKB
 	}
 
 	var (
@@ -152,7 +150,7 @@ func validateSet(value interface{}, t uint32) ([]byte, bool, error) {
 	// we try to see if cropping the first 4 values helps
 	// make a valid WKB.
 	for i := 0; i < 2; i++ {
-		littleEndian, typeCode, err = ReadHeader(data)
+		littleEndian, typeCode, err = readHeader(data)
 		if err != nil {
 			return nil, false, err
 		}
@@ -165,31 +163,31 @@ func validateSet(value interface{}, t uint32) ([]byte, bool, error) {
 	}
 
 	if typeCode != t {
-		return nil, false, orb.ErrIncorrectGeometry
+		return nil, false, ErrIncorrectGeometry
 	}
 
 	return data, littleEndian, nil
 }
 
-// ReadHeader reads the beginning of the data and returns the header.
-func ReadHeader(data []byte) (bool, uint32, error) {
+// readHeader reads the beginning of the data and returns the header.
+func readHeader(data []byte) (bool, uint32, error) {
 	if len(data) < 6 {
-		return false, 0, orb.ErrNotWKB
+		return false, 0, ErrNotWKB
 	}
 
 	if data[0] == 0 {
-		return false, ReadUint32(data[1:5], false), nil
+		return false, readUint32(data[1:5], false), nil
 	}
 
 	if data[0] == 1 {
-		return true, ReadUint32(data[1:5], true), nil
+		return true, readUint32(data[1:5], true), nil
 	}
 
-	return false, 0, orb.ErrNotWKB
+	return false, 0, ErrNotWKB
 }
 
-// ReadUint32 reads the data and returns a uint32.
-func ReadUint32(data []byte, littleEndian bool) uint32 {
+// readUint32 reads the data and returns a uint32.
+func readUint32(data []byte, littleEndian bool) uint32 {
 	var v uint32
 
 	if littleEndian {
@@ -207,8 +205,8 @@ func ReadUint32(data []byte, littleEndian bool) uint32 {
 	return v
 }
 
-// ReadFloat64 reads the data and returns a float64.
-func ReadFloat64(data []byte, littleEndian bool) float64 {
+// readFloat64 reads the data and returns a float64.
+func readFloat64(data []byte, littleEndian bool) float64 {
 	var v uint64
 
 	if littleEndian {

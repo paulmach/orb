@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/paulmach/orb/geo"
+	"github.com/paulmach/orb"
 )
 
 func TestNewFeature(t *testing.T) {
-	f := NewFeature(geo.NewPoint(1, 2))
+	f := NewFeature(orb.NewPoint(1, 2))
 
 	if f.Type != "Feature" {
 		t.Errorf("incorrect feature: %v != Feature", f.Type)
@@ -17,7 +17,7 @@ func TestNewFeature(t *testing.T) {
 }
 
 func TestFeatureMarshalJSON(t *testing.T) {
-	f := NewFeature(geo.NewPoint(1, 2))
+	f := NewFeature(orb.NewPoint(1, 2))
 	blob, err := f.MarshalJSON()
 
 	if err != nil {
@@ -30,7 +30,7 @@ func TestFeatureMarshalJSON(t *testing.T) {
 }
 
 func TestFeatureMarshal(t *testing.T) {
-	f := NewFeature(geo.NewPoint(1, 2))
+	f := NewFeature(orb.NewPoint(1, 2))
 	blob, err := json.Marshal(f)
 
 	if err != nil {
@@ -43,7 +43,7 @@ func TestFeatureMarshal(t *testing.T) {
 }
 
 func TestFeatureMarshalValue(t *testing.T) {
-	f := NewFeature(geo.NewPoint(1, 2))
+	f := NewFeature(orb.NewPoint(1, 2))
 	blob, err := json.Marshal(*f)
 
 	if err != nil {
@@ -137,12 +137,7 @@ func TestUnmarshalFeatureID(t *testing.T) {
 }
 
 func TestMarshalRing(t *testing.T) {
-	ring := append(geo.NewRing(),
-		geo.NewPoint(0, 0),
-		geo.NewPoint(1, 1),
-		geo.NewPoint(2, 1),
-		geo.NewPoint(0, 0),
-	)
+	ring := orb.Ring{{0, 0}, {1, 1}, {2, 1}, {0, 0}}
 
 	f := NewFeature(ring)
 	data, err := f.MarshalJSON()

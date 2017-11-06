@@ -1,9 +1,4 @@
-package geo
-
-import (
-	"bytes"
-	"fmt"
-)
+package orb
 
 // MultiPolygon is a set of polygons.
 type MultiPolygon []Polygon
@@ -31,41 +26,6 @@ func (mp MultiPolygon) Bound() Bound {
 	}
 
 	return bound
-}
-
-// WKT returns the polygon in WKT format, eg. POlYGON((0 0,1 0,1 1,0 0))
-// For empty polygons the result will be 'EMPTY'.
-func (mp MultiPolygon) WKT() string {
-	if len(mp) == 0 {
-		return "EMPTY"
-	}
-
-	buff := bytes.NewBuffer(nil)
-	fmt.Fprintf(buff, "MULTIPOLYGON(")
-
-	for i, p := range mp {
-		if i != 0 {
-			buff.Write([]byte(","))
-		}
-
-		buff.Write([]byte("("))
-		for j, r := range p {
-			if j != 0 {
-				buff.Write([]byte(","))
-
-			}
-			wktPoints(buff, r)
-		}
-		buff.Write([]byte(")"))
-	}
-
-	buff.Write([]byte(")"))
-	return buff.String()
-}
-
-// String returns the wkt representation of the multi polygon.
-func (mp MultiPolygon) String() string {
-	return mp.WKT()
 }
 
 // Equal compares two multi-polygons.

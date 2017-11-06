@@ -4,6 +4,7 @@ import (
 	"math"
 	"testing"
 
+	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/geo"
 	"github.com/paulmach/orb/internal/mercator"
 	"github.com/paulmach/orb/planar"
@@ -11,7 +12,7 @@ import (
 
 func TestMercator(t *testing.T) {
 	for _, city := range mercator.Cities {
-		g := geo.Point{
+		g := orb.Point{
 			city[1],
 			city[0],
 		}
@@ -19,12 +20,12 @@ func TestMercator(t *testing.T) {
 		p := Mercator.ToPlanar(g)
 		g = Mercator.ToGeo(p)
 
-		if math.Abs(g.Lat()-city[0]) > mercator.Epsilon {
-			t.Errorf("latitude miss match: %f != %f", g.Lat(), city[0])
+		if math.Abs(g[1]-city[0]) > mercator.Epsilon {
+			t.Errorf("latitude miss match: %f != %f", g[1], city[0])
 		}
 
-		if math.Abs(g.Lon()-city[1]) > mercator.Epsilon {
-			t.Errorf("longitude miss match: %f != %f", g.Lon(), city[1])
+		if math.Abs(g[0]-city[1]) > mercator.Epsilon {
+			t.Errorf("longitude miss match: %f != %f", g[0], city[1])
 		}
 	}
 }
@@ -32,27 +33,27 @@ func TestMercator(t *testing.T) {
 func TestMercatorScaleFactor(t *testing.T) {
 	cases := []struct {
 		name   string
-		point  geo.Point
+		point  orb.Point
 		factor float64
 	}{
 		{
 			name:   "30 deg",
-			point:  geo.NewPoint(0, 30.0),
+			point:  orb.NewPoint(0, 30.0),
 			factor: 1.154701,
 		},
 		{
 			name:   "45 deg",
-			point:  geo.NewPoint(0, 45.0),
+			point:  orb.NewPoint(0, 45.0),
 			factor: 1.414214,
 		},
 		{
 			name:   "60 deg",
-			point:  geo.NewPoint(0, 60.0),
+			point:  orb.NewPoint(0, 60.0),
 			factor: 2,
 		},
 		{
 			name:   "80 deg",
-			point:  geo.NewPoint(0, 80.0),
+			point:  orb.NewPoint(0, 80.0),
 			factor: 5.758770,
 		},
 	}
@@ -70,24 +71,24 @@ func TestTransverseMercator(t *testing.T) {
 	tested := 0
 
 	for _, city := range mercator.Cities {
-		g := geo.Point{
+		g := orb.Point{
 			city[1],
 			city[0],
 		}
 
-		if math.Abs(g.Lon()) > 10 {
+		if math.Abs(g[0]) > 10 {
 			continue
 		}
 
 		p := TransverseMercator.ToPlanar(g)
 		g = TransverseMercator.ToGeo(p)
 
-		if math.Abs(g.Lat()-city[0]) > mercator.Epsilon {
-			t.Errorf("latitude miss match: %f != %f", g.Lat(), city[0])
+		if math.Abs(g[1]-city[0]) > mercator.Epsilon {
+			t.Errorf("latitude miss match: %f != %f", g[1], city[0])
 		}
 
-		if math.Abs(g.Lon()-city[1]) > mercator.Epsilon {
-			t.Errorf("longitude miss match: %f != %f", g.Lon(), city[1])
+		if math.Abs(g[0]-city[1]) > mercator.Epsilon {
+			t.Errorf("longitude miss match: %f != %f", g[0], city[1])
 		}
 
 		tested++
@@ -102,10 +103,10 @@ func TestTransverseMercatorScaling(t *testing.T) {
 
 	// points on the 0 longitude should have the same
 	// projected distance as geo distance
-	g1 := geo.NewPoint(0, 15)
-	g2 := geo.NewPoint(0, 30)
+	g1 := orb.NewPoint(0, 15)
+	g2 := orb.NewPoint(0, 30)
 
-	geoDistance := g1.DistanceFrom(g2)
+	geoDistance := geo.Distance(g1, g2)
 
 	p1 := TransverseMercator.ToPlanar(g1)
 	p2 := TransverseMercator.ToPlanar(g2)
@@ -118,85 +119,85 @@ func TestTransverseMercatorScaling(t *testing.T) {
 
 func TestBuildTransverseMercator(t *testing.T) {
 	for _, city := range mercator.Cities {
-		g := geo.Point{
+		g := orb.Point{
 			city[1],
 			city[0],
 		}
 
-		offset := math.Floor(g.Lon()/10.0) * 10.0
+		offset := math.Floor(g[0]/10.0) * 10.0
 		projector := BuildTransverseMercator(offset)
 
 		p := projector.ToPlanar(g)
 		g = projector.ToGeo(p)
 
-		if math.Abs(g.Lat()-city[0]) > mercator.Epsilon {
-			t.Errorf("latitude miss match: %f != %f", g.Lat(), city[0])
+		if math.Abs(g[1]-city[0]) > mercator.Epsilon {
+			t.Errorf("latitude miss match: %f != %f", g[1], city[0])
 		}
 
-		if math.Abs(g.Lon()-city[1]) > mercator.Epsilon {
-			t.Errorf("longitude miss match: %f != %f", g.Lon(), city[1])
+		if math.Abs(g[0]-city[1]) > mercator.Epsilon {
+			t.Errorf("longitude miss match: %f != %f", g[0], city[1])
 		}
 	}
 
 	// test anti-meridian from right
 	projector := BuildTransverseMercator(-178.0)
 
-	test := geo.NewPoint(-175.0, 30)
+	test := orb.NewPoint(-175.0, 30)
 
 	g := test
 	p := projector.ToPlanar(g)
 	g = projector.ToGeo(p)
 
-	if math.Abs(g.Lat()-test.Lat()) > mercator.Epsilon {
-		t.Errorf("latitude miss match: %f != %f", g.Lat(), test.Lat())
+	if math.Abs(g[1]-test[1]) > mercator.Epsilon {
+		t.Errorf("latitude miss match: %f != %f", g[1], test[1])
 	}
 
-	if math.Abs(g.Lon()-test.Lon()) > mercator.Epsilon {
-		t.Errorf("longitude miss match: %f != %f", g.Lon(), test.Lat())
+	if math.Abs(g[0]-test[0]) > mercator.Epsilon {
+		t.Errorf("longitude miss match: %f != %f", g[0], test[1])
 	}
 
-	test = geo.NewPoint(179.0, 30)
+	test = orb.NewPoint(179.0, 30)
 
 	g = test
 	p = projector.ToPlanar(g)
 	g = projector.ToGeo(p)
 
-	if math.Abs(g.Lat()-test.Lat()) > mercator.Epsilon {
-		t.Errorf("latitude miss match: %f != %f", g.Lat(), test.Lat())
+	if math.Abs(g[1]-test[1]) > mercator.Epsilon {
+		t.Errorf("latitude miss match: %f != %f", g[1], test[1])
 	}
 
-	if math.Abs(g.Lon()-test.Lon()) > mercator.Epsilon {
-		t.Errorf("longitude miss match: %f != %f", g.Lon(), test.Lat())
+	if math.Abs(g[0]-test[0]) > mercator.Epsilon {
+		t.Errorf("longitude miss match: %f != %f", g[0], test[1])
 	}
 
 	// test anti-meridian from left
 	projector = BuildTransverseMercator(178.0)
 
-	test = geo.NewPoint(175.0, 30)
+	test = orb.NewPoint(175.0, 30)
 
 	g = test
 	p = projector.ToPlanar(g)
 	g = projector.ToGeo(p)
 
-	if math.Abs(g.Lat()-test.Lat()) > mercator.Epsilon {
-		t.Errorf("latitude miss match: %f != %f", g.Lat(), test.Lat())
+	if math.Abs(g[1]-test[1]) > mercator.Epsilon {
+		t.Errorf("latitude miss match: %f != %f", g[1], test[1])
 	}
 
-	if math.Abs(g.Lon()-test.Lon()) > mercator.Epsilon {
-		t.Errorf("longitude miss match: %f != %f", g.Lon(), test.Lat())
+	if math.Abs(g[0]-test[0]) > mercator.Epsilon {
+		t.Errorf("longitude miss match: %f != %f", g[0], test[1])
 	}
 
-	test = geo.NewPoint(-179.0, 30)
+	test = orb.NewPoint(-179.0, 30)
 
 	g = test
 	p = projector.ToPlanar(g)
 	g = projector.ToGeo(p)
 
-	if math.Abs(g.Lat()-test.Lat()) > mercator.Epsilon {
-		t.Errorf("latitude miss match: %f != %f", g.Lat(), test.Lat())
+	if math.Abs(g[1]-test[1]) > mercator.Epsilon {
+		t.Errorf("latitude miss match: %f != %f", g[1], test[1])
 	}
 
-	if math.Abs(g.Lon()-test.Lon()) > mercator.Epsilon {
-		t.Errorf("longitude miss match: %f != %f", g.Lon(), test.Lat())
+	if math.Abs(g[0]-test[0]) > mercator.Epsilon {
+		t.Errorf("longitude miss match: %f != %f", g[0], test[1])
 	}
 }

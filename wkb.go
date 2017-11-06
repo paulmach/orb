@@ -1,6 +1,4 @@
-package geo
-
-import "github.com/paulmach/orb/internal/wkb"
+package orb
 
 // Scan implements the sql.Scanner interface allowing
 // Point structs to be passed into rows.Scan(...interface{})
@@ -8,7 +6,7 @@ import "github.com/paulmach/orb/internal/wkb"
 // Will attempt to parse MySQL's SRID+WKB format if the data is of the right size.
 // If the column is empty (not null) an empty point (0, 0) will be returned.
 func (p *Point) Scan(value interface{}) error {
-	x, y, isNull, err := wkb.ValidatePoint(value)
+	x, y, isNull, err := validatePoint(value)
 	if err != nil || isNull {
 		return err
 	}
@@ -19,8 +17,8 @@ func (p *Point) Scan(value interface{}) error {
 
 func readWKBPoint(data []byte, littleEndian bool) Point {
 	return Point{
-		wkb.ReadFloat64(data[:8], littleEndian),
-		wkb.ReadFloat64(data[8:], littleEndian),
+		readFloat64(data[:8], littleEndian),
+		readFloat64(data[8:], littleEndian),
 	}
 }
 
@@ -49,7 +47,7 @@ func (ls *LineString) Scan(value interface{}) error {
 }
 
 func (ls *LineString) scan(value interface{}) ([]byte, error) {
-	data, littleEndian, length, err := wkb.ValidateLineString(value)
+	data, littleEndian, length, err := validateLineString(value)
 	if err != nil || data == nil {
 		return nil, err
 	}
@@ -79,7 +77,7 @@ func (p *Polygon) Scan(value interface{}) error {
 }
 
 func (p *Polygon) scan(value interface{}) ([]byte, error) {
-	data, littleEndian, rings, err := wkb.ValidatePolygon(value)
+	data, littleEndian, rings, err := validatePolygon(value)
 	if err != nil || data == nil {
 		return nil, err
 	}
@@ -88,7 +86,7 @@ func (p *Polygon) scan(value interface{}) ([]byte, error) {
 	for i := 0; i < rings; i++ {
 		var ls LineString
 
-		length := wkb.ReadUint32(data, littleEndian)
+		length := readUint32(data, littleEndian)
 		ls, data, err = scanXYList(data[4:], littleEndian, int(length))
 		if err != nil {
 			return nil, err
@@ -108,7 +106,7 @@ func (p *Polygon) scan(value interface{}) ([]byte, error) {
 // SRID+WKB format if obviously not WKB or parsing as WKB fails.
 // If the column is empty (not null) an empty point set will be returned.
 func (mp *MultiPoint) Scan(value interface{}) error {
-	data, littleEndian, length, err := wkb.ValidateMultiPoint(value)
+	data, littleEndian, length, err := validateMultiPoint(value)
 	if err != nil || data == nil {
 		return err
 	}
@@ -120,7 +118,7 @@ func (mp *MultiPoint) Scan(value interface{}) error {
 func unWKBMultiPoint(data []byte, littleEndian bool, length int) (MultiPoint, error) {
 	points := make([]Point, length)
 	for i := 0; i < length; i++ {
-		x, y, err := wkb.ReadPoint(data[21*i:])
+		x, y, err := readPoint(data[21*i:])
 		if err != nil {
 			return nil, err
 		}
@@ -138,7 +136,7 @@ func unWKBMultiPoint(data []byte, littleEndian bool, length int) (MultiPoint, er
 // SRID+WKB format if obviously not WKB or parsing as WKB fails.
 // If the column is empty (not null) an empty point set will be returned.
 func (mls *MultiLineString) Scan(value interface{}) error {
-	data, _, length, err := wkb.ValidateMultiLineString(value)
+	data, _, length, err := validateMultiLineString(value)
 	if err != nil || data == nil {
 		return err
 	}
@@ -162,7 +160,7 @@ func (mls *MultiLineString) Scan(value interface{}) error {
 // SRID+WKB format if obviously not WKB or parsing as WKB fails.
 // If the column is empty (not null) an empty point set will be returned.
 func (mp *MultiPolygon) Scan(value interface{}) error {
-	data, _, length, err := wkb.ValidateMultiPolygon(value)
+	data, _, length, err := validateMultiPolygon(value)
 	if err != nil || data == nil {
 		return err
 	}

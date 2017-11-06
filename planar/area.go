@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/paulmach/orb/geo"
+	"github.com/paulmach/orb"
 )
 
 // Area returns the area of the geometry in the 2d plane.
-func Area(g geo.Geometry) float64 {
+func Area(g orb.Geometry) float64 {
 	// TOOD: make faster non-centroid version.
 	_, a := CentroidArea(g)
 	return a
@@ -16,32 +16,32 @@ func Area(g geo.Geometry) float64 {
 
 // CentroidArea returns botht the centroid and the area in the 2d plane.
 // Since the area is need for the centroid, return both.
-func CentroidArea(g geo.Geometry) (geo.Point, float64) {
+func CentroidArea(g orb.Geometry) (orb.Point, float64) {
 	switch g := g.(type) {
-	case geo.Point:
-		return multiPointCentroid(geo.MultiPoint{g}), 0
-	case geo.MultiPoint:
+	case orb.Point:
+		return multiPointCentroid(orb.MultiPoint{g}), 0
+	case orb.MultiPoint:
 		return multiPointCentroid(g), 0
-	case geo.LineString:
-		return multiLineStringCentroid(geo.MultiLineString{g}), 0
-	case geo.MultiLineString:
+	case orb.LineString:
+		return multiLineStringCentroid(orb.MultiLineString{g}), 0
+	case orb.MultiLineString:
 		return multiLineStringCentroid(g), 0
-	case geo.Ring:
+	case orb.Ring:
 		return ringCentroidArea(g)
-	case geo.Polygon:
+	case orb.Polygon:
 		return polygonCentroidArea(g)
-	case geo.MultiPolygon:
+	case orb.MultiPolygon:
 		return multiPolygonCentroidArea(g)
-	case geo.Collection:
+	case orb.Collection:
 		panic("TODO")
-	case geo.Bound:
+	case orb.Bound:
 		return CentroidArea(g.ToRing())
 	}
 
 	panic(fmt.Sprintf("geometry type not supported: %T", g))
 }
 
-func multiPointCentroid(mp geo.MultiPoint) geo.Point {
+func multiPointCentroid(mp orb.MultiPoint) orb.Point {
 	x, y := 0.0, 0.0
 	for _, p := range mp {
 		x += p[0]
@@ -49,15 +49,15 @@ func multiPointCentroid(mp geo.MultiPoint) geo.Point {
 	}
 
 	num := float64(len(mp))
-	return geo.Point{x / num, y / num}
+	return orb.Point{x / num, y / num}
 }
 
-func multiLineStringCentroid(mls geo.MultiLineString) geo.Point {
-	point := geo.Point{}
+func multiLineStringCentroid(mls orb.MultiLineString) orb.Point {
+	point := orb.Point{}
 	dist := 0.0
 
 	if len(mls) == 0 {
-		return geo.Point{}
+		return orb.Point{}
 	}
 
 	for _, ls := range mls {
@@ -73,7 +73,7 @@ func multiLineStringCentroid(mls geo.MultiLineString) geo.Point {
 	}
 
 	if dist == math.Inf(1) {
-		return geo.Point{}
+		return orb.Point{}
 	}
 
 	point[0] /= dist
@@ -82,23 +82,23 @@ func multiLineStringCentroid(mls geo.MultiLineString) geo.Point {
 	return point
 }
 
-func lineStringCentroidDist(ls geo.LineString) (geo.Point, float64) {
+func lineStringCentroidDist(ls orb.LineString) (orb.Point, float64) {
 	dist := 0.0
-	point := geo.Point{}
+	point := orb.Point{}
 
 	if len(ls) == 0 {
-		return geo.Point{}, math.Inf(1)
+		return orb.Point{}, math.Inf(1)
 	}
 
 	// implicitly move everything to near the origin to help with roundoff
 	offset := ls[0]
 	for i := 0; i < len(ls)-1; i++ {
-		p1 := geo.Point{
+		p1 := orb.Point{
 			ls[i][0] - offset[0],
 			ls[i][1] - offset[1],
 		}
 
-		p2 := geo.Point{
+		p2 := orb.Point{
 			ls[i+1][0] - offset[0],
 			ls[i+1][1] - offset[1],
 		}
@@ -118,8 +118,8 @@ func lineStringCentroidDist(ls geo.LineString) (geo.Point, float64) {
 	return point, dist
 }
 
-func ringCentroidArea(r geo.Ring) (geo.Point, float64) {
-	centroid := geo.Point{}
+func ringCentroidArea(r orb.Ring) (orb.Point, float64) {
+	centroid := orb.Point{}
 	area := 0.0
 
 	// implicitly move everything to near the origin to help with roundoff
@@ -151,12 +151,12 @@ func ringCentroidArea(r geo.Ring) (geo.Point, float64) {
 	return centroid, area
 }
 
-func polygonCentroidArea(p geo.Polygon) (geo.Point, float64) {
+func polygonCentroidArea(p orb.Polygon) (orb.Point, float64) {
 	centroid, area := ringCentroidArea(p[0])
 	area = math.Abs(area)
 
 	holeArea := 0.0
-	holeCentroid := geo.Point{}
+	holeCentroid := orb.Point{}
 	for i := 1; i < len(p); i++ {
 		hc, ha := ringCentroidArea(p[i])
 
@@ -173,8 +173,8 @@ func polygonCentroidArea(p geo.Polygon) (geo.Point, float64) {
 	return centroid, totalArea
 }
 
-func multiPolygonCentroidArea(mp geo.MultiPolygon) (geo.Point, float64) {
-	point := geo.Point{}
+func multiPolygonCentroidArea(mp orb.MultiPolygon) (orb.Point, float64) {
+	point := orb.Point{}
 	area := 0.0
 
 	for _, p := range mp {

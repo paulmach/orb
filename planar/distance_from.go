@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/paulmach/orb/geo"
+	"github.com/paulmach/orb"
 )
 
 // DistanceFrom returns the distance from the boundary of the geometry in
 // the units of the geometry.
-func DistanceFrom(g geo.Geometry, p geo.Point) float64 {
+func DistanceFrom(g orb.Geometry, p orb.Point) float64 {
 	d, _ := DistanceFromWithIndex(g, p)
 	return d
 }
@@ -17,15 +17,15 @@ func DistanceFrom(g geo.Geometry, p geo.Point) float64 {
 // DistanceFromWithIndex returns the minimum euclidean distance
 // from the boundary of the geometry plus the index of the sub-geometry
 // that was the match.
-func DistanceFromWithIndex(g geo.Geometry, p geo.Point) (float64, int) {
+func DistanceFromWithIndex(g orb.Geometry, p orb.Point) (float64, int) {
 	switch g := g.(type) {
-	case geo.Point:
+	case orb.Point:
 		return Distance(g, p), 0
-	case geo.MultiPoint:
+	case orb.MultiPoint:
 		return multiPointDistanceFrom(g, p)
-	case geo.LineString:
+	case orb.LineString:
 		return lineStringDistanceFrom(g, p)
-	case geo.MultiLineString:
+	case orb.MultiLineString:
 		dist := math.Inf(1)
 		index := -1
 		for i, ls := range g {
@@ -36,11 +36,11 @@ func DistanceFromWithIndex(g geo.Geometry, p geo.Point) (float64, int) {
 		}
 
 		return dist, index
-	case geo.Ring:
-		return lineStringDistanceFrom(geo.LineString(g), p)
-	case geo.Polygon:
+	case orb.Ring:
+		return lineStringDistanceFrom(orb.LineString(g), p)
+	case orb.Polygon:
 		return polygonDistanceFrom(g, p)
-	case geo.MultiPolygon:
+	case orb.MultiPolygon:
 		dist := math.Inf(1)
 		index := -1
 		for i, poly := range g {
@@ -51,7 +51,7 @@ func DistanceFromWithIndex(g geo.Geometry, p geo.Point) (float64, int) {
 		}
 
 		return dist, index
-	case geo.Collection:
+	case orb.Collection:
 		dist := math.Inf(1)
 		index := -1
 		for i, ge := range g {
@@ -62,14 +62,14 @@ func DistanceFromWithIndex(g geo.Geometry, p geo.Point) (float64, int) {
 		}
 
 		return dist, index
-	case geo.Bound:
+	case orb.Bound:
 		return DistanceFromWithIndex(g.ToRing(), p)
 	}
 
 	panic(fmt.Sprintf("geometry type not supported: %T", g))
 }
 
-func multiPointDistanceFrom(mp geo.MultiPoint, p geo.Point) (float64, int) {
+func multiPointDistanceFrom(mp orb.MultiPoint, p orb.Point) (float64, int) {
 	dist := math.Inf(1)
 	index := -1
 
@@ -83,7 +83,7 @@ func multiPointDistanceFrom(mp geo.MultiPoint, p geo.Point) (float64, int) {
 	return math.Sqrt(dist), index
 }
 
-func lineStringDistanceFrom(ls geo.LineString, p geo.Point) (float64, int) {
+func lineStringDistanceFrom(ls orb.LineString, p orb.Point) (float64, int) {
 	dist := math.Inf(1)
 	index := -1
 
@@ -97,14 +97,14 @@ func lineStringDistanceFrom(ls geo.LineString, p geo.Point) (float64, int) {
 	return math.Sqrt(dist), index
 }
 
-func polygonDistanceFrom(p geo.Polygon, point geo.Point) (float64, int) {
+func polygonDistanceFrom(p orb.Polygon, point orb.Point) (float64, int) {
 	if len(p) == 0 {
 		return math.Inf(1), -1
 	}
 
-	dist, index := lineStringDistanceFrom(geo.LineString(p[0]), point)
+	dist, index := lineStringDistanceFrom(orb.LineString(p[0]), point)
 	for i := 1; i < len(p); i++ {
-		d, i := lineStringDistanceFrom(geo.LineString(p[i]), point)
+		d, i := lineStringDistanceFrom(orb.LineString(p[i]), point)
 		if d < dist {
 			dist = d
 			index = i
@@ -114,7 +114,7 @@ func polygonDistanceFrom(p geo.Polygon, point geo.Point) (float64, int) {
 	return dist, index
 }
 
-func segmentDistanceFromSquared(p1, p2, point geo.Point) float64 {
+func segmentDistanceFromSquared(p1, p2, point orb.Point) float64 {
 	x := p1[0]
 	y := p1[1]
 	dx := p2[0] - x
