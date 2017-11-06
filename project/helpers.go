@@ -56,22 +56,20 @@ func ToGeo(g orb.Geometry, proj *Projection) orb.Geometry {
 
 // MultiPointToPlanar is a helper to project an entire multi point.
 func MultiPointToPlanar(mp orb.MultiPoint, proj *Projection) orb.MultiPoint {
-	n := make(orb.MultiPoint, len(mp))
 	for i := range mp {
-		n[i] = proj.ToPlanar(mp[i])
+		mp[i] = proj.ToPlanar(mp[i])
 	}
 
-	return n
+	return mp
 }
 
 // MultiPointToGeo is a helper to project an entire multi point.
 func MultiPointToGeo(mp orb.MultiPoint, proj *Projection) orb.MultiPoint {
-	n := make(orb.MultiPoint, len(mp))
 	for i := range mp {
-		n[i] = proj.ToGeo(mp[i])
+		mp[i] = proj.ToGeo(mp[i])
 	}
 
-	return n
+	return mp
 }
 
 // LineStringToPlanar is a helper to project an entire line string.
@@ -86,22 +84,20 @@ func LineStringToGeo(ls orb.LineString, proj *Projection) orb.LineString {
 
 // MultiLineStringToPlanar is a helper to project an entire multi linestring.
 func MultiLineStringToPlanar(mls orb.MultiLineString, proj *Projection) orb.MultiLineString {
-	n := make(orb.MultiLineString, len(mls))
 	for i := range mls {
-		n[i] = LineStringToPlanar(mls[i], proj)
+		mls[i] = LineStringToPlanar(mls[i], proj)
 	}
 
-	return n
+	return mls
 }
 
 // MultiLineStringToGeo is a helper to project an entire multi linestring.
 func MultiLineStringToGeo(mls orb.MultiLineString, proj *Projection) orb.MultiLineString {
-	n := make(orb.MultiLineString, len(mls))
 	for i := range mls {
-		n[i] = LineStringToGeo(mls[i], proj)
+		mls[i] = LineStringToGeo(mls[i], proj)
 	}
 
-	return n
+	return mls
 }
 
 // RingToPlanar is a helper to project an entire ring.
@@ -116,62 +112,56 @@ func RingToGeo(r orb.Ring, proj *Projection) orb.Ring {
 
 // PolygonToPlanar is a helper to project an entire polygon.
 func PolygonToPlanar(p orb.Polygon, proj *Projection) orb.Polygon {
-	n := make(orb.Polygon, len(p))
 	for i := range p {
-		n[i] = RingToPlanar(p[i], proj)
+		p[i] = RingToPlanar(p[i], proj)
 	}
 
-	return n
+	return p
 }
 
 // PolygonToGeo is a helper to project an entire line string.
 func PolygonToGeo(p orb.Polygon, proj *Projection) orb.Polygon {
-	n := make(orb.Polygon, len(p))
 	for i := range p {
-		n[i] = RingToGeo(p[i], proj)
+		p[i] = RingToGeo(p[i], proj)
 	}
 
-	return n
+	return p
 }
 
 // MultiPolygonToPlanar is a helper to project an entire multi polygon.
 func MultiPolygonToPlanar(mp orb.MultiPolygon, proj *Projection) orb.MultiPolygon {
-	n := make(orb.MultiPolygon, len(mp))
 	for i := range mp {
-		n[i] = PolygonToPlanar(mp[i], proj)
+		mp[i] = PolygonToPlanar(mp[i], proj)
 	}
 
-	return n
+	return mp
 }
 
 // MultiPolygonToGeo is a helper to project an entire multi linestring.
 func MultiPolygonToGeo(mp orb.MultiPolygon, proj *Projection) orb.MultiPolygon {
-	n := make(orb.MultiPolygon, len(mp))
 	for i := range mp {
-		n[i] = PolygonToGeo(mp[i], proj)
+		mp[i] = PolygonToGeo(mp[i], proj)
 	}
 
-	return n
+	return mp
 }
 
 // CollectionToPlanar is a helper to project a rectangle.
 func CollectionToPlanar(c orb.Collection, proj *Projection) orb.Collection {
-	n := make(orb.Collection, len(c))
 	for i := range c {
-		n[i] = ToPlanar(c[i], proj)
+		c[i] = ToPlanar(c[i], proj)
 	}
 
-	return n
+	return c
 }
 
 // CollectionToGeo is a helper to project a rectangle.
 func CollectionToGeo(c orb.Collection, proj *Projection) orb.Collection {
-	n := make(orb.Collection, len(c))
 	for i := range c {
-		n[i] = ToGeo(c[i], proj)
+		c[i] = ToGeo(c[i], proj)
 	}
 
-	return n
+	return c
 }
 
 // BoundToPlanar is a helper to project a rectangle.
