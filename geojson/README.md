@@ -1,4 +1,4 @@
-orb/geo/geojson [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/geo/geojson?status.png)](https://godoc.org/github.com/paulmach/orb/geo/geojson)
+orb/geo/geojson [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/geojson?status.png)](https://godoc.org/github.com/paulmach/orb/geojson)
 ===============
 
 This package **encodes and decodes** [GeoJSON](http://geojson.org/) into Go structs
