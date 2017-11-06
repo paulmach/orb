@@ -5,7 +5,6 @@ import (
 	"math"
 
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/internal/mercator"
 )
 
 // A Point is a Lon/Lat 2d point.
@@ -89,21 +88,6 @@ func (p Point) Midpoint(p2 Point) Point {
 	r[1] = rad2deg(r[1])
 
 	return r
-}
-
-// Quadkey returns the quad key for the given point at the provided level.
-// See http://msdn.microsoft.com/en-us/library/bb259689.aspx for more information
-// about this coordinate system.
-func (p Point) Quadkey(level uint32) uint64 {
-	x, y := mercator.ToPlanar(p.Lon(), p.Lat(), level)
-
-	var i, result uint64
-	for i = 0; i < uint64(level); i++ {
-		result |= (uint64(x) & (1 << i)) << i
-		result |= (uint64(y) & (1 << i)) << (i + 1)
-	}
-
-	return result
 }
 
 // Equal checks if the point represents the same point or vector.

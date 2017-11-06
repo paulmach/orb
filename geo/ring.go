@@ -24,14 +24,10 @@ func (r Ring) Dimensions() int {
 	return 2
 }
 
-// Valid will return true if the ring is a real ring.
+// Closed will return true if the ring is a real ring.
 // ie. 4+ points and the first and last points match.
 // NOTE: this will not check for self-intersection.
-func (r Ring) Valid() bool {
-	if len(r) < 4 {
-		return false
-	}
-
+func (r Ring) Closed() bool {
 	// first must equal last
 	return r[0] == r[len(r)-1]
 }
