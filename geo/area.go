@@ -18,7 +18,7 @@ func Area(g orb.Geometry) float64 {
 	case orb.MultiPolygon:
 		return multiPolygonArea(g)
 	case orb.Collection:
-		panic("TODO")
+		return collectionArea(g)
 	case orb.Bound:
 		return Area(g.ToRing())
 	}
@@ -90,4 +90,13 @@ func multiPolygonArea(mp orb.MultiPolygon) float64 {
 	}
 
 	return sum
+}
+
+func collectionArea(c orb.Collection) float64 {
+	area := 0.0
+	for _, g := range c {
+		area += Area(g)
+	}
+
+	return area
 }

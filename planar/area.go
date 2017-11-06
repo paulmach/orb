@@ -33,7 +33,7 @@ func CentroidArea(g orb.Geometry) (orb.Point, float64) {
 	case orb.MultiPolygon:
 		return multiPolygonCentroidArea(g)
 	case orb.Collection:
-		panic("TODO")
+		return collectionCentroidArea(g)
 	case orb.Bound:
 		return CentroidArea(g.ToRing())
 	}
@@ -190,4 +190,39 @@ func multiPolygonCentroidArea(mp orb.MultiPolygon) (orb.Point, float64) {
 	point[1] /= area
 
 	return point, area
+}
+
+func collectionCentroidArea(c orb.Collection) (orb.Point, float64) {
+	point := orb.Point{}
+	area := 0.0
+
+	max := maxDim(c)
+	for _, g := range c {
+		if g.Dimensions() != max {
+			continue
+		}
+
+		c, a := CentroidArea(g)
+
+		point[0] += c[0] * a
+		point[1] += c[1] * a
+
+		area += a
+	}
+
+	point[0] /= area
+	point[1] /= area
+
+	return point, area
+}
+
+func maxDim(c orb.Collection) int {
+	max := 0
+	for _, g := range c {
+		if d := g.Dimensions(); d > max {
+			max = d
+		}
+	}
+
+	return max
 }
