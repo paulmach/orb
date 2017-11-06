@@ -85,4 +85,10 @@ func TestBoundPad(t *testing.T) {
 			}
 		})
 	}
+
+	b1 := orb.NewBound(-180, 180, -90, 90)
+	b2 := BoundPad(b1, 100)
+	if !b1.Equal(b2) {
+		t.Errorf("should be extend bound around fill earth: %v", b2)
+	}
 }

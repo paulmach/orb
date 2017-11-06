@@ -51,6 +51,12 @@ func BoundPad(b orb.Bound, meters float64) orb.Bound {
 	b[1][0] += dx
 	b[1][1] += dy
 
+	b[0][0] = math.Max(b[0][0], -180)
+	b[0][1] = math.Max(b[0][1], -90)
+
+	b[1][0] = math.Min(b[1][0], 180)
+	b[1][1] = math.Min(b[1][1], 90)
+
 	return b
 }
 
