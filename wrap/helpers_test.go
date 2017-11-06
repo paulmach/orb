@@ -1,33 +1,32 @@
-package geowrap
+package wrap
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/geo"
 )
 
 func TestRing(t *testing.T) {
 	cases := []struct {
 		name   string
-		bound  geo.Bound
-		input  geo.Ring
-		output geo.Ring
+		bound  orb.Bound
+		input  orb.Ring
+		output orb.Ring
 		orient orb.Orientation
 	}{
 		{
 			name:   "wrap around whole box ccw",
-			bound:  geo.Bound{{-1, -1}, {1, 1}},
-			input:  geo.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}},
-			output: geo.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-2, 0.5}},
+			bound:  orb.Bound{{-1, -1}, {1, 1}},
+			input:  orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}},
+			output: orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-2, 0.5}},
 			orient: orb.CCW,
 		},
 		{
 			name:   "just close the ring",
-			bound:  geo.Bound{{-1, -1}, {1, 1}},
-			input:  geo.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}},
-			output: geo.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}, {-2, 0.5}},
+			bound:  orb.Bound{{-1, -1}, {1, 1}},
+			input:  orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}},
+			output: orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}, {-2, 0.5}},
 			orient: orb.CW,
 		},
 	}

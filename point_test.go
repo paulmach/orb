@@ -1,12 +1,8 @@
-package orb_test
+package orb
 
 import (
 	"testing"
-
-	. "github.com/paulmach/orb"
 )
-
-var epsilon = 1e-6
 
 func TestNewPoint(t *testing.T) {
 	p := NewPoint(1, 2)

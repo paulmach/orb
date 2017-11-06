@@ -4,13 +4,6 @@ import (
 	"testing"
 )
 
-func center(r Bound) Point {
-	return Point{
-		(r[0][0] + r[1][0]) / 2.0,
-		(r[0][1] + r[1][1]) / 2.0,
-	}
-}
-
 func TestBoundExtend(t *testing.T) {
 	bound := NewBound(0, 3, 0, 5)
 

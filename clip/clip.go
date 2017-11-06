@@ -172,27 +172,3 @@ func intersect(box orb.Bound, edge int, a, b orb.Point) orb.Point {
 
 	panic("no edge??")
 }
-
-// pointFor returns a representative point for the side of the given bitCode.
-func pointFor(b orb.Bound, code int) orb.Point {
-	switch code {
-	case 1:
-		return orb.Point{b.Left(), (b.Top() + b.Bottom()) / 2}
-	case 2:
-		return orb.Point{b.Right(), (b.Top() + b.Bottom()) / 2}
-	case 4:
-		return orb.Point{(b.Right() + b.Left()) / 2, b.Bottom()}
-	case 5:
-		return orb.Point{b.Left(), b.Bottom()}
-	case 6:
-		return orb.Point{b.Right(), b.Bottom()}
-	case 8:
-		return orb.Point{(b.Right() + b.Left()) / 2, b.Top()}
-	case 9:
-		return orb.Point{b.Left(), b.Top()}
-	case 10:
-		return orb.Point{b.Right(), b.Top()}
-	}
-
-	panic("invalid code")
-}
