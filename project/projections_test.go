@@ -6,6 +6,7 @@ import (
 
 	"github.com/paulmach/orb/geo"
 	"github.com/paulmach/orb/internal/mercator"
+	"github.com/paulmach/orb/planar"
 )
 
 func TestMercator(t *testing.T) {
@@ -108,7 +109,7 @@ func TestTransverseMercatorScaling(t *testing.T) {
 
 	p1 := TransverseMercator.ToPlanar(g1)
 	p2 := TransverseMercator.ToPlanar(g2)
-	projectedDistance := p1.DistanceFrom(p2)
+	projectedDistance := planar.Distance(p1, p2)
 
 	if math.Abs(geoDistance-projectedDistance) > mercator.Epsilon {
 		t.Errorf("incorrect scale: %f != %f", geoDistance, projectedDistance)

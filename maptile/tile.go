@@ -6,7 +6,6 @@ import (
 
 	"github.com/paulmach/orb/geo"
 	"github.com/paulmach/orb/internal/mercator"
-	"github.com/paulmach/orb/planar"
 )
 
 // Tiles is a set of tiles, later we can add methods to this.
@@ -138,8 +137,8 @@ func (t Tile) Parent() Tile {
 // Fraction returns the precise tile fraction at the given zoom.
 // Returns the range y range of [0, 2^zoom]. Will return 2^zoom if
 // the point is below 85.0511 S.
-func Fraction(ll geo.Point, z Zoom) planar.Point {
-	var p planar.Point
+func Fraction(ll geo.Point, z Zoom) geo.Point {
+	var p geo.Point
 
 	factor := uint32(1 << z)
 	maxtiles := float64(factor)

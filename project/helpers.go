@@ -2,11 +2,10 @@ package project
 
 import (
 	"github.com/paulmach/orb/geo"
-	"github.com/paulmach/orb/planar"
 )
 
 // ToPlanar projects a geometry from geo -> planar
-func ToPlanar(g geo.Geometry, proj *Projection) planar.Geometry {
+func ToPlanar(g geo.Geometry, proj *Projection) geo.Geometry {
 	switch g := g.(type) {
 	case geo.Point:
 		return proj.ToPlanar(g)
@@ -32,25 +31,25 @@ func ToPlanar(g geo.Geometry, proj *Projection) planar.Geometry {
 }
 
 // ToGeo projects a geometry from planar -> geo
-func ToGeo(g planar.Geometry, proj *Projection) geo.Geometry {
+func ToGeo(g geo.Geometry, proj *Projection) geo.Geometry {
 	switch g := g.(type) {
-	case planar.Point:
+	case geo.Point:
 		return proj.ToGeo(g)
-	case planar.MultiPoint:
+	case geo.MultiPoint:
 		return MultiPointToGeo(g, proj)
-	case planar.LineString:
+	case geo.LineString:
 		return LineStringToGeo(g, proj)
-	case planar.MultiLineString:
+	case geo.MultiLineString:
 		return MultiLineStringToGeo(g, proj)
-	case planar.Ring:
+	case geo.Ring:
 		return RingToGeo(g, proj)
-	case planar.Polygon:
+	case geo.Polygon:
 		return PolygonToGeo(g, proj)
-	case planar.MultiPolygon:
+	case geo.MultiPolygon:
 		return MultiPolygonToGeo(g, proj)
-	case planar.Collection:
+	case geo.Collection:
 		return CollectionToGeo(g, proj)
-	case planar.Bound:
+	case geo.Bound:
 		return BoundToGeo(g, proj)
 	}
 
@@ -58,8 +57,8 @@ func ToGeo(g planar.Geometry, proj *Projection) geo.Geometry {
 }
 
 // MultiPointToPlanar is a helper to project an entire multi point.
-func MultiPointToPlanar(mp geo.MultiPoint, proj *Projection) planar.MultiPoint {
-	n := make(planar.MultiPoint, len(mp))
+func MultiPointToPlanar(mp geo.MultiPoint, proj *Projection) geo.MultiPoint {
+	n := make(geo.MultiPoint, len(mp))
 	for i := range mp {
 		n[i] = proj.ToPlanar(mp[i])
 	}
@@ -68,7 +67,7 @@ func MultiPointToPlanar(mp geo.MultiPoint, proj *Projection) planar.MultiPoint {
 }
 
 // MultiPointToGeo is a helper to project an entire multi point.
-func MultiPointToGeo(mp planar.MultiPoint, proj *Projection) geo.MultiPoint {
+func MultiPointToGeo(mp geo.MultiPoint, proj *Projection) geo.MultiPoint {
 	n := make(geo.MultiPoint, len(mp))
 	for i := range mp {
 		n[i] = proj.ToGeo(mp[i])
@@ -78,18 +77,18 @@ func MultiPointToGeo(mp planar.MultiPoint, proj *Projection) geo.MultiPoint {
 }
 
 // LineStringToPlanar is a helper to project an entire line string.
-func LineStringToPlanar(ls geo.LineString, proj *Projection) planar.LineString {
-	return planar.LineString(MultiPointToPlanar(geo.MultiPoint(ls), proj))
+func LineStringToPlanar(ls geo.LineString, proj *Projection) geo.LineString {
+	return geo.LineString(MultiPointToPlanar(geo.MultiPoint(ls), proj))
 }
 
 // LineStringToGeo is a helper to project an entire line string.
-func LineStringToGeo(ls planar.LineString, proj *Projection) geo.LineString {
-	return geo.LineString(MultiPointToGeo(planar.MultiPoint(ls), proj))
+func LineStringToGeo(ls geo.LineString, proj *Projection) geo.LineString {
+	return geo.LineString(MultiPointToGeo(geo.MultiPoint(ls), proj))
 }
 
 // MultiLineStringToPlanar is a helper to project an entire multi linestring.
-func MultiLineStringToPlanar(mls geo.MultiLineString, proj *Projection) planar.MultiLineString {
-	n := make(planar.MultiLineString, len(mls))
+func MultiLineStringToPlanar(mls geo.MultiLineString, proj *Projection) geo.MultiLineString {
+	n := make(geo.MultiLineString, len(mls))
 	for i := range mls {
 		n[i] = LineStringToPlanar(mls[i], proj)
 	}
@@ -98,7 +97,7 @@ func MultiLineStringToPlanar(mls geo.MultiLineString, proj *Projection) planar.M
 }
 
 // MultiLineStringToGeo is a helper to project an entire multi linestring.
-func MultiLineStringToGeo(mls planar.MultiLineString, proj *Projection) geo.MultiLineString {
+func MultiLineStringToGeo(mls geo.MultiLineString, proj *Projection) geo.MultiLineString {
 	n := make(geo.MultiLineString, len(mls))
 	for i := range mls {
 		n[i] = LineStringToGeo(mls[i], proj)
@@ -108,18 +107,18 @@ func MultiLineStringToGeo(mls planar.MultiLineString, proj *Projection) geo.Mult
 }
 
 // RingToPlanar is a helper to project an entire ring.
-func RingToPlanar(r geo.Ring, proj *Projection) planar.Ring {
-	return planar.Ring(LineStringToPlanar(geo.LineString(r), proj))
+func RingToPlanar(r geo.Ring, proj *Projection) geo.Ring {
+	return geo.Ring(LineStringToPlanar(geo.LineString(r), proj))
 }
 
 // RingToGeo is a helper to project an entire ring.
-func RingToGeo(r planar.Ring, proj *Projection) geo.Ring {
-	return geo.Ring(LineStringToGeo(planar.LineString(r), proj))
+func RingToGeo(r geo.Ring, proj *Projection) geo.Ring {
+	return geo.Ring(LineStringToGeo(geo.LineString(r), proj))
 }
 
 // PolygonToPlanar is a helper to project an entire polygon.
-func PolygonToPlanar(p geo.Polygon, proj *Projection) planar.Polygon {
-	n := make(planar.Polygon, len(p))
+func PolygonToPlanar(p geo.Polygon, proj *Projection) geo.Polygon {
+	n := make(geo.Polygon, len(p))
 	for i := range p {
 		n[i] = RingToPlanar(p[i], proj)
 	}
@@ -128,7 +127,7 @@ func PolygonToPlanar(p geo.Polygon, proj *Projection) planar.Polygon {
 }
 
 // PolygonToGeo is a helper to project an entire line string.
-func PolygonToGeo(p planar.Polygon, proj *Projection) geo.Polygon {
+func PolygonToGeo(p geo.Polygon, proj *Projection) geo.Polygon {
 	n := make(geo.Polygon, len(p))
 	for i := range p {
 		n[i] = RingToGeo(p[i], proj)
@@ -138,8 +137,8 @@ func PolygonToGeo(p planar.Polygon, proj *Projection) geo.Polygon {
 }
 
 // MultiPolygonToPlanar is a helper to project an entire multi polygon.
-func MultiPolygonToPlanar(mp geo.MultiPolygon, proj *Projection) planar.MultiPolygon {
-	n := make(planar.MultiPolygon, len(mp))
+func MultiPolygonToPlanar(mp geo.MultiPolygon, proj *Projection) geo.MultiPolygon {
+	n := make(geo.MultiPolygon, len(mp))
 	for i := range mp {
 		n[i] = PolygonToPlanar(mp[i], proj)
 	}
@@ -148,7 +147,7 @@ func MultiPolygonToPlanar(mp geo.MultiPolygon, proj *Projection) planar.MultiPol
 }
 
 // MultiPolygonToGeo is a helper to project an entire multi linestring.
-func MultiPolygonToGeo(mp planar.MultiPolygon, proj *Projection) geo.MultiPolygon {
+func MultiPolygonToGeo(mp geo.MultiPolygon, proj *Projection) geo.MultiPolygon {
 	n := make(geo.MultiPolygon, len(mp))
 	for i := range mp {
 		n[i] = PolygonToGeo(mp[i], proj)
@@ -158,8 +157,8 @@ func MultiPolygonToGeo(mp planar.MultiPolygon, proj *Projection) geo.MultiPolygo
 }
 
 // CollectionToPlanar is a helper to project a rectangle.
-func CollectionToPlanar(c geo.Collection, proj *Projection) planar.Collection {
-	n := make(planar.Collection, len(c))
+func CollectionToPlanar(c geo.Collection, proj *Projection) geo.Collection {
+	n := make(geo.Collection, len(c))
 	for i := range c {
 		n[i] = ToPlanar(c[i], proj)
 	}
@@ -168,7 +167,7 @@ func CollectionToPlanar(c geo.Collection, proj *Projection) planar.Collection {
 }
 
 // CollectionToGeo is a helper to project a rectangle.
-func CollectionToGeo(c planar.Collection, proj *Projection) geo.Collection {
+func CollectionToGeo(c geo.Collection, proj *Projection) geo.Collection {
 	n := make(geo.Collection, len(c))
 	for i := range c {
 		n[i] = ToGeo(c[i], proj)
@@ -178,15 +177,15 @@ func CollectionToGeo(c planar.Collection, proj *Projection) geo.Collection {
 }
 
 // BoundToPlanar is a helper to project a rectangle.
-func BoundToPlanar(bound geo.Bound, proj *Projection) planar.Bound {
-	return planar.NewBoundFromPoints(
+func BoundToPlanar(bound geo.Bound, proj *Projection) geo.Bound {
+	return geo.NewBoundFromPoints(
 		proj.ToPlanar(bound[0]),
 		proj.ToPlanar(bound[1]),
 	)
 }
 
 // BoundToGeo is a helper to project a rectangle.
-func BoundToGeo(bound planar.Bound, proj *Projection) geo.Bound {
+func BoundToGeo(bound geo.Bound, proj *Projection) geo.Bound {
 	return geo.NewBoundFromPoints(
 		proj.ToGeo(bound[0]),
 		proj.ToGeo(bound[1]),

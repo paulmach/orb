@@ -3,18 +3,18 @@ package resample
 import (
 	"testing"
 
-	"github.com/paulmach/orb/planar"
+	"github.com/paulmach/orb/geo"
 )
 
 func TestLineStringResample(t *testing.T) {
-	ls := planar.NewLineString()
+	ls := geo.NewLineString()
 	Resample(ls, 10) // should not panic
 
-	ls = append(ls, planar.NewPoint(0, 0))
+	ls = append(ls, geo.NewPoint(0, 0))
 	Resample(ls, 10) // should not panic
 
-	ls = append(ls, planar.NewPoint(1.5, 1.5))
-	ls = append(ls, planar.NewPoint(2, 2))
+	ls = append(ls, geo.NewPoint(1.5, 1.5))
+	ls = append(ls, geo.NewPoint(2, 2))
 
 	// resample to 0?
 	result := Resample(ls, 0)
@@ -24,24 +24,24 @@ func TestLineStringResample(t *testing.T) {
 
 	// resample to 1
 	result = Resample(ls, 1)
-	answer := append(planar.NewLineString(), planar.NewPoint(0, 0))
+	answer := append(geo.NewLineString(), geo.NewPoint(0, 0))
 
 	if !result.Equal(answer) {
 		t.Error("down to 1 should be first point")
 	}
 
 	result = Resample(ls, 2)
-	answer = append(planar.NewLineString(),
-		planar.NewPoint(0, 0), planar.NewPoint(2, 2))
+	answer = append(geo.NewLineString(),
+		geo.NewPoint(0, 0), geo.NewPoint(2, 2))
 	if !result.Equal(answer) {
 		t.Error("resample downsampling")
 	}
 
 	result = Resample(ls, 5)
-	answer = append(planar.NewLineString(),
-		planar.NewPoint(0, 0), planar.NewPoint(0.5, 0.5),
-		planar.NewPoint(1, 1), planar.NewPoint(1.5, 1.5),
-		planar.NewPoint(2, 2))
+	answer = append(geo.NewLineString(),
+		geo.NewPoint(0, 0), geo.NewPoint(0.5, 0.5),
+		geo.NewPoint(1, 1), geo.NewPoint(1.5, 1.5),
+		geo.NewPoint(2, 2))
 	if !result.Equal(answer) {
 		t.Error("resample upsampling")
 		t.Log(result)
@@ -49,19 +49,19 @@ func TestLineStringResample(t *testing.T) {
 	}
 
 	// round off error case, triggered on my laptop
-	p1 := append(planar.NewLineString(),
-		planar.NewPoint(-88.145243, 42.321059),
-		planar.NewPoint(-88.145232, 42.325902))
+	p1 := append(geo.NewLineString(),
+		geo.NewPoint(-88.145243, 42.321059),
+		geo.NewPoint(-88.145232, 42.325902))
 	p1 = Resample(p1, 109)
 	if len(p1) != 109 {
 		t.Errorf("incorrect length: %v != 109", len(p1))
 	}
 
 	// duplicate points
-	ls = append(planar.NewLineString(),
-		planar.NewPoint(1, 0),
-		planar.NewPoint(1, 0),
-		planar.NewPoint(1, 0),
+	ls = append(geo.NewLineString(),
+		geo.NewPoint(1, 0),
+		geo.NewPoint(1, 0),
+		geo.NewPoint(1, 0),
 	)
 
 	ls = Resample(ls, 10)
@@ -69,7 +69,7 @@ func TestLineStringResample(t *testing.T) {
 		t.Errorf("length incorrect: %d != 10", l)
 	}
 
-	expected := planar.NewPoint(1, 0)
+	expected := geo.NewPoint(1, 0)
 	for i := 0; i < len(ls); i++ {
 		if !ls[i].Equal(expected) {
 			t.Errorf("incorrect point: %v != %v", ls[i], expected)
@@ -78,9 +78,9 @@ func TestLineStringResample(t *testing.T) {
 }
 
 func TestLineStringResampleWithInterval(t *testing.T) {
-	ls := append(planar.NewLineString(),
-		planar.NewPoint(0, 0),
-		planar.NewPoint(0, 10),
+	ls := append(geo.NewLineString(),
+		geo.NewPoint(0, 0),
+		geo.NewPoint(0, 10),
 	)
 
 	ls = ToInterval(ls, 5.0)
@@ -88,15 +88,15 @@ func TestLineStringResampleWithInterval(t *testing.T) {
 		t.Errorf("incorrect length: %v != 3", l)
 	}
 
-	expected := planar.NewPoint(0, 5.0)
+	expected := geo.NewPoint(0, 5.0)
 	if v := ls[1]; !v.Equal(expected) {
 		t.Errorf("incorrect point: %v != %v", v, expected)
 	}
 }
 
 func TestLineStringResampleEdgeCases(t *testing.T) {
-	ls := append(planar.NewLineString(),
-		planar.NewPoint(0, 0),
+	ls := append(geo.NewLineString(),
+		geo.NewPoint(0, 0),
 	)
 
 	_, ret := resampleEdgeCases(ls, 10)
@@ -105,7 +105,7 @@ func TestLineStringResampleEdgeCases(t *testing.T) {
 	}
 
 	// duplicate points
-	ls = append(ls, planar.NewPoint(0, 0))
+	ls = append(ls, geo.NewPoint(0, 0))
 	ls, ret = resampleEdgeCases(ls, 10)
 	if !ret {
 		t.Errorf("should return true")
