@@ -7,27 +7,16 @@ import (
 	"github.com/paulmach/orb/geo"
 )
 
-// DistanceFrom returns the distance from the geometry in
+// DistanceFrom returns the distance from the boundary of the geometry in
 // the units of the geometry.
 func DistanceFrom(g geo.Geometry, p geo.Point) float64 {
-	switch g := g.(type) {
-	case geo.Point:
-		return Distance(g, p)
-	case geo.LineString:
-		d, _ := lineStringDistanceFrom(g, p)
-		return d
-	case geo.Ring:
-		d, _ := lineStringDistanceFrom(geo.LineString(g), p)
-		return d
-	case geo.Bound:
-		return DistanceFrom(g.ToRing(), p)
-	}
-
-	panic(fmt.Sprintf("geometry type not supported: %T", g))
+	d, _ := DistanceFromWithIndex(g, p)
+	return d
 }
 
 // DistanceFromWithIndex returns the minimum euclidean distance
-// from the points plus the index of that element in the set.
+// from the boundary of the geometry plus the index of the sub-geometry
+// that was the match.
 func DistanceFromWithIndex(g geo.Geometry, p geo.Point) (float64, int) {
 	switch g := g.(type) {
 	case geo.Point:

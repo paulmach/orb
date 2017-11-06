@@ -134,6 +134,10 @@ func ringCentroidArea(r geo.Ring) (geo.Point, float64) {
 		centroid[1] += (r[i][1] + r[i+1][1] - 2*offsetY) * a
 	}
 
+	if area == 0 {
+		return r[0], 0
+	}
+
 	// no need to deal with first and last vertex since we "moved"
 	// that point the origin (multiply by 0 == 0)
 

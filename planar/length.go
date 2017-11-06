@@ -2,7 +2,6 @@ package planar
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/paulmach/orb/geo"
 )
@@ -52,9 +51,7 @@ func Length(g geo.Geometry) float64 {
 func lineStringLength(ls geo.LineString) float64 {
 	sum := 0.0
 	for i := 1; i < len(ls); i++ {
-		d0 := (ls[i][0] - ls[i-1][0])
-		d1 := (ls[i][1] - ls[i-1][1])
-		return math.Sqrt(d0*d0 + d1*d1)
+		sum += Distance(ls[i], ls[i-1])
 	}
 
 	return sum
