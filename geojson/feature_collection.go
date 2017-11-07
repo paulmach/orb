@@ -1,6 +1,6 @@
 /*
 Package geojson is a library for encoding and decoding GeoJSON into Go structs using
-the geometries in the orb/geo package.  Supports both the json.Marshaler and json.Unmarshaler
+the geometries in the orb package. Supports both the json.Marshaler and json.Unmarshaler
 interfaces as well as helper functions such as `UnmarshalFeatureCollection` and `UnmarshalFeature`.
 */
 package geojson

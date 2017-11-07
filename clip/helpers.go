@@ -1,3 +1,4 @@
+// Package clip is a library for clipping geometry to a bounding box.
 package clip
 
 import (

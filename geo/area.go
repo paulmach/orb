@@ -1,3 +1,4 @@
+// Package geo computes properties on geometries assuming they are lon/lat data.
 package geo
 
 import (

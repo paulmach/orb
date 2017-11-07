@@ -6,8 +6,11 @@ Package orb/maptile provides types and methods for working with
 It defines a tile as:
 
 	type Tile struct {
-		X, Y, Z uint32
+		X, Y uint32
+		Z    Zoom
 	}
+
+	type Zoom uint32
 
 Functions are provided to create tiles from lon/lat points as well as
 [quadkeys](https://msdn.microsoft.com/en-us/library/bb259689.aspx).
