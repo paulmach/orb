@@ -6,6 +6,10 @@ import (
 
 // Clone will make a deep copy of the geometry.
 func Clone(g Geometry) Geometry {
+	if g == nil {
+		return nil
+	}
+
 	switch g := g.(type) {
 	case Point:
 		return g
