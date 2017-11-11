@@ -7,6 +7,10 @@ import "github.com/paulmach/orb"
 // line will clip a line into a set of lines
 // along the bounding box boundary.
 func line(box orb.Bound, in orb.LineString) orb.MultiLineString {
+	if len(in) == 0 {
+		return nil
+	}
+
 	var out orb.MultiLineString
 	line := 0
 

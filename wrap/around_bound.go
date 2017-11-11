@@ -14,10 +14,15 @@ func aroundBound(
 	in orb.Ring,
 	o orb.Orientation,
 ) (orb.Ring, error) {
-	next, ok := nexts[o]
-	if !ok {
-		return nil, errors.New("wrap: invalid orientation")
+	if o != orb.CCW && o != orb.CW {
+		panic("invalid orientation")
 	}
+
+	if len(in) == 0 {
+		return nil, nil
+	}
+
+	next := nexts[o]
 
 	f := in[0]
 	l := in[len(in)-1]

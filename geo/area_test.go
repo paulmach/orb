@@ -7,6 +7,13 @@ import (
 	"github.com/paulmach/orb"
 )
 
+func TestArea(t *testing.T) {
+	for _, g := range orb.AllGeometries {
+		// should not panic with unsupported type
+		Area(g)
+	}
+}
+
 func TestSignedArea(t *testing.T) {
 	area := 12392.029
 	cases := []struct {

@@ -85,12 +85,34 @@ func (c Collection) Dimensions() int {
 
 // Bound returns the bounding box of all the Geometries combined.
 func (c Collection) Bound() Bound {
-	r := c[0].Bound()
-	for i := 1; i < len(c); i++ {
-		r = r.Union(c[i].Bound())
+	if len(c) == 0 {
+		return Bound{}
 	}
 
-	return r
+	var b Bound
+	start := -1
+
+	for i, g := range c {
+		if g != nil {
+			start = i
+			b = g.Bound()
+			break
+		}
+	}
+
+	if start == -1 {
+		return Bound{}
+	}
+
+	for i := start + 1; i < len(c); i++ {
+		if c[i] == nil {
+			continue
+		}
+
+		b = b.Union(c[i].Bound())
+	}
+
+	return b
 }
 
 // Equal compares two collections. Returns true if lengths are the same

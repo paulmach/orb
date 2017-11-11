@@ -9,6 +9,10 @@ import (
 // Length returns the length of the boundary of the geometry
 // using 2d euclidean geometry.
 func Length(g orb.Geometry, df orb.Distance) float64 {
+	if g == nil {
+		return 0
+	}
+
 	switch g := g.(type) {
 	case orb.Point:
 		return 0

@@ -17,6 +17,9 @@ func (p Polygon) Dimensions() int {
 
 // Bound returns a bound around the polygon.
 func (p Polygon) Bound() Bound {
+	if len(p) == 0 {
+		return Bound{}
+	}
 	return p[0].Bound()
 }
 

@@ -17,6 +17,10 @@ func Area(g orb.Geometry) float64 {
 // CentroidArea returns botht the centroid and the area in the 2d plane.
 // Since the area is need for the centroid, return both.
 func CentroidArea(g orb.Geometry) (orb.Point, float64) {
+	if g == nil {
+		return orb.Point{}, 0
+	}
+
 	switch g := g.(type) {
 	case orb.Point:
 		return multiPointCentroid(orb.MultiPoint{g}), 0
@@ -122,6 +126,10 @@ func ringCentroidArea(r orb.Ring) (orb.Point, float64) {
 	centroid := orb.Point{}
 	area := 0.0
 
+	if len(r) == 0 {
+		return orb.Point{}, 0
+	}
+
 	// implicitly move everything to near the origin to help with roundoff
 	offsetX := r[0][0]
 	offsetY := r[0][1]
@@ -152,6 +160,10 @@ func ringCentroidArea(r orb.Ring) (orb.Point, float64) {
 }
 
 func polygonCentroidArea(p orb.Polygon) (orb.Point, float64) {
+	if len(p) == 0 {
+		return orb.Point{}, 0
+	}
+
 	centroid, area := ringCentroidArea(p[0])
 	area = math.Abs(area)
 

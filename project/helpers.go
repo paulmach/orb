@@ -4,6 +4,10 @@ import "github.com/paulmach/orb"
 
 // ToPlanar projects a geometry from geo -> planar
 func ToPlanar(g orb.Geometry, proj *Projection) orb.Geometry {
+	if g == nil {
+		return nil
+	}
+
 	switch g := g.(type) {
 	case orb.Point:
 		return proj.ToPlanar(g)
@@ -30,6 +34,10 @@ func ToPlanar(g orb.Geometry, proj *Projection) orb.Geometry {
 
 // ToGeo projects a geometry from planar -> geo
 func ToGeo(g orb.Geometry, proj *Projection) orb.Geometry {
+	if g == nil {
+		return nil
+	}
+
 	switch g := g.(type) {
 	case orb.Point:
 		return proj.ToGeo(g)

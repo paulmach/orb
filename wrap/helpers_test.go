@@ -7,6 +7,12 @@ import (
 	"github.com/paulmach/orb"
 )
 
+func TestAroundBound(t *testing.T) {
+	for _, g := range orb.AllGeometries {
+		AroundBound(orb.Bound{}, g, orb.CW)
+	}
+}
+
 func TestRing(t *testing.T) {
 	cases := []struct {
 		name   string

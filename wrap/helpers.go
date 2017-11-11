@@ -10,8 +10,8 @@ import (
 // connect the endpoints around the boundary of the bound in the direction provided.
 // Will append to the original geometry.
 func AroundBound(b orb.Bound, g orb.Geometry, o orb.Orientation) (orb.Geometry, error) {
-	if o != orb.CCW && o != orb.CW {
-		panic("invalid orientation")
+	if g == nil {
+		return nil, nil
 	}
 
 	switch g := g.(type) {
@@ -47,6 +47,10 @@ func Ring(b orb.Bound, r orb.Ring, o orb.Orientation) (orb.Ring, error) {
 // Polygon will connect the polygon rings around the bound assuming the outer
 // ring is in the direction provided and the inner rings are the opposite.
 func Polygon(b orb.Bound, p orb.Polygon, o orb.Orientation) (orb.Polygon, error) {
+	if len(p) == 0 {
+		return p, nil
+	}
+
 	r, err := Ring(b, p[0], o)
 	if err != nil {
 		return nil, err

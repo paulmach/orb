@@ -6,6 +6,12 @@ import (
 	"github.com/paulmach/orb"
 )
 
+func TestCentroidArea(t *testing.T) {
+	for _, g := range orb.AllGeometries {
+		CentroidArea(g)
+	}
+}
+
 func TestCentroidArea_MultiPoint(t *testing.T) {
 	mp := orb.MultiPoint{{0, 0}, {1, 1.5}, {2, 0}}
 

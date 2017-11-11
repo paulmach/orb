@@ -1,4 +1,4 @@
-package project
+package geo
 
 import (
 	"testing"
@@ -6,16 +6,16 @@ import (
 	"github.com/paulmach/orb"
 )
 
-func TestToPlanar(t *testing.T) {
+func TestLength(t *testing.T) {
 	for _, g := range orb.AllGeometries {
 		// should not panic with unsupported type
-		ToPlanar(g, Mercator)
+		Length(g)
 	}
 }
 
-func TestToGeo(t *testing.T) {
+func TestLengthHaversign(t *testing.T) {
 	for _, g := range orb.AllGeometries {
 		// should not panic with unsupported type
-		ToGeo(g, Mercator)
+		LengthHaversign(g)
 	}
 }

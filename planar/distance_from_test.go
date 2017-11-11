@@ -9,6 +9,12 @@ import (
 
 var epsilon = 1e-6
 
+func TestDistanceFromWithIndex(t *testing.T) {
+	for _, g := range orb.AllGeometries {
+		DistanceFromWithIndex(g, orb.Point{})
+	}
+}
+
 func TestDistanceFrom_MultiPoint(t *testing.T) {
 	mp := orb.MultiPoint{{0.0}, {1, 1}, {2, 2}}
 

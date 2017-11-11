@@ -13,6 +13,10 @@ import (
 // This operation will modify the input of '2d geometry' by using as a
 // scratch space so clone if necessary.
 func Clip(b orb.Bound, g orb.Geometry) orb.Geometry {
+	if g == nil {
+		return nil
+	}
+
 	if !b.Intersects(g.Bound()) {
 		return nil
 	}
@@ -136,6 +140,10 @@ func Ring(b orb.Bound, r orb.Ring) orb.Ring {
 // This operation will modify the input by using as a scratch space
 // so clone if necessary.
 func Polygon(b orb.Bound, p orb.Polygon) orb.Polygon {
+	if len(p) == 0 {
+		return nil
+	}
+
 	r := Ring(b, p[0])
 	if r == nil {
 		return nil

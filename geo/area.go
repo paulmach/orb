@@ -10,8 +10,13 @@ import (
 
 // Area returns the area of the geometry on the earth.
 func Area(g orb.Geometry) float64 {
+	if g == nil {
+		return 0
+	}
+
 	switch g := g.(type) {
 	case orb.Point, orb.MultiPoint, orb.LineString, orb.MultiLineString:
+		return 0
 	case orb.Ring:
 		return math.Abs(ringArea(g))
 	case orb.Polygon:
@@ -76,6 +81,10 @@ func ringArea(r orb.Ring) float64 {
 }
 
 func polygonArea(p orb.Polygon) float64 {
+	if len(p) == 0 {
+		return 0
+	}
+
 	sum := math.Abs(ringArea(p[0]))
 	for i := 1; i < len(p); i++ {
 		sum -= math.Abs(ringArea(p[i]))

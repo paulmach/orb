@@ -18,6 +18,10 @@ func DistanceFrom(g orb.Geometry, p orb.Point) float64 {
 // from the boundary of the geometry plus the index of the sub-geometry
 // that was the match.
 func DistanceFromWithIndex(g orb.Geometry, p orb.Point) (float64, int) {
+	if g == nil {
+		return math.Inf(1), -1
+	}
+
 	switch g := g.(type) {
 	case orb.Point:
 		return Distance(g, p), 0
