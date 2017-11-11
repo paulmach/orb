@@ -24,7 +24,7 @@ func TestPathBound(t *testing.T) {
 		NewPoint(1, 8),
 	)
 
-	expected := NewBound(-1, 1, 0, 10)
+	expected := Bound{Min: Point{-1, 0}, Max: Point{1, 10}}
 	if b := mp.Bound(); !b.Equal(expected) {
 		t.Errorf("incorrect bound, %v != %v", b, expected)
 	}

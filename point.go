@@ -20,7 +20,7 @@ func (p Point) Dimensions() int {
 
 // Bound returns a single point bound of the point.
 func (p Point) Bound() Bound {
-	return NewBound(p[0], p[0], p[1], p[1])
+	return Bound{p, p}
 }
 
 // Equal checks if the point represents the same point or vector.

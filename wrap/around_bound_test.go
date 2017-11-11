@@ -30,34 +30,34 @@ func TestInternalAroundBound(t *testing.T) {
 	}{
 		{
 			name:   "simple ccw",
-			box:    orb.NewBound(-1, 1, -1, 1),
+			box:    orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{1, 1}},
 			input:  orb.Ring{{-2, -2}, {2, 2}},
 			output: orb.Ring{{-2, -2}, {2, 2}, {0, 1}, {-1, 1}, {-1, 0}, {-2, -2}}, expected: orb.CCW,
 		},
 		{
 			name:     "simple cw",
-			box:      orb.NewBound(-1, 1, -1, 1),
+			box:      orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{1, 1}},
 			input:    orb.Ring{{-2, -2}, {2, 2}},
 			output:   orb.Ring{{-2, -2}, {2, 2}, {1, 0}, {1, -1}, {0, -1}, {-2, -2}},
 			expected: orb.CW,
 		},
 		{
 			name:     "wrap around whole box ccw",
-			box:      orb.NewBound(-1, 1, -1, 1),
+			box:      orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{1, 1}},
 			input:    orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}},
 			output:   orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-2, 0.5}},
 			expected: orb.CCW,
 		},
 		{
 			name:     "wrap around whole box cw",
-			box:      orb.NewBound(-1, 1, -1, 1),
+			box:      orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{1, 1}},
 			input:    orb.Ring{{-2, -0.5}, {0, -0.5}, {0, 0.5}, {-2, 0.5}},
 			output:   orb.Ring{{-2, -0.5}, {0, -0.5}, {0, 0.5}, {-2, 0.5}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-2, -0.5}},
 			expected: orb.CW,
 		},
 		{
 			name:        "already cw with endpoints in same section",
-			box:         orb.NewBound(-1, 1, -1, 1),
+			box:         orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{1, 1}},
 			input:       orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}},
 			output:      orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}, {-2, 0.5}},
 			orientation: orb.CW,
@@ -65,7 +65,7 @@ func TestInternalAroundBound(t *testing.T) {
 		},
 		{
 			name:        "cw but want ccw with endpoints in same section",
-			box:         orb.NewBound(-1, 1, -1, 1),
+			box:         orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{1, 1}},
 			input:       orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}},
 			output:      orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-2, 0.5}},
 			orientation: orb.CW,

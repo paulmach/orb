@@ -170,8 +170,8 @@ func TestCentroidArea_Polygon(t *testing.T) {
 }
 
 func TestCentroidArea_Bound(t *testing.T) {
-	r := orb.NewBound(0, 1, 2, 3)
-	centroid, area := CentroidArea(r)
+	b := orb.Bound{Min: orb.Point{0, 2}, Max: orb.Point{1, 3}}
+	centroid, area := CentroidArea(b)
 
 	expected := orb.NewPoint(0.5, 2.5)
 	if !centroid.Equal(expected) {
@@ -182,8 +182,8 @@ func TestCentroidArea_Bound(t *testing.T) {
 		t.Errorf("incorrect area: %f != 1", area)
 	}
 
-	r = orb.NewBound(0, 0, 2, 2)
-	centroid, area = CentroidArea(r)
+	b = orb.Bound{Min: orb.Point{0, 2}, Max: orb.Point{0, 2}}
+	centroid, area = CentroidArea(b)
 
 	expected = orb.NewPoint(0, 2)
 	if !centroid.Equal(expected) {

@@ -15,7 +15,7 @@ func TestRing(t *testing.T) {
 	}{
 		{
 			name:  "bound to the top",
-			bound: orb.NewBound(-1, 3, 3, 4),
+			bound: orb.Bound{Min: orb.Point{-1, 3}, Max: orb.Point{3, 4}},
 			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
@@ -23,7 +23,7 @@ func TestRing(t *testing.T) {
 		},
 		{
 			name:  "bound in lower left",
-			bound: orb.NewBound(-1, 0, -1, 0),
+			bound: orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{0, 0}},
 			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
@@ -53,39 +53,39 @@ func TestBound(t *testing.T) {
 	}{
 		{
 			name: "normal intersection",
-			b1:   orb.NewBound(0, 3, 1, 4),
-			b2:   orb.NewBound(1, 4, 2, 5),
-			rs:   orb.NewBound(1, 3, 2, 4),
+			b1:   orb.Bound{Min: orb.Point{0, 1}, Max: orb.Point{3, 4}},
+			b2:   orb.Bound{Min: orb.Point{1, 2}, Max: orb.Point{4, 5}},
+			rs:   orb.Bound{Min: orb.Point{1, 2}, Max: orb.Point{3, 4}},
 		},
 		{
 			name: "1 contains 2",
-			b1:   orb.NewBound(0, 3, 1, 4),
-			b2:   orb.NewBound(1, 2, 2, 3),
-			rs:   orb.NewBound(1, 2, 2, 3),
+			b1:   orb.Bound{Min: orb.Point{0, 1}, Max: orb.Point{3, 4}},
+			b2:   orb.Bound{Min: orb.Point{1, 2}, Max: orb.Point{2, 3}},
+			rs:   orb.Bound{Min: orb.Point{1, 2}, Max: orb.Point{2, 3}},
 		},
 		{
 			name: "no overlap",
-			b1:   orb.NewBound(0, 3, 1, 4),
-			b2:   orb.NewBound(4, 5, 5, 6),
-			rs:   orb.NewBound(1, 0, 1, 0), // empty
+			b1:   orb.Bound{Min: orb.Point{0, 1}, Max: orb.Point{3, 4}},
+			b2:   orb.Bound{Min: orb.Point{4, 5}, Max: orb.Point{5, 6}},
+			rs:   orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{0, 0}}, // empty
 		},
 		{
 			name: "same bound",
-			b1:   orb.NewBound(0, 3, 1, 4),
-			b2:   orb.NewBound(0, 3, 1, 4),
-			rs:   orb.NewBound(0, 3, 1, 4),
+			b1:   orb.Bound{Min: orb.Point{0, 1}, Max: orb.Point{3, 4}},
+			b2:   orb.Bound{Min: orb.Point{0, 1}, Max: orb.Point{3, 4}},
+			rs:   orb.Bound{Min: orb.Point{0, 1}, Max: orb.Point{3, 4}},
 		},
 		{
 			name: "1 is empty",
-			b1:   orb.NewBound(1, 0, 1, 0),
-			b2:   orb.NewBound(0, 3, 1, 4),
-			rs:   orb.NewBound(0, 3, 1, 4),
+			b1:   orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{0, 0}},
+			b2:   orb.Bound{Min: orb.Point{0, 1}, Max: orb.Point{3, 4}},
+			rs:   orb.Bound{Min: orb.Point{0, 1}, Max: orb.Point{3, 4}},
 		},
 		{
 			name: "both are empty",
-			b1:   orb.NewBound(1, 0, 1, 0),
-			b2:   orb.NewBound(1, 0, 1, 0),
-			rs:   orb.NewBound(1, 0, 1, 0),
+			b1:   orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{0, 0}},
+			b2:   orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{0, 0}},
+			rs:   orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{0, 0}},
 		},
 	}
 

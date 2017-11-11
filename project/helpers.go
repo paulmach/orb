@@ -167,15 +167,15 @@ func CollectionToGeo(c orb.Collection, proj *Projection) orb.Collection {
 // BoundToPlanar is a helper to project a rectangle.
 func BoundToPlanar(bound orb.Bound, proj *Projection) orb.Bound {
 	return orb.NewBoundFromPoints(
-		proj.ToPlanar(bound[0]),
-		proj.ToPlanar(bound[1]),
+		proj.ToPlanar(bound.Min),
+		proj.ToPlanar(bound.Max),
 	)
 }
 
 // BoundToGeo is a helper to project a rectangle.
 func BoundToGeo(bound orb.Bound, proj *Projection) orb.Bound {
 	return orb.NewBoundFromPoints(
-		proj.ToGeo(bound[0]),
-		proj.ToGeo(bound[1]),
+		proj.ToGeo(bound.Min),
+		proj.ToGeo(bound.Max),
 	)
 }

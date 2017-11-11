@@ -8,8 +8,8 @@ import (
 // ForBound creates a tile cover for the bound. i.e. all the tiles
 // that intersect the bound.
 func ForBound(b orb.Bound, z maptile.Zoom) maptile.Tiles {
-	lo := maptile.At(b[0], z)
-	hi := maptile.At(b[1], z)
+	lo := maptile.At(b.Min, z)
+	hi := maptile.At(b.Max, z)
 
 	result := make(maptile.Tiles, 0, (hi.X-lo.X+1)*(lo.Y-hi.Y+1))
 

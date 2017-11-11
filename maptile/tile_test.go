@@ -90,11 +90,8 @@ func TestTileBound(t *testing.T) {
 		t.Errorf("should not contain point")
 	}
 
-	if b := New(0, 0, 0).Bound(); b != orb.NewBound(-180, 180, -85.05112877980659, 85.05112877980659) {
-		t.Errorf("should be full earth, got %v", b)
-	}
-
-	if b := New(0, 0, 0).Bound(10); b != orb.NewBound(-180, 180, -85.05112877980659, 85.05112877980659) {
+	expected := orb.Bound{Min: orb.Point{-180, -85.05112877980659}, Max: orb.Point{180, 85.05112877980659}}
+	if b := New(0, 0, 0).Bound(); !b.Equal(expected) {
 		t.Errorf("should be full earth, got %v", b)
 	}
 }

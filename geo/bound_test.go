@@ -7,44 +7,37 @@ import (
 	"github.com/paulmach/orb"
 )
 
-func center(r orb.Bound) orb.Point {
-	return orb.Point{
-		(r[0][0] + r[1][0]) / 2.0,
-		(r[0][1] + r[1][1]) / 2.0,
-	}
-}
-
 func TestBoundAroundPoint(t *testing.T) {
 	p := orb.Point{
 		5.42553,
 		50.0359,
 	}
 
-	bound := NewBoundAroundPoint(p, 1000000)
-	if center(bound)[1] != p[1] {
+	b := NewBoundAroundPoint(p, 1000000)
+	if b.Center()[1] != p[1] {
 		t.Errorf("should have correct center lat point")
 	}
 
-	if center(bound)[0] != p[0] {
+	if b.Center()[0] != p[0] {
 		t.Errorf("should have correct center lon point")
 	}
 
 	//Given point is 968.9 km away from center
-	if !bound.Contains(orb.Point{3.412, 58.3838}) {
+	if !b.Contains(orb.Point{3.412, 58.3838}) {
 		t.Errorf("should have point included in bound")
 	}
 
-	bound = NewBoundAroundPoint(p, 10000.0)
-	if center(bound)[1] != p[1] {
+	b = NewBoundAroundPoint(p, 10000.0)
+	if b.Center()[1] != p[1] {
 		t.Errorf("should have correct center lat point")
 	}
 
-	if center(bound)[0] != p[0] {
+	if b.Center()[0] != p[0] {
 		t.Errorf("should have correct center lon point")
 	}
 
 	//Given point is 968.9 km away from center
-	if bound.Contains(orb.Point{3.412, 58.3838}) {
+	if b.Contains(orb.Point{3.412, 58.3838}) {
 		t.Errorf("should not have point included in bound")
 	}
 }
@@ -86,7 +79,7 @@ func TestBoundPad(t *testing.T) {
 		})
 	}
 
-	b1 := orb.NewBound(-180, 180, -90, 90)
+	b1 := orb.Bound{Min: orb.Point{-180, -90}, Max: orb.Point{180, 90}}
 	b2 := BoundPad(b1, 100)
 	if !b1.Equal(b2) {
 		t.Errorf("should be extend bound around fill earth: %v", b2)

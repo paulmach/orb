@@ -198,13 +198,13 @@ func Bound(b, bound orb.Bound) orb.Bound {
 	}
 
 	return orb.Bound{
-		orb.Point{
-			math.Max(b[0][0], bound[0][0]),
-			math.Max(b[0][1], bound[0][1]),
+		Min: orb.Point{
+			math.Max(b.Min[0], bound.Min[0]),
+			math.Max(b.Min[1], bound.Min[1]),
 		},
-		orb.Point{
-			math.Min(b[1][0], bound[1][0]),
-			math.Min(b[1][1], bound[1][1]),
+		Max: orb.Point{
+			math.Min(b.Max[0], bound.Max[0]),
+			math.Min(b.Max[1], bound.Max[1]),
 		},
 	}
 }

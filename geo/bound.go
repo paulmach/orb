@@ -34,44 +34,44 @@ func NewBoundAroundPoint(center orb.Point, distance float64) orb.Bound {
 	}
 
 	return orb.Bound{
-		orb.Point{rad2deg(minLon), rad2deg(minLat)},
-		orb.Point{rad2deg(maxLon), rad2deg(maxLat)},
+		Min: orb.Point{rad2deg(minLon), rad2deg(minLat)},
+		Max: orb.Point{rad2deg(maxLon), rad2deg(maxLat)},
 	}
 }
 
 // BoundPad expands the bound in all directions by the given amount of meters.
 func BoundPad(b orb.Bound, meters float64) orb.Bound {
 	dy := meters / 111131.75
-	dx := dy / math.Cos(deg2rad(b[1][1]))
-	dx = math.Max(dx, dy/math.Cos(deg2rad(b[0][1])))
+	dx := dy / math.Cos(deg2rad(b.Max[1]))
+	dx = math.Max(dx, dy/math.Cos(deg2rad(b.Min[1])))
 
-	b[0][0] -= dx
-	b[0][1] -= dy
+	b.Min[0] -= dx
+	b.Min[1] -= dy
 
-	b[1][0] += dx
-	b[1][1] += dy
+	b.Max[0] += dx
+	b.Max[1] += dy
 
-	b[0][0] = math.Max(b[0][0], -180)
-	b[0][1] = math.Max(b[0][1], -90)
+	b.Min[0] = math.Max(b.Min[0], -180)
+	b.Min[1] = math.Max(b.Min[1], -90)
 
-	b[1][0] = math.Min(b[1][0], 180)
-	b[1][1] = math.Min(b[1][1], 90)
+	b.Max[0] = math.Min(b.Max[0], 180)
+	b.Max[1] = math.Min(b.Max[1], 90)
 
 	return b
 }
 
 // BoundHeight returns the approximate height in meters.
 func BoundHeight(b orb.Bound) float64 {
-	return 111131.75 * (b[1][1] - b[0][1])
+	return 111131.75 * (b.Max[1] - b.Min[1])
 }
 
 // BoundWidth returns the approximate width in meters
 // of the center of the bound.
 func BoundWidth(b orb.Bound) float64 {
-	c := (b[0][1] + b[1][1]) / 2.0
+	c := (b.Min[1] + b.Max[1]) / 2.0
 
-	s1 := orb.Point{b[0][0], c}
-	s2 := orb.Point{b[1][0], c}
+	s1 := orb.Point{b.Min[0], c}
+	s2 := orb.Point{b.Max[0], c}
 
 	return Distance(s1, s2)
 }

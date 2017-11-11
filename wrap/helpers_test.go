@@ -17,14 +17,14 @@ func TestRing(t *testing.T) {
 	}{
 		{
 			name:   "wrap around whole box ccw",
-			bound:  orb.Bound{{-1, -1}, {1, 1}},
+			bound:  orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{1, 1}},
 			input:  orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}},
 			output: orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-2, 0.5}},
 			orient: orb.CCW,
 		},
 		{
 			name:   "just close the ring",
-			bound:  orb.Bound{{-1, -1}, {1, 1}},
+			bound:  orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{1, 1}},
 			input:  orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}},
 			output: orb.Ring{{-2, 0.5}, {0, 0.5}, {0, -0.5}, {-2, -0.5}, {-2, 0.5}},
 			orient: orb.CW,

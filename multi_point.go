@@ -1,9 +1,5 @@
 package orb
 
-import (
-	"math"
-)
-
 // A MultiPoint represents a set of points in the 2D Eucledian or Cartesian plane.
 type MultiPoint []Point
 
@@ -36,21 +32,12 @@ func (mp MultiPoint) Bound() Bound {
 		return Bound{}
 	}
 
-	minX := math.Inf(1)
-	minY := math.Inf(1)
-
-	maxX := math.Inf(-1)
-	maxY := math.Inf(-1)
-
-	for _, v := range mp {
-		minX = math.Min(minX, v[0])
-		minY = math.Min(minY, v[1])
-
-		maxX = math.Max(maxX, v[0])
-		maxY = math.Max(maxY, v[1])
+	b := Bound{mp[0], mp[0]}
+	for _, p := range mp {
+		b = b.Extend(p)
 	}
 
-	return NewBound(minX, maxX, minY, maxY)
+	return b
 }
 
 // Equal compares two MultiPoint objects. Returns true if lengths are the same

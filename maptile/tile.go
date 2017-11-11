@@ -102,8 +102,8 @@ func (t Tile) Bound(tileBuffer ...float64) orb.Bound {
 	lon2, lat2 := mercator.ToGeo(maxx, maxy, uint32(t.Z))
 
 	return orb.Bound{
-		orb.Point{lon1, lat2},
-		orb.Point{lon2, lat1},
+		Min: orb.Point{lon1, lat2},
+		Max: orb.Point{lon2, lat1},
 	}
 }
 

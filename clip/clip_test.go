@@ -16,7 +16,7 @@ func TestInternalLine(t *testing.T) {
 	}{
 		{
 			name:  "clip line",
-			bound: orb.NewBound(0, 30, 0, 30),
+			bound: orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{30, 30}},
 			input: orb.LineString{
 				{-10, 10}, {10, 10}, {10, -10}, {20, -10}, {20, 10}, {40, 10},
 				{40, 20}, {20, 20}, {20, 40}, {10, 40}, {10, 20}, {5, 20}, {-10, 20},
@@ -30,7 +30,7 @@ func TestInternalLine(t *testing.T) {
 		},
 		{
 			name:  "clips line crossign many times",
-			bound: orb.NewBound(0, 20, 0, 20),
+			bound: orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{20, 20}},
 			input: orb.LineString{
 				{10, -10}, {10, 30}, {20, 30}, {20, -10},
 			},
@@ -41,7 +41,7 @@ func TestInternalLine(t *testing.T) {
 		},
 		{
 			name:  "no changes if all inside",
-			bound: orb.NewBound(0, 20, 0, 20),
+			bound: orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{20, 20}},
 			input: orb.LineString{
 				{1, 1}, {2, 2}, {3, 3},
 			},
@@ -51,7 +51,7 @@ func TestInternalLine(t *testing.T) {
 		},
 		{
 			name:  "empty if nothing in bound",
-			bound: orb.NewBound(0, 2, 0, 2),
+			bound: orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{2, 2}},
 			input: orb.LineString{
 				{10, 10}, {20, 20}, {30, 30},
 			},
@@ -59,7 +59,7 @@ func TestInternalLine(t *testing.T) {
 		},
 		{
 			name:  "floating point example",
-			bound: orb.NewBound(-91.93359375, -91.7578125, 42.29356419217009, 42.42345651793831),
+			bound: orb.Bound{Min: orb.Point{-91.93359375, 42.29356419217009}, Max: orb.Point{-91.7578125, 42.42345651793831}},
 			input: orb.LineString{
 				{-86.66015624999999, 42.22851735620852}, {-81.474609375, 38.51378825951165},
 				{-85.517578125, 37.125286284966776}, {-85.8251953125, 38.95940879245423},
@@ -97,7 +97,7 @@ func TestInternalRing(t *testing.T) {
 	}{
 		{
 			name:  "clips polygon",
-			bound: orb.NewBound(0, 30, 0, 30),
+			bound: orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{30, 30}},
 			input: orb.Ring{
 				{-10, 10}, {0, 10}, {10, 10}, {10, 5}, {10, -5},
 				{10, -10}, {20, -10}, {20, 10}, {40, 10}, {40, 20},
@@ -113,7 +113,7 @@ func TestInternalRing(t *testing.T) {
 		},
 		{
 			name:  "completely inside bound",
-			bound: orb.NewBound(0, 10, 0, 10),
+			bound: orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{10, 10}},
 			input: orb.Ring{
 				{3, 3}, {5, 3}, {5, 5}, {3, 5}, {3, 3},
 			},
@@ -123,7 +123,7 @@ func TestInternalRing(t *testing.T) {
 		},
 		{
 			name:  "completely around bound",
-			bound: orb.NewBound(1, 2, 1, 2),
+			bound: orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{2, 2}},
 			input: orb.Ring{
 				{0, 0}, {3, 0}, {3, 3}, {0, 3}, {0, 0},
 			},
@@ -131,7 +131,7 @@ func TestInternalRing(t *testing.T) {
 		},
 		{
 			name:  "completely around touching corners",
-			bound: orb.NewBound(1, 3, 1, 3),
+			bound: orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{3, 3}},
 			input: orb.Ring{
 				{0, 2}, {2, 0}, {4, 2}, {2, 4}, {0, 2},
 			},
@@ -139,7 +139,7 @@ func TestInternalRing(t *testing.T) {
 		},
 		{
 			name:  "around but cut corners",
-			bound: orb.NewBound(0.5, 3.5, 0.5, 3.5),
+			bound: orb.Bound{Min: orb.Point{0.5, 0.5}, Max: orb.Point{3.5, 3.5}},
 			input: orb.Ring{
 				{0, 2}, {2, 4}, {4, 2}, {2, 0}, {0, 2},
 			},
@@ -147,7 +147,7 @@ func TestInternalRing(t *testing.T) {
 		},
 		{
 			name:  "unclosed ring",
-			bound: orb.NewBound(1, 4, 1, 4),
+			bound: orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{4, 4}},
 			input: orb.Ring{
 				{2, 0}, {3, 0}, {3, 5}, {2, 5},
 			},
@@ -176,7 +176,7 @@ func TestInternalRing_CompletelyOutside(t *testing.T) {
 	}{
 		{
 			name:  "bound in lower left",
-			bound: orb.NewBound(-1, 0, -1, 0),
+			bound: orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{0, 0}},
 			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
@@ -184,7 +184,7 @@ func TestInternalRing_CompletelyOutside(t *testing.T) {
 		},
 		{
 			name:  "bound in lower right",
-			bound: orb.NewBound(3, 4, -1, 0),
+			bound: orb.Bound{Min: orb.Point{3, -1}, Max: orb.Point{4, 0}},
 			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
@@ -192,7 +192,7 @@ func TestInternalRing_CompletelyOutside(t *testing.T) {
 		},
 		{
 			name:  "bound in upper right",
-			bound: orb.NewBound(3, 4, 3, 4),
+			bound: orb.Bound{Min: orb.Point{3, 3}, Max: orb.Point{4, 4}},
 			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
@@ -200,7 +200,7 @@ func TestInternalRing_CompletelyOutside(t *testing.T) {
 		},
 		{
 			name:  "bound in upper left",
-			bound: orb.NewBound(-1, 0, 3, 4),
+			bound: orb.Bound{Min: orb.Point{-1, 3}, Max: orb.Point{0, 4}},
 			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
@@ -208,7 +208,7 @@ func TestInternalRing_CompletelyOutside(t *testing.T) {
 		},
 		{
 			name:  "bound to the left",
-			bound: orb.NewBound(-1, 0, -1, 3),
+			bound: orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{0, 3}},
 			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
@@ -216,7 +216,7 @@ func TestInternalRing_CompletelyOutside(t *testing.T) {
 		},
 		{
 			name:  "bound to the right",
-			bound: orb.NewBound(3, 4, -1, 3),
+			bound: orb.Bound{Min: orb.Point{3, -1}, Max: orb.Point{4, 3}},
 			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
@@ -224,7 +224,7 @@ func TestInternalRing_CompletelyOutside(t *testing.T) {
 		},
 		{
 			name:  "bound to the top",
-			bound: orb.NewBound(-1, 3, 3, 4),
+			bound: orb.Bound{Min: orb.Point{-1, 3}, Max: orb.Point{3, 3}},
 			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
@@ -232,7 +232,7 @@ func TestInternalRing_CompletelyOutside(t *testing.T) {
 		},
 		{
 			name:  "bound to the bottom",
-			bound: orb.NewBound(-1, 3, -1, 0),
+			bound: orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{3, 0}},
 			input: orb.Ring{
 				{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1},
 			},
