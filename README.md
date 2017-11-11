@@ -20,11 +20,11 @@ It supports the following types:
 
 All of these types match the `orb.Geometry` interface which is defined as:
 
-type Geometry interface {
-    GeoJSONType() string
-    Dimensions() int // e.g. 0d, 1d, 2d
-    Bound() Bound
-}
+	type Geometry interface {
+		GeoJSONType() string
+		Dimensions() int // e.g. 0d, 1d, 2d
+		Bound() Bound
+	}
 
 Only a few methods are defined directly on these type, for example `Clone`, `Equal`, `GeoJSONType`.
 Other operation that depend on geo vs. planar contexts are defined in the respective sub package.
@@ -32,15 +32,15 @@ For example:
 
 * Computing the geo distance between two point:
 
-	p1 := orb.Point{-72.796408, -45.407131}
-	p2 := orb.Point{-72.688541, -45.384987}
+		p1 := orb.Point{-72.796408, -45.407131}
+		p2 := orb.Point{-72.688541, -45.384987}
 
-	geo.Distance(p1, p2)
+		geo.Distance(p1, p2)
 
 * Compute the planar area and centroid of a polygon:
 
-	poly := orb.Polygon{...}
-	centroid, area := planar.CentroidArea(poly)
+		poly := orb.Polygon{...}
+		centroid, area := planar.CentroidArea(poly)
 
 ### Other Subpackages
 
