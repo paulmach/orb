@@ -16,7 +16,7 @@ func (mp MultiPolygon) Dimensions() int {
 // Bound returns a bound around the multi-polygon.
 func (mp MultiPolygon) Bound() Bound {
 	if len(mp) == 0 {
-		return Bound{}
+		return emptyBound
 	}
 	bound := mp[0].Bound()
 	for i := 1; i < len(mp); i++ {

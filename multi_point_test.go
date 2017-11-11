@@ -4,19 +4,7 @@ import (
 	"testing"
 )
 
-func TestNewMultiPoint(t *testing.T) {
-	mp := MultiPoint{
-		{-122.42558918, 37.76159786},
-		{-122.41486043, 37.78138826},
-		{-122.40206146, 37.77962363},
-	}
-
-	if len(mp) != 3 {
-		t.Errorf("incorrect length of new multi point: %v", len(mp))
-	}
-}
-
-func TestPathBound(t *testing.T) {
+func TestMultiPointBound(t *testing.T) {
 	mp := MultiPoint{{0.5, .2}, {-1, 0}, {1, 10}, {1, 8}}
 
 	expected := Bound{Min: Point{-1, 0}, Max: Point{1, 10}}
@@ -25,8 +13,8 @@ func TestPathBound(t *testing.T) {
 	}
 
 	mp = MultiPoint{}
-	if !mp.Bound().IsZero() {
-		t.Error("expect empty multi point to have zero bounds")
+	if b := mp.Bound(); !b.IsEmpty() {
+		t.Errorf("expect empty multi point to have empty bounds: %v", b)
 	}
 }
 

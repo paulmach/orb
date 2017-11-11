@@ -24,7 +24,7 @@ func (mp MultiPoint) Clone() MultiPoint {
 // Bound returns a bound around the points. Uses rectangular coordinates.
 func (mp MultiPoint) Bound() Bound {
 	if len(mp) == 0 {
-		return Bound{}
+		return emptyBound
 	}
 
 	b := Bound{mp[0], mp[0]}

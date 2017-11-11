@@ -86,7 +86,7 @@ func (c Collection) Dimensions() int {
 // Bound returns the bounding box of all the Geometries combined.
 func (c Collection) Bound() Bound {
 	if len(c) == 0 {
-		return Bound{}
+		return emptyBound
 	}
 
 	var b Bound
@@ -101,7 +101,7 @@ func (c Collection) Bound() Bound {
 	}
 
 	if start == -1 {
-		return Bound{}
+		return emptyBound
 	}
 
 	for i := start + 1; i < len(c); i++ {

@@ -4,6 +4,8 @@ import (
 	"math"
 )
 
+var emptyBound = Bound{Min: Point{1, 1}, Max: Point{-1, -1}}
+
 // A Bound represents an enclosed "box" on the sphere.
 // It does not know anything about the anti-meridian (TODO).
 // With two random points you do something like:
@@ -60,6 +62,10 @@ func (b Bound) Extend(point Point) Bound {
 
 // Union extends this bound to contain the union of this and the given bound.
 func (b Bound) Union(other Bound) Bound {
+	if other.IsEmpty() {
+		return b
+	}
+
 	b = b.Extend(other.Min)
 	b = b.Extend(other.Max)
 	b = b.Extend(other.LeftTop())

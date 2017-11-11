@@ -4,14 +4,14 @@ import (
 	"testing"
 )
 
-func TestNewPoint(t *testing.T) {
+func TestPoint(t *testing.T) {
 	p := Point{1, 2}
-	if p[0] != 1 {
-		t.Errorf("incorrect lon: %v != 1", p[0])
+	if v := p.Lon(); v != 1 {
+		t.Errorf("incorrect lon: %v != 1", v)
 	}
 
-	if p[1] != 2 {
-		t.Errorf("incorrect lat: %v != 2", p[1])
+	if v := p.Lat(); v != 2 {
+		t.Errorf("incorrect lat: %v != 2", v)
 	}
 }
 func TestPointEqual(t *testing.T) {

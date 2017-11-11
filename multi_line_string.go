@@ -16,7 +16,7 @@ func (mls MultiLineString) Dimensions() int {
 // Bound returns a bound around all the line strings.
 func (mls MultiLineString) Bound() Bound {
 	if len(mls) == 0 {
-		return Bound{}
+		return emptyBound
 	}
 
 	bound := mls[0].Bound()
