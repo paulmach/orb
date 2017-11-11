@@ -23,6 +23,26 @@ func (p Point) Bound() Bound {
 	return Bound{p, p}
 }
 
+// Y returns the vertical coordinate of the point.
+func (p Point) Y() float64 {
+	return p[1]
+}
+
+// X returns the horizontal coordinate of the point.
+func (p Point) X() float64 {
+	return p[0]
+}
+
+// Lat returns the vertical, latitude coordinate of the point.
+func (p Point) Lat() float64 {
+	return p[1]
+}
+
+// Lon returns the horizontal, longitude coordinate of the point.
+func (p Point) Lon() float64 {
+	return p[0]
+}
+
 // Equal checks if the point represents the same point or vector.
 func (p Point) Equal(point Point) bool {
 	return p[0] == point[0] && p[1] == point[1]
