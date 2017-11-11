@@ -1,0 +1,12 @@
+language: go
+
+go:
+  - 1.9
+  - tip
+
+after_script:
+  - FIXED=$(go vet ./... | wc -l); if [ $FIXED -gt 0 ]; then echo "go vet - $FIXED issues(s), please fix." && exit 2; fi
+  - FIXED=$(go fmt ./... | wc -l); if [ $FIXED -gt 0 ]; then echo "gofmt - $FIXED file(s) not formatted correctly, please run gofmt to fix this." && exit 2; fi
+
+script:
+  - go test -v ./...
