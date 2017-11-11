@@ -7,6 +7,7 @@ type Geometry interface {
 	Dimensions() int // e.g. 0d, 1d, 2d
 	Bound() Bound
 
+	// requiring because sub package type switch over all possible types.
 	private()
 }
 

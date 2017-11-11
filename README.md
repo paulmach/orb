@@ -14,9 +14,17 @@ It supports the following types:
 	type Polygon []Ring
 	type MultiPolygon []Polygon
 
-	type Bound [2]Point
+	type Collection []Geometry
 
-All of these types match the `orb.Geometry` interface.
+	type Bound struct { Min, Max Point }
+
+All of these types match the `orb.Geometry` interface which is defined as:
+
+type Geometry interface {
+    GeoJSONType() string
+    Dimensions() int // e.g. 0d, 1d, 2d
+    Bound() Bound
+}
 
 Only a few methods are defined directly on these type, for example `Clone`, `Equal`, `GeoJSONType`.
 Other operation that depend on geo vs. planar contexts are defined in the respective sub package.
@@ -40,5 +48,5 @@ For example:
 * [`clip`](clip) - clipping geometry to a bounding box
 * [`wrap`](wrap) - wrap an open polygon ring around a bounding box.
 * [`maptile`](maptile) - working with mercator map tiles
-* [`resample`](resample) - resample points in a linestring geometry.
-* [`project`](project) - project geometries between
+* [`resample`](resample) - resample points in a line string geometry.
+* [`project`](project) - project geometries between geo and planar contexts
