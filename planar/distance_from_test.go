@@ -27,19 +27,19 @@ func TestDistanceFrom_LineString(t *testing.T) {
 		result float64
 	}{
 		{
-			point:  orb.NewPoint(4.5, 1.5),
+			point:  orb.Point{4.5, 1.5},
 			result: 0.5,
 		},
 		{
-			point:  orb.NewPoint(0.4, 1.5),
+			point:  orb.Point{0.4, 1.5},
 			result: 0.4,
 		},
 		{
-			point:  orb.NewPoint(-0.3, 1.5),
+			point:  orb.Point{-0.3, 1.5},
 			result: 0.3,
 		},
 		{
-			point:  orb.NewPoint(0.3, 2.8),
+			point:  orb.Point{0.3, 2.8},
 			result: 0.2,
 		},
 	}
@@ -57,8 +57,7 @@ func TestDistanceFrom_LineString(t *testing.T) {
 func TestDistanceFrom_Polygon(t *testing.T) {
 	r1 := orb.Ring{{0, 0}, {3, 0}, {3, 3}, {0, 3}, {0, 0}}
 	r2 := orb.Ring{{1, 1}, {2, 1}, {2, 2}, {1, 2}, {1, 1}}
-
-	poly := append(orb.NewPolygon(), r1, r2)
+	poly := orb.Polygon{r1, r2}
 
 	cases := []struct {
 		name   string
@@ -67,17 +66,17 @@ func TestDistanceFrom_Polygon(t *testing.T) {
 	}{
 		{
 			name:   "outside",
-			point:  orb.NewPoint(-1, 2),
+			point:  orb.Point{-1, 2},
 			result: 1,
 		},
 		{
 			name:   "inside",
-			point:  orb.NewPoint(0.4, 2),
+			point:  orb.Point{0.4, 2},
 			result: 0.4,
 		},
 		{
 			name:   "in hole",
-			point:  orb.NewPoint(1.3, 1.4),
+			point:  orb.Point{1.3, 1.4},
 			result: 0.3,
 		},
 	}

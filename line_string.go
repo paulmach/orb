@@ -3,11 +3,6 @@ package orb
 // LineString represents a set of points to be thought of as a polyline.
 type LineString []Point
 
-// NewLineString creates a new line string.
-func NewLineString() LineString {
-	return LineString{}
-}
-
 // GeoJSONType returns the GeoJSON type for the object.
 func (ls LineString) GeoJSONType() string {
 	return "LineString"

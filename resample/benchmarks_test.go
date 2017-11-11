@@ -38,11 +38,11 @@ func testLineString1() orb.LineString {
 		panic(err)
 	}
 
-	ls := orb.NewLineString()
+	ls := orb.LineString{}
 	for _, d := range data {
 		ls = append(ls, orb.Point{d[1], d[0]})
 	}
-	lineString := orb.NewLineString()
+	lineString := orb.LineString{}
 
 	// this parameter can be used to thin to line to see if worst cases are impacting averages
 	skip := 5

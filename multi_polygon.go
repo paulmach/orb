@@ -3,11 +3,6 @@ package orb
 // MultiPolygon is a set of polygons.
 type MultiPolygon []Polygon
 
-// NewMultiPolygon creates a new MultiPolygon.
-func NewMultiPolygon() MultiPolygon {
-	return MultiPolygon{}
-}
-
 // GeoJSONType returns the GeoJSON type for the object.
 func (mp MultiPolygon) GeoJSONType() string {
 	return "MultiPolygon"

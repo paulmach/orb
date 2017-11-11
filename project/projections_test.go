@@ -38,22 +38,22 @@ func TestMercatorScaleFactor(t *testing.T) {
 	}{
 		{
 			name:   "30 deg",
-			point:  orb.NewPoint(0, 30.0),
+			point:  orb.Point{0, 30.0},
 			factor: 1.154701,
 		},
 		{
 			name:   "45 deg",
-			point:  orb.NewPoint(0, 45.0),
+			point:  orb.Point{0, 45.0},
 			factor: 1.414214,
 		},
 		{
 			name:   "60 deg",
-			point:  orb.NewPoint(0, 60.0),
+			point:  orb.Point{0, 60.0},
 			factor: 2,
 		},
 		{
 			name:   "80 deg",
-			point:  orb.NewPoint(0, 80.0),
+			point:  orb.Point{0, 80.0},
 			factor: 5.758770,
 		},
 	}
@@ -103,8 +103,8 @@ func TestTransverseMercatorScaling(t *testing.T) {
 
 	// points on the 0 longitude should have the same
 	// projected distance as geo distance
-	g1 := orb.NewPoint(0, 15)
-	g2 := orb.NewPoint(0, 30)
+	g1 := orb.Point{0, 15}
+	g2 := orb.Point{0, 30}
 
 	geoDistance := geo.Distance(g1, g2)
 
@@ -142,7 +142,7 @@ func TestBuildTransverseMercator(t *testing.T) {
 	// test anti-meridian from right
 	projector := BuildTransverseMercator(-178.0)
 
-	test := orb.NewPoint(-175.0, 30)
+	test := orb.Point{-175.0, 30}
 
 	g := test
 	p := projector.ToPlanar(g)
@@ -156,7 +156,7 @@ func TestBuildTransverseMercator(t *testing.T) {
 		t.Errorf("longitude miss match: %f != %f", g[0], test[1])
 	}
 
-	test = orb.NewPoint(179.0, 30)
+	test = orb.Point{179.0, 30}
 
 	g = test
 	p = projector.ToPlanar(g)
@@ -173,7 +173,7 @@ func TestBuildTransverseMercator(t *testing.T) {
 	// test anti-meridian from left
 	projector = BuildTransverseMercator(178.0)
 
-	test = orb.NewPoint(175.0, 30)
+	test = orb.Point{175.0, 30}
 
 	g = test
 	p = projector.ToPlanar(g)
@@ -187,7 +187,7 @@ func TestBuildTransverseMercator(t *testing.T) {
 		t.Errorf("longitude miss match: %f != %f", g[0], test[1])
 	}
 
-	test = orb.NewPoint(-179.0, 30)
+	test = orb.Point{-179.0, 30}
 
 	g = test
 	p = projector.ToPlanar(g)

@@ -5,11 +5,6 @@ package orb
 // ie. the first point matches the last.
 type Polygon []Ring
 
-// NewPolygon creates a new Polygon.
-func NewPolygon() Polygon {
-	return Polygon{}
-}
-
 // GeoJSONType returns the GeoJSON type for the object.
 func (p Polygon) GeoJSONType() string {
 	return "Polygon"

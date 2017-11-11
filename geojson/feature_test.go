@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewFeature(t *testing.T) {
-	f := NewFeature(orb.NewPoint(1, 2))
+	f := NewFeature(orb.Point{1, 2})
 
 	if f.Type != "Feature" {
 		t.Errorf("incorrect feature: %v != Feature", f.Type)
@@ -17,7 +17,7 @@ func TestNewFeature(t *testing.T) {
 }
 
 func TestFeatureMarshalJSON(t *testing.T) {
-	f := NewFeature(orb.NewPoint(1, 2))
+	f := NewFeature(orb.Point{1, 2})
 	blob, err := f.MarshalJSON()
 
 	if err != nil {
@@ -30,7 +30,7 @@ func TestFeatureMarshalJSON(t *testing.T) {
 }
 
 func TestFeatureMarshal(t *testing.T) {
-	f := NewFeature(orb.NewPoint(1, 2))
+	f := NewFeature(orb.Point{1, 2})
 	blob, err := json.Marshal(f)
 
 	if err != nil {
@@ -43,7 +43,7 @@ func TestFeatureMarshal(t *testing.T) {
 }
 
 func TestFeatureMarshalValue(t *testing.T) {
-	f := NewFeature(orb.NewPoint(1, 2))
+	f := NewFeature(orb.Point{1, 2})
 	blob, err := json.Marshal(*f)
 
 	if err != nil {

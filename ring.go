@@ -3,11 +3,6 @@ package orb
 // Ring represents a set of ring on the earth.
 type Ring LineString
 
-// NewRing creates a new ring.
-func NewRing() Ring {
-	return Ring{}
-}
-
 // GeoJSONType returns the GeoJSON type for the object.
 func (r Ring) GeoJSONType() string {
 	return "Polygon"

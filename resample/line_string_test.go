@@ -8,14 +8,14 @@ import (
 )
 
 func TestLineStringResample(t *testing.T) {
-	ls := orb.NewLineString()
+	ls := orb.LineString{}
 	Resample(planar.Distance, ls, 10) // should not panic
 
-	ls = append(ls, orb.NewPoint(0, 0))
+	ls = append(ls, orb.Point{0, 0})
 	Resample(planar.Distance, ls, 10) // should not panic
 
-	ls = append(ls, orb.NewPoint(1.5, 1.5))
-	ls = append(ls, orb.NewPoint(2, 2))
+	ls = append(ls, orb.Point{1.5, 1.5})
+	ls = append(ls, orb.Point{2, 2})
 
 	// resample to 0?
 	result := Resample(planar.Distance, ls, 0)
@@ -59,7 +59,7 @@ func TestLineStringResample(t *testing.T) {
 		t.Errorf("length incorrect: %d != 10", l)
 	}
 
-	expected := orb.NewPoint(1, 0)
+	expected := orb.Point{1, 0}
 	for i := 0; i < len(ls); i++ {
 		if !ls[i].Equal(expected) {
 			t.Errorf("incorrect point: %v != %v", ls[i], expected)
@@ -75,7 +75,7 @@ func TestLineStringResampleWithInterval(t *testing.T) {
 		t.Errorf("incorrect length: %v != 3", l)
 	}
 
-	expected := orb.NewPoint(0, 5.0)
+	expected := orb.Point{0, 5.0}
 	if v := ls[1]; !v.Equal(expected) {
 		t.Errorf("incorrect point: %v != %v", v, expected)
 	}
@@ -90,7 +90,7 @@ func TestLineStringResampleEdgeCases(t *testing.T) {
 	}
 
 	// duplicate points
-	ls = append(ls, orb.NewPoint(0, 0))
+	ls = append(ls, orb.Point{0, 0})
 	ls, ret = resampleEdgeCases(ls, 10)
 	if !ret {
 		t.Errorf("should return true")

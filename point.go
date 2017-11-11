@@ -3,11 +3,6 @@ package orb
 // A Point is a Lon/Lat 2d point.
 type Point [2]float64
 
-// NewPoint creates a new point.
-func NewPoint(lon, lat float64) Point {
-	return Point{lon, lat}
-}
-
 // GeoJSONType returns the GeoJSON type for the object.
 func (p Point) GeoJSONType() string {
 	return "Point"

@@ -6,14 +6,10 @@ import (
 
 // A Bound represents an enclosed "box" on the sphere.
 // It does not know anything about the anti-meridian (TODO).
+// With two random points you do something like:
+//	orb.MultiPoint{p1, p2}.Bound()
 type Bound struct {
 	Min, Max Point
-}
-
-// NewBoundFromPoints creates a new bound given two opposite corners.
-// These corners can be either sw/ne or se/nw.
-func NewBoundFromPoints(corner, oppositeCorner Point) Bound {
-	return Bound{corner, corner}.Extend(oppositeCorner)
 }
 
 // GeoJSONType returns the GeoJSON type for the object.

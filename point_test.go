@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewPoint(t *testing.T) {
-	p := NewPoint(1, 2)
+	p := Point{1, 2}
 	if p[0] != 1 {
 		t.Errorf("incorrect lon: %v != 1", p[0])
 	}
@@ -15,11 +15,11 @@ func TestNewPoint(t *testing.T) {
 	}
 }
 func TestPointEqual(t *testing.T) {
-	p1 := NewPoint(1, 0)
-	p2 := NewPoint(1, 0)
+	p1 := Point{1, 0}
+	p2 := Point{1, 0}
 
-	p3 := NewPoint(2, 3)
-	p4 := NewPoint(2, 4)
+	p3 := Point{2, 3}
+	p4 := Point{2, 4}
 
 	if !p1.Equal(p2) {
 		t.Errorf("expected: %v == %v", p1, p2)

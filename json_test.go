@@ -6,7 +6,7 @@ import (
 )
 
 func TestPointJSON(t *testing.T) {
-	p1 := NewPoint(1, 2.1)
+	p1 := Point{1, 2.1}
 
 	data, err := json.Marshal(p1)
 	if err != nil {
@@ -29,11 +29,7 @@ func TestPointJSON(t *testing.T) {
 }
 
 func TestLineStringJSON(t *testing.T) {
-	ls1 := append(NewLineString(),
-		NewPoint(1.5, 2.5),
-		NewPoint(3.5, 4.5),
-		NewPoint(5.5, 6.5),
-	)
+	ls1 := LineString{{1.5, 2.5}, {3.5, 4.5}, {5.5, 6.5}}
 
 	data, err := json.Marshal(ls1)
 	if err != nil {
@@ -55,7 +51,7 @@ func TestLineStringJSON(t *testing.T) {
 	}
 
 	// empty line
-	ls1 = NewLineString()
+	ls1 = LineString{}
 	data, err = json.Marshal(ls1)
 	if err != nil {
 		t.Errorf("should marshal just fine: %v", err)

@@ -9,17 +9,17 @@ import (
 )
 
 func TestAt(t *testing.T) {
-	tile := At(orb.NewPoint(0, 0), 28)
+	tile := At(orb.Point{0, 0}, 28)
 	if b := tile.Bound(); b.Top() != 0 || b.Left() != 0 {
 		t.Errorf("incorrect tile bound: %v", b)
 	}
 
 	// specific case
-	if tile := At(orb.NewPoint(-87.65005229999997, 41.850033), 20); tile.X != 268988 || tile.Y != 389836 {
+	if tile := At(orb.Point{-87.65005229999997, 41.850033}, 20); tile.X != 268988 || tile.Y != 389836 {
 		t.Errorf("projection incorrect: %v", tile)
 	}
 
-	if tile := At(orb.NewPoint(-87.65005229999997, 41.850033), 28); tile.X != 68861112 || tile.Y != 99798110 {
+	if tile := At(orb.Point{-87.65005229999997, 41.850033}, 28); tile.X != 68861112 || tile.Y != 99798110 {
 		t.Errorf("projection incorrect: %v", tile)
 	}
 
@@ -37,11 +37,11 @@ func TestAt(t *testing.T) {
 	}
 
 	// test polar regions
-	if tile := At(orb.NewPoint(0, 89.9), 30); tile.Y != 0 {
+	if tile := At(orb.Point{0, 89.9}, 30); tile.Y != 0 {
 		t.Errorf("top of the world error: %d != %d", tile.Y, 0)
 	}
 
-	if tile := At(orb.NewPoint(0, -89.9), 30); tile.Y != (1<<30)-1 {
+	if tile := At(orb.Point{0, -89.9}, 30); tile.Y != (1<<30)-1 {
 		t.Errorf("bottom of the world error: %d != %d", tile.Y, (1<<30)-1)
 	}
 }
@@ -97,24 +97,24 @@ func TestTileBound(t *testing.T) {
 }
 
 func TestFraction(t *testing.T) {
-	p := Fraction(orb.NewPoint(-180, 0), 30)
+	p := Fraction(orb.Point{-180, 0}, 30)
 	if p[0] != 0 {
 		t.Errorf("should have left at zero: %f", p[0])
 	}
 
-	p = Fraction(orb.NewPoint(180, 0), 30)
+	p = Fraction(orb.Point{180, 0}, 30)
 	if p[0] != 0 {
 		t.Errorf("should have right at zero: %f", p[0])
 	}
 
-	p = Fraction(orb.NewPoint(360, 0), 30)
+	p = Fraction(orb.Point{360, 0}, 30)
 	if p[0] != 1<<29 {
 		t.Errorf("should have center: %f", p[0])
 	}
 }
 
 func TestSharedParent(t *testing.T) {
-	p := orb.NewPoint(-122.2711, 37.8044)
+	p := orb.Point{-122.2711, 37.8044}
 	one := At(p, 15)
 	two := At(p, 15)
 
@@ -138,7 +138,7 @@ func TestSharedParent(t *testing.T) {
 }
 
 func BenchmarkSharedParent_SameZoom(b *testing.B) {
-	p := orb.NewPoint(-122.2711, 37.8044)
+	p := orb.Point{-122.2711, 37.8044}
 	one := At(p, 10)
 	two := At(p, 10)
 
@@ -158,7 +158,7 @@ func BenchmarkSharedParent_SameZoom(b *testing.B) {
 }
 
 func BenchmarkSharedParent_DifferentZoom(b *testing.B) {
-	p := orb.NewPoint(-122.2711, 37.8044)
+	p := orb.Point{-122.2711, 37.8044}
 	one := At(p, 10)
 	two := At(p, 10)
 

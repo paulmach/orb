@@ -49,15 +49,15 @@ func TestBoundPad(t *testing.T) {
 	}{
 		{
 			name:  "test bound",
-			bound: orb.NewBoundFromPoints(orb.NewPoint(-122.559, 37.887), orb.NewPoint(-122.521, 37.911)),
+			bound: orb.MultiPoint{{-122.559, 37.887}, {-122.521, 37.911}}.Bound(),
 		},
 		{
-			name:  "no width",
-			bound: orb.NewBoundFromPoints(orb.NewPoint(-122.559, 15), orb.NewPoint(-122.521, 15)),
+			name:  "no height",
+			bound: orb.MultiPoint{{-122.559, 15}, {-122.521, 15}}.Bound(),
 		},
 		{
 			name:  "no area",
-			bound: orb.NewBoundFromPoints(orb.NewPoint(20, -15), orb.NewPoint(20, -15)),
+			bound: orb.Bound{Min: orb.Point{20, -15}, Max: orb.Point{20, -15}},
 		},
 	}
 

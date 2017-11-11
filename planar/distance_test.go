@@ -7,8 +7,8 @@ import (
 )
 
 func TestDistance(t *testing.T) {
-	p1 := orb.NewPoint(0, 0)
-	p2 := orb.NewPoint(3, 4)
+	p1 := orb.Point{0, 0}
+	p2 := orb.Point{3, 4}
 
 	if d := Distance(p1, p2); d != 5 {
 		t.Errorf("point, distanceFrom expected 5, got %f", d)

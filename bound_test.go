@@ -7,12 +7,12 @@ import (
 func TestBoundExtend(t *testing.T) {
 	bound := Bound{Min: Point{0, 0}, Max: Point{3, 5}}
 
-	if r := bound.Extend(NewPoint(2, 1)); !r.Equal(bound) {
+	if r := bound.Extend(Point{2, 1}); !r.Equal(bound) {
 		t.Errorf("extend incorrect: %v != %v", r, bound)
 	}
 
 	answer := Bound{Min: Point{0, -1}, Max: Point{6, 5}}
-	if r := bound.Extend(NewPoint(6, -1)); !r.Equal(answer) {
+	if r := bound.Extend(Point{6, -1}); !r.Equal(answer) {
 		t.Errorf("extend incorrect: %v != %v", r, answer)
 	}
 }
@@ -41,37 +41,37 @@ func TestBoundContains(t *testing.T) {
 	}{
 		{
 			name:   "middle",
-			point:  NewPoint(0, 0),
+			point:  Point{0, 0},
 			result: true,
 		},
 		{
 			name:   "left border",
-			point:  NewPoint(-1, 0),
+			point:  Point{-1, 0},
 			result: true,
 		},
 		{
 			name:   "ne corner",
-			point:  NewPoint(2, 1),
+			point:  Point{2, 1},
 			result: true,
 		},
 		{
 			name:   "above",
-			point:  NewPoint(0, 3),
+			point:  Point{0, 3},
 			result: false,
 		},
 		{
 			name:   "below",
-			point:  NewPoint(0, -3),
+			point:  Point{0, -3},
 			result: false,
 		},
 		{
 			name:   "left",
-			point:  NewPoint(-3, 0),
+			point:  Point{-3, 0},
 			result: false,
 		},
 		{
 			name:   "right",
-			point:  NewPoint(3, 0),
+			point:  Point{3, 0},
 			result: false,
 		},
 	}

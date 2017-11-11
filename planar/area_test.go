@@ -10,7 +10,7 @@ func TestCentroidArea_MultiPoint(t *testing.T) {
 	mp := orb.MultiPoint{{0, 0}, {1, 1.5}, {2, 0}}
 
 	centroid, area := CentroidArea(mp)
-	expected := orb.NewPoint(1, 0.5)
+	expected := orb.Point{1, 0.5}
 	if !centroid.Equal(expected) {
 		t.Errorf("incorrect centroid: %v != %v", centroid, expected)
 	}
@@ -145,7 +145,7 @@ func TestCentroid_RingAdv(t *testing.T) {
 	// |     |
 	// +-----+
 
-	expected := orb.NewPoint(1.5, 0.45)
+	expected := orb.Point{1.5, 0.45}
 	if c, _ := CentroidArea(ring); !c.Equal(expected) {
 		t.Errorf("incorrect centroid: %v != %v", c, expected)
 	}
@@ -159,7 +159,7 @@ func TestCentroidArea_Polygon(t *testing.T) {
 	poly := orb.Polygon{r1, r2}
 
 	centroid, area := CentroidArea(poly)
-	if !centroid.Equal(orb.NewPoint(21.5/11.0, 1.5)) {
+	if !centroid.Equal(orb.Point{21.5 / 11.0, 1.5}) {
 		t.Errorf("%v", 21.5/11.0)
 		t.Errorf("incorrect centroid: %v", centroid)
 	}
@@ -173,7 +173,7 @@ func TestCentroidArea_Bound(t *testing.T) {
 	b := orb.Bound{Min: orb.Point{0, 2}, Max: orb.Point{1, 3}}
 	centroid, area := CentroidArea(b)
 
-	expected := orb.NewPoint(0.5, 2.5)
+	expected := orb.Point{0.5, 2.5}
 	if !centroid.Equal(expected) {
 		t.Errorf("incorrect centroid: %v != %v", centroid, expected)
 	}
@@ -185,7 +185,7 @@ func TestCentroidArea_Bound(t *testing.T) {
 	b = orb.Bound{Min: orb.Point{0, 2}, Max: orb.Point{0, 2}}
 	centroid, area = CentroidArea(b)
 
-	expected = orb.NewPoint(0, 2)
+	expected = orb.Point{0, 2}
 	if !centroid.Equal(expected) {
 		t.Errorf("incorrect centroid: %v != %v", centroid, expected)
 	}

@@ -3,11 +3,6 @@ package orb
 // MultiLineString is a set of polylines.
 type MultiLineString []LineString
 
-// NewMultiLineString creates a new multi line string.
-func NewMultiLineString() MultiLineString {
-	return MultiLineString{}
-}
-
 // GeoJSONType returns the GeoJSON type for the object.
 func (mls MultiLineString) GeoJSONType() string {
 	return "MultiLineString"
