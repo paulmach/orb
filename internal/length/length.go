@@ -8,7 +8,7 @@ import (
 
 // Length returns the length of the boundary of the geometry
 // using 2d euclidean geometry.
-func Length(g orb.Geometry, df orb.Distance) float64 {
+func Length(g orb.Geometry, df orb.DistanceFunc) float64 {
 	if g == nil {
 		return 0
 	}
@@ -52,7 +52,7 @@ func Length(g orb.Geometry, df orb.Distance) float64 {
 	panic(fmt.Sprintf("geometry type not supported: %T", g))
 }
 
-func lineStringLength(ls orb.LineString, df orb.Distance) float64 {
+func lineStringLength(ls orb.LineString, df orb.DistanceFunc) float64 {
 	sum := 0.0
 	for i := 1; i < len(ls); i++ {
 		sum += df(ls[i], ls[i-1])
@@ -61,7 +61,7 @@ func lineStringLength(ls orb.LineString, df orb.Distance) float64 {
 	return sum
 }
 
-func polygonLength(p orb.Polygon, df orb.Distance) float64 {
+func polygonLength(p orb.Polygon, df orb.DistanceFunc) float64 {
 	sum := 0.0
 	for _, r := range p {
 		sum += lineStringLength(orb.LineString(r), df)

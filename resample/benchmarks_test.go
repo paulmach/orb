@@ -16,7 +16,7 @@ func BenchmarkToMorePoints(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		resample.Resample(planar.Distance, ls, totalPoints)
+		resample.Resample(ls, planar.Distance, totalPoints)
 	}
 }
 
@@ -27,7 +27,7 @@ func BenchmarkLineStringResampleToLessPoints(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		resample.Resample(planar.Distance, ls, totalPoints)
+		resample.Resample(ls, planar.Distance, totalPoints)
 	}
 }
 

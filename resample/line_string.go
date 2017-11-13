@@ -5,7 +5,7 @@ import (
 )
 
 // Resample converts the line string into totalPoints-1 evenly spaced segments.
-func Resample(df orb.Distance, ls orb.LineString, totalPoints int) orb.LineString {
+func Resample(ls orb.LineString, df orb.DistanceFunc, totalPoints int) orb.LineString {
 	if totalPoints <= 0 {
 		return nil
 	}
@@ -22,7 +22,7 @@ func Resample(df orb.Distance, ls orb.LineString, totalPoints int) orb.LineStrin
 
 // ToInterval coverts the line string into evenly spaced points of
 // about the given distance.
-func ToInterval(df orb.Distance, ls orb.LineString, dist float64) orb.LineString {
+func ToInterval(ls orb.LineString, df orb.DistanceFunc, dist float64) orb.LineString {
 	if dist <= 0 {
 		return nil
 	}
@@ -122,7 +122,7 @@ func resampleEdgeCases(ls orb.LineString, totalPoints int) (orb.LineString, bool
 }
 
 // precomputeDistances precomputes the total distance and intermediate distances.
-func precomputeDistances(ls orb.LineString, df orb.Distance) (float64, []float64) {
+func precomputeDistances(ls orb.LineString, df orb.DistanceFunc) (float64, []float64) {
 	total := 0.0
 	dists := make([]float64, len(ls)-1)
 	for i := 0; i < len(ls)-1; i++ {
