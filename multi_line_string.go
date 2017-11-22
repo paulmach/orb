@@ -45,6 +45,10 @@ func (mls MultiLineString) Equal(multiLineString MultiLineString) bool {
 
 // Clone returns a new deep copy of the multi line string.
 func (mls MultiLineString) Clone() MultiLineString {
+	if mls == nil {
+		return nil
+	}
+
 	nmls := make(MultiLineString, 0, len(mls))
 	for _, ls := range mls {
 		nmls = append(nmls, ls.Clone())

@@ -67,6 +67,10 @@ func (r Ring) Equal(ring Ring) bool {
 
 // Clone returns a new copy of the ring.
 func (r Ring) Clone() Ring {
+	if r == nil {
+		return nil
+	}
+
 	ps := MultiPoint(r)
 	return Ring(ps.Clone())
 }

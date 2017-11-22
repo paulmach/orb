@@ -43,6 +43,10 @@ func (mp MultiPolygon) Equal(multiPolygon MultiPolygon) bool {
 
 // Clone returns a new deep copy of the multi-polygon.
 func (mp MultiPolygon) Clone() MultiPolygon {
+	if mp == nil {
+		return nil
+	}
+
 	nmp := make(MultiPolygon, 0, len(mp))
 	for _, p := range mp {
 		nmp = append(nmp, p.Clone())

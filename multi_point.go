@@ -15,6 +15,10 @@ func (mp MultiPoint) Dimensions() int {
 
 // Clone returns a new copy of the points.
 func (mp MultiPoint) Clone() MultiPoint {
+	if mp == nil {
+		return nil
+	}
+
 	points := make([]Point, len(mp))
 	copy(points, mp)
 

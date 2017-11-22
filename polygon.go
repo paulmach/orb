@@ -42,6 +42,10 @@ func (p Polygon) Equal(polygon Polygon) bool {
 // Clone returns a new deep copy of the polygon.
 // All of the rings are also cloned.
 func (p Polygon) Clone() Polygon {
+	if p == nil {
+		return p
+	}
+
 	np := make(Polygon, 0, len(p))
 	for _, r := range p {
 		np = append(np, r.Clone())
