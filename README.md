@@ -46,7 +46,6 @@ For example:
 
 * [`geojson`](geojson) - working with geojson and the types in this package.
 * [`clip`](clip) - clipping geometry to a bounding box
-* [`wrap`](wrap) - wrap an open polygon ring around a bounding box.
 * [`maptile`](maptile) - working with mercator map tiles
 * [`resample`](resample) - resample points in a line string geometry.
 * [`project`](project) - project geometries between geo and planar contexts
