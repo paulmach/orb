@@ -10,7 +10,7 @@ import (
 
 // Clip will clip the geometry to the bounding box using the
 // correct functions for the type.
-// This operation will modify the input of '2d geometry' by using as a
+// This operation will modify the input of '1d or 2d geometry' by using as a
 // scratch space so clone if necessary.
 func Clip(b orb.Bound, g orb.Geometry) orb.Geometry {
 	if g == nil {
@@ -26,6 +26,10 @@ func Clip(b orb.Bound, g orb.Geometry) orb.Geometry {
 		return g // Intersect check above
 	case orb.MultiPoint:
 		mp := MultiPoint(b, g)
+		if len(mp) == 1 {
+			return mp[0]
+		}
+
 		if mp == nil {
 			return nil
 		}
@@ -37,12 +41,16 @@ func Clip(b orb.Bound, g orb.Geometry) orb.Geometry {
 			return mls[0]
 		}
 
-		if mls == nil {
+		if len(mls) == 0 {
 			return nil
 		}
 		return mls
 	case orb.MultiLineString:
 		mls := MultiLineString(b, g)
+		if len(mls) == 1 {
+			return mls[0]
+		}
+
 		if mls == nil {
 			return nil
 		}
@@ -64,6 +72,10 @@ func Clip(b orb.Bound, g orb.Geometry) orb.Geometry {
 		return p
 	case orb.MultiPolygon:
 		mp := MultiPolygon(b, g)
+		if len(mp) == 1 {
+			return mp[0]
+		}
+
 		if mp == nil {
 			return nil
 		}
@@ -71,6 +83,10 @@ func Clip(b orb.Bound, g orb.Geometry) orb.Geometry {
 		return mp
 	case orb.Collection:
 		c := Collection(b, g)
+		if len(c) == 1 {
+			return c[0]
+		}
+
 		if c == nil {
 			return nil
 		}
@@ -101,8 +117,18 @@ func MultiPoint(b orb.Bound, mp orb.MultiPoint) orb.MultiPoint {
 }
 
 // LineString clips the linestring to the bounding box.
-func LineString(b orb.Bound, ls orb.LineString) orb.MultiLineString {
-	result := line(b, ls)
+func LineString(b orb.Bound, ls orb.LineString, opts ...Option) orb.MultiLineString {
+	open := false
+	if len(opts) > 0 {
+		o := &options{}
+		for _, opt := range opts {
+			opt(o)
+		}
+
+		open = o.openBound
+	}
+
+	result := line(b, ls, open)
 	if len(result) == 0 {
 		return nil
 	}
@@ -112,11 +138,21 @@ func LineString(b orb.Bound, ls orb.LineString) orb.MultiLineString {
 
 // MultiLineString clips the linestrings to the bounding box
 // and returns a linestring union.
-func MultiLineString(b orb.Bound, mls orb.MultiLineString) orb.MultiLineString {
+func MultiLineString(b orb.Bound, mls orb.MultiLineString, opts ...Option) orb.MultiLineString {
+	open := false
+	if len(opts) > 0 {
+		o := &options{}
+		for _, opt := range opts {
+			opt(o)
+		}
+
+		open = o.openBound
+	}
+
 	var result orb.MultiLineString
 	for _, ls := range mls {
-		r := LineString(b, ls)
-		if r != nil {
+		r := line(b, ls, open)
+		if len(r) != 0 {
 			result = append(result, r...)
 		}
 	}

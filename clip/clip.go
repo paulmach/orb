@@ -1,12 +1,14 @@
 package clip
 
-import "github.com/paulmach/orb"
+import (
+	"github.com/paulmach/orb"
+)
 
 // Code based on https://github.com/mapbox/lineclip
 
 // line will clip a line into a set of lines
 // along the bounding box boundary.
-func line(box orb.Bound, in orb.LineString) orb.MultiLineString {
+func line(box orb.Bound, in orb.LineString, open bool) orb.MultiLineString {
 	if len(in) == 0 {
 		return nil
 	}
@@ -14,13 +16,24 @@ func line(box orb.Bound, in orb.LineString) orb.MultiLineString {
 	var out orb.MultiLineString
 	line := 0
 
-	codeA := bitCode(box, in[0])
+	var codeA int
+	if open {
+		codeA = bitCodeOpen(box, in[0])
+	} else {
+		codeA = bitCode(box, in[0])
+	}
+
 	loopTo := len(in)
 	for i := 1; i < loopTo; i++ {
 		a := in[i-1]
 		b := in[i]
 
-		codeB := bitCode(box, b)
+		var codeB int
+		if open {
+			codeB = bitCodeOpen(box, b)
+		} else {
+			codeB = bitCode(box, b)
+		}
 		endCode := codeB
 
 		// loops through all the intersection of the line and box.
@@ -143,15 +156,32 @@ func ring(box orb.Bound, in orb.Ring) orb.Ring {
 // bottom  0101  0100  0110
 func bitCode(b orb.Bound, p orb.Point) int {
 	code := 0
-	if p[0] < b.Left() {
+	if p[0] < b.Min[0] {
 		code |= 1
-	} else if p[0] > b.Right() {
+	} else if p[0] > b.Max[0] {
 		code |= 2
 	}
 
-	if p[1] < b.Bottom() {
+	if p[1] < b.Min[1] {
 		code |= 4
-	} else if p[1] > b.Top() {
+	} else if p[1] > b.Max[1] {
+		code |= 8
+	}
+
+	return code
+}
+
+func bitCodeOpen(b orb.Bound, p orb.Point) int {
+	code := 0
+	if p[0] <= b.Min[0] {
+		code |= 1
+	} else if p[0] >= b.Max[0] {
+		code |= 2
+	}
+
+	if p[1] <= b.Min[1] {
+		code |= 4
+	} else if p[1] >= b.Max[1] {
 		code |= 8
 	}
 
@@ -162,16 +192,16 @@ func bitCode(b orb.Bound, p orb.Point) int {
 func intersect(box orb.Bound, edge int, a, b orb.Point) orb.Point {
 	if edge&8 != 0 {
 		// top
-		return orb.Point{a[0] + (b[0]-a[0])*(box.Top()-a[1])/(b[1]-a[1]), box.Top()}
+		return orb.Point{a[0] + (b[0]-a[0])*(box.Max[1]-a[1])/(b[1]-a[1]), box.Max[1]}
 	} else if edge&4 != 0 {
 		// bottom
-		return orb.Point{a[0] + (b[0]-a[0])*(box.Bottom()-a[1])/(b[1]-a[1]), box.Bottom()}
+		return orb.Point{a[0] + (b[0]-a[0])*(box.Min[1]-a[1])/(b[1]-a[1]), box.Min[1]}
 	} else if edge&2 != 0 {
 		// right
-		return orb.Point{box.Right(), a[1] + (b[1]-a[1])*(box.Right()-a[0])/(b[0]-a[0])}
+		return orb.Point{box.Max[0], a[1] + (b[1]-a[1])*(box.Max[0]-a[0])/(b[0]-a[0])}
 	} else if edge&1 != 0 {
 		// left
-		return orb.Point{box.Left(), a[1] + (b[1]-a[1])*(box.Left()-a[0])/(b[0]-a[0])}
+		return orb.Point{box.Min[0], a[1] + (b[1]-a[1])*(box.Min[0]-a[0])/(b[0]-a[0])}
 	}
 
 	panic("no edge??")
