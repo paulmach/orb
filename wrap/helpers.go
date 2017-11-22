@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/internal/wrap"
 )
 
 // AroundBound takes a ring and if invalid (i.e. endpoints don't match) will
@@ -36,7 +37,7 @@ func AroundBound(b orb.Bound, g orb.Geometry, o orb.Orientation) (orb.Geometry, 
 
 // Ring will connect the ring round the bound in the direction provided.
 func Ring(b orb.Bound, r orb.Ring, o orb.Orientation) (orb.Ring, error) {
-	result, err := aroundBound(b, r, o)
+	result, err := wrap.AroundBound(b, r, o, r.Orientation)
 	if err != nil {
 		return nil, err
 	}

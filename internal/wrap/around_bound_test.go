@@ -19,7 +19,7 @@ func TestNexts(t *testing.T) {
 	}
 }
 
-func TestInternalAroundBound(t *testing.T) {
+func TestAroundBound(t *testing.T) {
 	cases := []struct {
 		name        string
 		box         orb.Bound
@@ -75,7 +75,7 @@ func TestInternalAroundBound(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			out, err := aroundBound(tc.box, tc.input, tc.expected)
+			out, err := AroundBound(tc.box, tc.input, tc.expected, tc.input.Orientation)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}

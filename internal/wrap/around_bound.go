@@ -6,13 +6,14 @@ import (
 	"github.com/paulmach/orb"
 )
 
-// aroundBound will connect the endpoints of the linestring provided
+// AroundBound will connect the endpoints of the linestring provided
 // by wrapping the line around the bounds in the direction provided.
 // Will append to the input.
-func aroundBound(
+func AroundBound(
 	box orb.Bound,
 	in orb.Ring,
 	o orb.Orientation,
+	inOrientation func() orb.Orientation, // sometimes we need input orientation.
 ) (orb.Ring, error) {
 	if o != orb.CCW && o != orb.CW {
 		panic("invalid orientation")
@@ -35,10 +36,10 @@ func aroundBound(
 	current := bitCodeOpen(box, l)
 
 	if target == 0 || current == 0 {
-		return in, errors.New("wrap: endpoints must be outside bound")
+		return in, errors.New("endpoints must be outside bound")
 	}
 
-	if current == target && in.Orientation() == o {
+	if current == target && inOrientation() == o {
 		in = append(in, f)
 		return in, nil
 	}
@@ -63,15 +64,15 @@ func aroundBound(
 // on the boundary is outside
 func bitCodeOpen(b orb.Bound, p orb.Point) int {
 	code := 0
-	if p[0] <= b.Left() {
+	if p[0] <= b.Min[0] {
 		code |= 1
-	} else if p[0] >= b.Right() {
+	} else if p[0] >= b.Max[0] {
 		code |= 2
 	}
 
-	if p[1] <= b.Bottom() {
+	if p[1] <= b.Min[1] {
 		code |= 4
-	} else if p[1] >= b.Top() {
+	} else if p[1] >= b.Max[1] {
 		code |= 8
 	}
 
@@ -82,21 +83,21 @@ func bitCodeOpen(b orb.Bound, p orb.Point) int {
 func pointFor(b orb.Bound, code int) orb.Point {
 	switch code {
 	case 1:
-		return orb.Point{b.Left(), (b.Top() + b.Bottom()) / 2}
+		return orb.Point{b.Min[0], (b.Max[1] + b.Min[1]) / 2}
 	case 2:
-		return orb.Point{b.Right(), (b.Top() + b.Bottom()) / 2}
+		return orb.Point{b.Max[0], (b.Max[1] + b.Min[1]) / 2}
 	case 4:
-		return orb.Point{(b.Right() + b.Left()) / 2, b.Bottom()}
+		return orb.Point{(b.Max[0] + b.Min[0]) / 2, b.Min[1]}
 	case 5:
-		return orb.Point{b.Left(), b.Bottom()}
+		return orb.Point{b.Min[0], b.Min[1]}
 	case 6:
-		return orb.Point{b.Right(), b.Bottom()}
+		return orb.Point{b.Max[0], b.Min[1]}
 	case 8:
-		return orb.Point{(b.Right() + b.Left()) / 2, b.Top()}
+		return orb.Point{(b.Max[0] + b.Min[0]) / 2, b.Max[1]}
 	case 9:
-		return orb.Point{b.Left(), b.Top()}
+		return orb.Point{b.Min[0], b.Max[1]}
 	case 10:
-		return orb.Point{b.Right(), b.Top()}
+		return orb.Point{b.Max[0], b.Max[1]}
 	}
 
 	panic("invalid code")
