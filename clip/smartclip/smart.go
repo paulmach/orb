@@ -204,6 +204,7 @@ func clipRings(box orb.Bound, rings []orb.Ring) (open []orb.LineString, closed [
 		if ls[0] == ls[len(ls)-1] && pointSide(box, ls[0]) == notOnSide {
 			closed = append(closed, orb.Ring(ls))
 		} else {
+			result[at] = ls
 			at++
 		}
 	}
