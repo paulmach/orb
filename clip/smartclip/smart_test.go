@@ -162,6 +162,21 @@ func TestPolygon(t *testing.T) {
 			},
 		},
 		{
+			name:  "with inner endpoints touching edge and closed inner",
+			bound: orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{9, 9}},
+			input: orb.Polygon{
+				{{0, 2}, {8, 2}, {8, 8}, {0, 8}},
+				{{6, 6}, {6, 7}, {7, 7}, {7, 6}, {6, 6}},
+				{{1, 4}, {2, 5}, {3, 4}, {2, 3}, {1, 4}},
+			},
+			expected: orb.MultiPolygon{
+				{
+					{{1, 2}, {8, 2}, {8, 8}, {1, 8}, {1, 4}, {2, 5}, {3, 4}, {2, 3}, {1, 4}, {1, 2}},
+					{{6, 6}, {6, 7}, {7, 7}, {7, 6}, {6, 6}},
+				},
+			},
+		},
+		{
 			name:  "with inner interior point touching edge",
 			bound: orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{9, 9}},
 			input: orb.Polygon{
