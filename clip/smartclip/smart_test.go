@@ -7,6 +7,13 @@ import (
 	"github.com/paulmach/orb"
 )
 
+func TestSmartClip(t *testing.T) {
+	bound := orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{1, 1}}
+	for _, g := range orb.AllGeometries {
+		SmartClip(bound, g, orb.CCW)
+	}
+}
+
 func TestRing(t *testing.T) {
 	oneSix := orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{6, 6}}
 

@@ -10,7 +10,7 @@ func (mp MultiPoint) GeoJSONType() string {
 
 // Dimensions returns 0 because a MultiPoint is a 0d object.
 func (mp MultiPoint) Dimensions() int {
-	return 2
+	return 0
 }
 
 // Clone returns a new copy of the points.

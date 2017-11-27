@@ -14,7 +14,7 @@ func Area(g orb.Geometry) float64 {
 	return a
 }
 
-// CentroidArea returns botht the centroid and the area in the 2d plane.
+// CentroidArea returns both the centroid and the area in the 2d plane.
 // Since the area is need for the centroid, return both.
 func CentroidArea(g orb.Geometry) (orb.Point, float64) {
 	if g == nil {

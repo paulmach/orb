@@ -44,9 +44,12 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 			err    error
 		)
 
-		if ring, ok := f.Geometry.(orb.Ring); ok {
-			coords, err = json.Marshal(orb.Polygon{ring})
-		} else {
+		switch g := f.Geometry.(type) {
+		case orb.Ring:
+			coords, err = json.Marshal(orb.Polygon{g})
+		case orb.Bound:
+			coords, err = json.Marshal(g.ToPolygon())
+		default:
 			coords, err = json.Marshal(f.Geometry)
 		}
 		if err != nil {

@@ -10,7 +10,7 @@ func (mls MultiLineString) GeoJSONType() string {
 
 // Dimensions returns 1 because a MultiLineString is a 2d object.
 func (mls MultiLineString) Dimensions() int {
-	return 2
+	return 1
 }
 
 // Bound returns a bound around all the line strings.

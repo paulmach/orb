@@ -29,6 +29,23 @@ func TestFeatureMarshalJSON(t *testing.T) {
 	}
 }
 
+func TestFeatureMarshalJSON_Bound(t *testing.T) {
+	f := NewFeature(orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{2, 2}})
+	blob, err := f.MarshalJSON()
+
+	if err != nil {
+		t.Fatalf("error marshalling to json: %v", err)
+	}
+
+	if !bytes.Contains(blob, []byte(`"type":"Polygon"`)) {
+		t.Errorf("should set type to polygon")
+	}
+
+	if !bytes.Contains(blob, []byte(`"coordinates":[[[1,1],[2,1],[2,2],[1,2],[1,1]]]`)) {
+		t.Errorf("should set type to polygon coords: %v", string(blob))
+	}
+}
+
 func TestFeatureMarshal(t *testing.T) {
 	f := NewFeature(orb.Point{1, 2})
 	blob, err := json.Marshal(f)
