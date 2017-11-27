@@ -6,7 +6,6 @@ import (
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/clip"
-	"github.com/paulmach/orb/internal/wrap"
 )
 
 // SmartClip will do a smart more involved clipping and wrapping of the geometry.
@@ -231,6 +230,8 @@ func (e *endpoint) Before(mls []orb.LineString) orb.Point {
 	return ls[len(ls)-2]
 }
 
+var emptyTwoRing = orb.Ring{{}, {}}
+
 // smartWrap takes the open lineStrings with endpoints on the boundary and
 // connects them correctly.
 func smartWrap(box orb.Bound, input []orb.LineString, o orb.Orientation) orb.MultiPolygon {
@@ -296,16 +297,11 @@ func smartWrap(box orb.Bound, input []orb.LineString, o orb.Orientation) orb.Mul
 		ep.Used = true
 
 		// previous was end, connect to this start
-		r, err := wrap.AroundBound(
-			box,
-			orb.Ring{ep.Point, current[len(current)-1]},
-			o,
-			func() orb.Orientation { return o },
-		)
-		if err != nil {
-			// should not be possible
-			// the input lineStrings all have endpoints on the boundary.
-			panic(err)
+		var r orb.Ring
+		if ep.Point == current[len(current)-1] {
+			r = emptyTwoRing
+		} else {
+			r = aroundBound(box, orb.Ring{ep.Point, current[len(current)-1]}, o)
 		}
 
 		if ep.Point.Equal(current[0]) {

@@ -1,26 +1,25 @@
-package wrap
+package smartclip
 
 import (
-	"errors"
+	"sort"
 
 	"github.com/paulmach/orb"
 )
 
-// AroundBound will connect the endpoints of the linestring provided
+// aroundBound will connect the endpoints of the linestring provided
 // by wrapping the line around the bounds in the direction provided.
 // Will append to the input.
-func AroundBound(
+func aroundBound(
 	box orb.Bound,
 	in orb.Ring,
 	o orb.Orientation,
-	inOrientation func() orb.Orientation, // sometimes we need input orientation.
-) (orb.Ring, error) {
+) orb.Ring {
 	if o != orb.CCW && o != orb.CW {
 		panic("invalid orientation")
 	}
 
 	if len(in) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	next := nexts[o]
@@ -28,20 +27,48 @@ func AroundBound(
 	f := in[0]
 	l := in[len(in)-1]
 
-	if f == l {
-		return in, nil // endpoints match
-	}
-
 	target := bitCodeOpen(box, f)
 	current := bitCodeOpen(box, l)
 
 	if target == 0 || current == 0 {
-		return in, errors.New("endpoints must be outside bound")
+		panic("endpoints must be outside bound")
 	}
 
-	if current == target && inOrientation() == o {
-		in = append(in, f)
-		return in, nil
+	if current == target {
+		// endpoints long an edge. Need to figure out what order they're in
+		// to figure out if we just need to connect them or go all the way around.
+		points := []*endpoint{
+			{
+				Point: f,
+				Start: true,
+				Side:  pointSide(box, f),
+				Index: 0,
+			},
+			&endpoint{
+				Point: l,
+				Start: false,
+				Side:  pointSide(box, l),
+				Index: 0,
+			},
+		}
+
+		se := &sortableEndpoints{
+			mls: []orb.LineString{orb.LineString(in)},
+			eps: points,
+		}
+
+		if o == orb.CCW {
+			sort.Sort(se)
+		} else {
+			sort.Sort(sort.Reverse(se))
+		}
+
+		if !points[0].Start {
+			if f != in[len(in)-1] {
+				in = append(in, f)
+			}
+			return in
+		}
 	}
 
 	// move to next and go until we're all the way around.
@@ -53,7 +80,7 @@ func AroundBound(
 
 	// add first point to the end to make it a ring
 	in = append(in, f)
-	return in, nil
+	return in
 }
 
 //         left  mid  right
