@@ -20,3 +20,6 @@ const (
 
 // A DistanceFunc is a function that computes the distance between two points.
 type DistanceFunc func(Point, Point) float64
+
+// A Projection a function that moves a point from one space to another.
+type Projection func(Point) Point

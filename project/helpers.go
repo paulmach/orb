@@ -2,184 +2,93 @@ package project
 
 import "github.com/paulmach/orb"
 
-// ToPlanar projects a geometry from geo -> planar
-func ToPlanar(g orb.Geometry, proj *Projection) orb.Geometry {
+// Geometry is a helper to project any geomtry.
+func Geometry(g orb.Geometry, proj orb.Projection) orb.Geometry {
 	if g == nil {
 		return nil
 	}
 
 	switch g := g.(type) {
 	case orb.Point:
-		return proj.ToPlanar(g)
+		return proj(g)
 	case orb.MultiPoint:
-		return MultiPointToPlanar(g, proj)
+		return MultiPoint(g, proj)
 	case orb.LineString:
-		return LineStringToPlanar(g, proj)
+		return LineString(g, proj)
 	case orb.MultiLineString:
-		return MultiLineStringToPlanar(g, proj)
+		return MultiLineString(g, proj)
 	case orb.Ring:
-		return RingToPlanar(g, proj)
+		return Ring(g, proj)
 	case orb.Polygon:
-		return PolygonToPlanar(g, proj)
+		return Polygon(g, proj)
 	case orb.MultiPolygon:
-		return MultiPolygonToPlanar(g, proj)
+		return MultiPolygon(g, proj)
 	case orb.Collection:
-		return CollectionToPlanar(g, proj)
+		return Collection(g, proj)
 	case orb.Bound:
-		return BoundToPlanar(g, proj)
+		return Bound(g, proj)
 	}
 
 	panic("geometry type not supported")
 }
 
-// ToGeo projects a geometry from planar -> geo
-func ToGeo(g orb.Geometry, proj *Projection) orb.Geometry {
-	if g == nil {
-		return nil
-	}
-
-	switch g := g.(type) {
-	case orb.Point:
-		return proj.ToGeo(g)
-	case orb.MultiPoint:
-		return MultiPointToGeo(g, proj)
-	case orb.LineString:
-		return LineStringToGeo(g, proj)
-	case orb.MultiLineString:
-		return MultiLineStringToGeo(g, proj)
-	case orb.Ring:
-		return RingToGeo(g, proj)
-	case orb.Polygon:
-		return PolygonToGeo(g, proj)
-	case orb.MultiPolygon:
-		return MultiPolygonToGeo(g, proj)
-	case orb.Collection:
-		return CollectionToGeo(g, proj)
-	case orb.Bound:
-		return BoundToGeo(g, proj)
-	}
-
-	panic("geometry type not supported")
-}
-
-// MultiPointToPlanar is a helper to project an entire multi point.
-func MultiPointToPlanar(mp orb.MultiPoint, proj *Projection) orb.MultiPoint {
+// MultiPoint is a helper to project an entire multi point.
+func MultiPoint(mp orb.MultiPoint, proj orb.Projection) orb.MultiPoint {
 	for i := range mp {
-		mp[i] = proj.ToPlanar(mp[i])
+		mp[i] = proj(mp[i])
 	}
 
 	return mp
 }
 
-// MultiPointToGeo is a helper to project an entire multi point.
-func MultiPointToGeo(mp orb.MultiPoint, proj *Projection) orb.MultiPoint {
-	for i := range mp {
-		mp[i] = proj.ToGeo(mp[i])
-	}
-
-	return mp
+// LineString is a helper to project an entire line string.
+func LineString(ls orb.LineString, proj orb.Projection) orb.LineString {
+	return orb.LineString(MultiPoint(orb.MultiPoint(ls), proj))
 }
 
-// LineStringToPlanar is a helper to project an entire line string.
-func LineStringToPlanar(ls orb.LineString, proj *Projection) orb.LineString {
-	return orb.LineString(MultiPointToPlanar(orb.MultiPoint(ls), proj))
-}
-
-// LineStringToGeo is a helper to project an entire line string.
-func LineStringToGeo(ls orb.LineString, proj *Projection) orb.LineString {
-	return orb.LineString(MultiPointToGeo(orb.MultiPoint(ls), proj))
-}
-
-// MultiLineStringToPlanar is a helper to project an entire multi linestring.
-func MultiLineStringToPlanar(mls orb.MultiLineString, proj *Projection) orb.MultiLineString {
+// MultiLineString is a helper to project an entire multi linestring.
+func MultiLineString(mls orb.MultiLineString, proj orb.Projection) orb.MultiLineString {
 	for i := range mls {
-		mls[i] = LineStringToPlanar(mls[i], proj)
+		mls[i] = LineString(mls[i], proj)
 	}
 
 	return mls
 }
 
-// MultiLineStringToGeo is a helper to project an entire multi linestring.
-func MultiLineStringToGeo(mls orb.MultiLineString, proj *Projection) orb.MultiLineString {
-	for i := range mls {
-		mls[i] = LineStringToGeo(mls[i], proj)
-	}
-
-	return mls
+// Ring is a helper to project an entire ring.
+func Ring(r orb.Ring, proj orb.Projection) orb.Ring {
+	return orb.Ring(LineString(orb.LineString(r), proj))
 }
 
-// RingToPlanar is a helper to project an entire ring.
-func RingToPlanar(r orb.Ring, proj *Projection) orb.Ring {
-	return orb.Ring(LineStringToPlanar(orb.LineString(r), proj))
-}
-
-// RingToGeo is a helper to project an entire ring.
-func RingToGeo(r orb.Ring, proj *Projection) orb.Ring {
-	return orb.Ring(LineStringToGeo(orb.LineString(r), proj))
-}
-
-// PolygonToPlanar is a helper to project an entire polygon.
-func PolygonToPlanar(p orb.Polygon, proj *Projection) orb.Polygon {
+// Polygon is a helper to project an entire polygon.
+func Polygon(p orb.Polygon, proj orb.Projection) orb.Polygon {
 	for i := range p {
-		p[i] = RingToPlanar(p[i], proj)
+		p[i] = Ring(p[i], proj)
 	}
 
 	return p
 }
 
-// PolygonToGeo is a helper to project an entire line string.
-func PolygonToGeo(p orb.Polygon, proj *Projection) orb.Polygon {
-	for i := range p {
-		p[i] = RingToGeo(p[i], proj)
-	}
-
-	return p
-}
-
-// MultiPolygonToPlanar is a helper to project an entire multi polygon.
-func MultiPolygonToPlanar(mp orb.MultiPolygon, proj *Projection) orb.MultiPolygon {
+// MultiPolygon is a helper to project an entire multi polygon.
+func MultiPolygon(mp orb.MultiPolygon, proj orb.Projection) orb.MultiPolygon {
 	for i := range mp {
-		mp[i] = PolygonToPlanar(mp[i], proj)
+		mp[i] = Polygon(mp[i], proj)
 	}
 
 	return mp
 }
 
-// MultiPolygonToGeo is a helper to project an entire multi linestring.
-func MultiPolygonToGeo(mp orb.MultiPolygon, proj *Projection) orb.MultiPolygon {
-	for i := range mp {
-		mp[i] = PolygonToGeo(mp[i], proj)
-	}
-
-	return mp
-}
-
-// CollectionToPlanar is a helper to project a rectangle.
-func CollectionToPlanar(c orb.Collection, proj *Projection) orb.Collection {
+// Collection is a helper to project a rectangle.
+func Collection(c orb.Collection, proj orb.Projection) orb.Collection {
 	for i := range c {
-		c[i] = ToPlanar(c[i], proj)
+		c[i] = Geometry(c[i], proj)
 	}
 
 	return c
 }
 
-// CollectionToGeo is a helper to project a rectangle.
-func CollectionToGeo(c orb.Collection, proj *Projection) orb.Collection {
-	for i := range c {
-		c[i] = ToGeo(c[i], proj)
-	}
-
-	return c
-}
-
-// BoundToPlanar is a helper to project a rectangle.
-func BoundToPlanar(bound orb.Bound, proj *Projection) orb.Bound {
-	min := proj.ToPlanar(bound.Min)
-	return orb.Bound{Min: min, Max: min}.Extend(proj.ToPlanar(bound.Max))
-}
-
-// BoundToGeo is a helper to project a rectangle.
-func BoundToGeo(bound orb.Bound, proj *Projection) orb.Bound {
-	min := proj.ToGeo(bound.Min)
-	return orb.Bound{Min: min, Max: min}.Extend(proj.ToGeo(bound.Max))
+// Bound is a helper to project a rectangle.
+func Bound(bound orb.Bound, proj orb.Projection) orb.Bound {
+	min := proj(bound.Min)
+	return orb.Bound{Min: min, Max: min}.Extend(proj(bound.Max))
 }

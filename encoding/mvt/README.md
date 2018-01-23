@@ -22,4 +22,4 @@ These function decode the geometry and leave it in the "tile coordinates".
 To project it to and from WGS84 (standard lon/lat) use:
 
 	func (l Layer) ProjectToTile(tile maptile.Tile)
-	func (l Layer) ProjectToLonLat(tile maptile.Tile)
+	func (l Layer) ProjectToWGS84(tile maptile.Tile)

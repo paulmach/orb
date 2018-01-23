@@ -30,16 +30,16 @@ func NewLayer(name string, fc *geojson.FeatureCollection) *Layer {
 func (l Layer) ProjectToTile(tile maptile.Tile) {
 	p := newProjection(tile, l.Extent)
 	for _, f := range l.Features {
-		f.Geometry = project.ToPlanar(f.Geometry, p)
+		f.Geometry = project.Geometry(f.Geometry, p.ToTile)
 	}
 }
 
-// ProjectToLonLat will project all the geometries backed to WGS84 from
+// ProjectToWGS84 will project all the geometries backed to WGS84 from
 // the extent and mercator projection.
-func (l Layer) ProjectToLonLat(tile maptile.Tile) {
+func (l Layer) ProjectToWGS84(tile maptile.Tile) {
 	p := newProjection(tile, l.Extent)
 	for _, f := range l.Features {
-		f.Geometry = project.ToGeo(f.Geometry, p)
+		f.Geometry = project.Geometry(f.Geometry, p.ToWGS84)
 	}
 }
 
@@ -77,10 +77,10 @@ func (ls Layers) ProjectToTile(tile maptile.Tile) {
 	}
 }
 
-// ProjectToLonLat will project all the geometries in all the layers backed
+// ProjectToWGS84 will project all the geometries in all the layers backed
 // to WGS84 from the extent and mercator projection.
-func (ls Layers) ProjectToLonLat(tile maptile.Tile) {
+func (ls Layers) ProjectToWGS84(tile maptile.Tile) {
 	for _, l := range ls {
-		l.ProjectToLonLat(tile)
+		l.ProjectToWGS84(tile)
 	}
 }

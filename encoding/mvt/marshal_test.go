@@ -58,7 +58,7 @@ func TestMarshalMarshalGzipped_Full(t *testing.T) {
 	}
 
 	// project back
-	decoded.ProjectToLonLat(tile)
+	decoded.ProjectToWGS84(tile)
 
 	// compare the results
 	result := decoded[0].Features[0]
@@ -99,7 +99,7 @@ func TestMarshalUnmarshal(t *testing.T) {
 				t.Errorf("unmarshal error: %v", err)
 			}
 
-			layers.ProjectToLonLat(tc.tile)
+			layers.ProjectToWGS84(tc.tile)
 			result := layers.ToFeatureCollections()
 
 			xEpsilon, yEpsilon := tileEpsilon(tc.tile)
@@ -140,7 +140,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatalf("error unmarshalling: %v", err)
 			}
 
-			layers.ProjectToLonLat(tc.tile)
+			layers.ProjectToWGS84(tc.tile)
 			result := layers.ToFeatureCollections()
 
 			xEpsilon, yEpsilon := tileEpsilon(tc.tile)
@@ -366,6 +366,6 @@ func BenchmarkProjectToGeo(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		layers.ProjectToLonLat(tile)
+		layers.ProjectToWGS84(tile)
 	}
 }
