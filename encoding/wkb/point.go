@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"math"
 
 	"github.com/paulmach/orb"
 )
@@ -20,6 +21,19 @@ func readPoint(r io.Reader, bom binary.ByteOrder) (orb.Point, error) {
 	}
 
 	return p, nil
+}
+
+func (e *Encoder) writePoint(p orb.Point) error {
+	e.order.PutUint32(e.buf, pointType)
+	_, err := e.w.Write(e.buf[:4])
+	if err != nil {
+		return err
+	}
+
+	e.order.PutUint64(e.buf, math.Float64bits(p[0]))
+	e.order.PutUint64(e.buf[8:], math.Float64bits(p[1]))
+	_, err = e.w.Write(e.buf)
+	return err
 }
 
 func readMultiPoint(r io.Reader, bom binary.ByteOrder) (orb.MultiPoint, error) {
@@ -48,4 +62,22 @@ func readMultiPoint(r io.Reader, bom binary.ByteOrder) (orb.MultiPoint, error) {
 	}
 
 	return result, nil
+}
+
+func (e *Encoder) writeMultiPoint(mp orb.MultiPoint) error {
+	e.order.PutUint32(e.buf, multiPointType)
+	e.order.PutUint32(e.buf[4:], uint32(len(mp)))
+	_, err := e.w.Write(e.buf[:8])
+	if err != nil {
+		return err
+	}
+
+	for _, p := range mp {
+		err := e.Encode(p)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

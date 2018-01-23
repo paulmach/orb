@@ -15,7 +15,7 @@ func readCollection(r io.Reader, bom binary.ByteOrder) (orb.Collection, error) {
 
 	result := make(orb.Collection, 0, num)
 	for i := 0; i < int(num); i++ {
-		geom, err := Read(r)
+		geom, err := NewDecoder(r).Decode()
 		if err != nil {
 			return nil, err
 		}
@@ -24,4 +24,22 @@ func readCollection(r io.Reader, bom binary.ByteOrder) (orb.Collection, error) {
 	}
 
 	return result, nil
+}
+
+func (e *Encoder) writeCollection(c orb.Collection) error {
+	e.order.PutUint32(e.buf, geometryCollectionType)
+	e.order.PutUint32(e.buf[4:], uint32(len(c)))
+	_, err := e.w.Write(e.buf[:8])
+	if err != nil {
+		return err
+	}
+
+	for _, geom := range c {
+		err := e.Encode(geom)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -7,12 +7,6 @@ import (
 	"github.com/paulmach/orb"
 )
 
-/*
-This purpose of this file is to house the wkt functions. These functions are
-use to take a tagola.Geometry and convert it to a wkt string. It will, also,
-contain functions to parse a wkt string into a wkb.Geometry.
-*/
-
 func wkt(geom orb.Geometry) string {
 	switch g := geom.(type) {
 	case orb.Point:

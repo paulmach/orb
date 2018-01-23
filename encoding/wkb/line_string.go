@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"math"
 
 	"github.com/paulmach/orb"
 )
@@ -25,6 +26,26 @@ func readLineString(r io.Reader, bom binary.ByteOrder) (orb.LineString, error) {
 	}
 
 	return result, nil
+}
+
+func (e *Encoder) writeLineString(ls orb.LineString) error {
+	e.order.PutUint32(e.buf, lineStringType)
+	e.order.PutUint32(e.buf[4:], uint32(len(ls)))
+	_, err := e.w.Write(e.buf[:8])
+	if err != nil {
+		return err
+	}
+
+	for _, p := range ls {
+		e.order.PutUint64(e.buf, math.Float64bits(p[0]))
+		e.order.PutUint64(e.buf[8:], math.Float64bits(p[1]))
+		_, err = e.w.Write(e.buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func readMultiLineString(r io.Reader, bom binary.ByteOrder) (orb.MultiLineString, error) {
@@ -53,4 +74,22 @@ func readMultiLineString(r io.Reader, bom binary.ByteOrder) (orb.MultiLineString
 	}
 
 	return result, nil
+}
+
+func (e *Encoder) writeMultiLineString(mls orb.MultiLineString) error {
+	e.order.PutUint32(e.buf, multiLineStringType)
+	e.order.PutUint32(e.buf[4:], uint32(len(mls)))
+	_, err := e.w.Write(e.buf[:8])
+	if err != nil {
+		return err
+	}
+
+	for _, ls := range mls {
+		err := e.Encode(ls)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

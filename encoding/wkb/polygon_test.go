@@ -1,8 +1,6 @@
 package wkb
 
 import (
-	"bytes"
-	"encoding/binary"
 	"testing"
 
 	"github.com/paulmach/orb"
@@ -12,13 +10,13 @@ func TestPolygon(t *testing.T) {
 	cases := []struct {
 		name     string
 		bytes    []byte
-		bom      binary.ByteOrder
 		expected orb.Polygon
 	}{
 		{
 			name: "polygon",
 			bytes: []byte{
 				//01    02    03    04    05    06    07    08
+				0x01, 0x03, 0x00, 0x00, 0x00,
 				0x01, 0x00, 0x00, 0x00, // Number of Rings 1
 				0x05, 0x00, 0x00, 0x00, // Number of Points 5
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X1 30
@@ -32,7 +30,6 @@ func TestPolygon(t *testing.T) {
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X5 30
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y5 10
 			},
-			bom: binary.LittleEndian,
 			expected: orb.Polygon{{
 				{30, 10}, {40, 40}, {20, 40}, {10, 20}, {30, 10},
 			}},
@@ -41,6 +38,7 @@ func TestPolygon(t *testing.T) {
 			name: "two ring polygon",
 			bytes: []byte{
 				//01    02    03    04    05    06    07    08
+				0x01, 0x03, 0x00, 0x00, 0x00,
 				0x02, 0x00, 0x00, 0x00, // Number of Lines (2)
 				0x05, 0x00, 0x00, 0x00, // Number of Points in Line1 (5)
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x41, 0x40, // X1 35
@@ -63,7 +61,6 @@ func TestPolygon(t *testing.T) {
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // X4 20
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // Y4 30
 			},
-			bom: binary.LittleEndian,
 			expected: orb.Polygon{
 				{{35, 10}, {45, 45}, {15, 40}, {10, 20}, {35, 10}},
 				{{20, 30}, {35, 35}, {30, 20}, {20, 30}},
@@ -73,20 +70,7 @@ func TestPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p, err := readPolygon(bytes.NewReader(tc.bytes), tc.bom)
-			if err != nil {
-				t.Fatalf("read error: %v", err)
-			}
-
-			if len(p) != len(tc.expected) {
-				t.Fatalf("incorrect rings: %d != %d", len(p), len(tc.expected))
-			}
-
-			for i := range tc.expected {
-				if !p[i].Equal(tc.expected[i]) {
-					t.Errorf("expected[%v]: %v != %v", i, p[i], tc.expected[i])
-				}
-			}
+			compare(t, tc.expected, tc.bytes)
 		})
 	}
 }
@@ -95,13 +79,13 @@ func TestMultiPolygon(t *testing.T) {
 	cases := []struct {
 		name     string
 		bytes    []byte
-		bom      binary.ByteOrder
 		expected orb.MultiPolygon
 	}{
 		{
 			name: "multi polygon",
 			bytes: []byte{
 				//01    02    03    04    05    06    07    08
+				0x01, 0x06, 0x00, 0x00, 0x00,
 				0x02, 0x00, 0x00, 0x00, // Number of Polygons (2)
 				0x01,                   // Byte Encoding Little
 				0x03, 0x00, 0x00, 0x00, // Type Polygon1 (3)
@@ -130,7 +114,6 @@ func TestMultiPolygon(t *testing.T) {
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2e, 0x40, // X5 15
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x40, // Y5  5
 			},
-			bom: binary.LittleEndian,
 			expected: orb.MultiPolygon{
 				{
 					{{30, 20}, {45, 40}, {10, 40}, {30, 20}},
@@ -144,6 +127,7 @@ func TestMultiPolygon(t *testing.T) {
 			name: "three polygons",
 			bytes: []byte{
 				//01    02    03    04    05    06    07    08
+				0x01, 0x06, 0x00, 0x00, 0x00,
 				0x02, 0x00, 0x00, 0x00, // Number of Polygons (2)
 				0x01,                   // Byte order marker little
 				0x03, 0x00, 0x00, 0x00, // type Polygon (3)
@@ -184,7 +168,6 @@ func TestMultiPolygon(t *testing.T) {
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y4 20
 
 			},
-			bom: binary.LittleEndian,
 			expected: orb.MultiPolygon{
 				{
 					{{40, 40}, {20, 45}, {45, 30}, {40, 40}},
@@ -199,20 +182,7 @@ func TestMultiPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mp, err := readMultiPolygon(bytes.NewReader(tc.bytes), tc.bom)
-			if err != nil {
-				t.Fatalf("read error: %v", err)
-			}
-
-			if len(mp) != len(tc.expected) {
-				t.Fatalf("incorrect length: %d != %d", len(mp), len(tc.expected))
-			}
-
-			for i := range tc.expected {
-				if !mp[i].Equal(tc.expected[i]) {
-					t.Errorf("expected[%v]: %v != %v", i, mp[i], tc.expected[i])
-				}
-			}
+			compare(t, tc.expected, tc.bytes)
 		})
 	}
 }
