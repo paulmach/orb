@@ -34,6 +34,17 @@ type Encoder struct {
 	order binary.ByteOrder
 }
 
+// MustMarshal will encode the geometry and panic on error.
+// Currently there is no reason to error during geometry marshalling.
+func MustMarshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) []byte {
+	d, err := Marshal(geom, byteOrder...)
+	if err != nil {
+		panic(err)
+	}
+
+	return d
+}
+
 // Marshal encodes the geometry with the given byte order.
 func Marshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) ([]byte, error) {
 
