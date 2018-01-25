@@ -46,6 +46,10 @@ func CentroidArea(g orb.Geometry) (orb.Point, float64) {
 }
 
 func multiPointCentroid(mp orb.MultiPoint) orb.Point {
+	if len(mp) == 0 {
+		return orb.Point{}
+	}
+
 	x, y := 0.0, 0.0
 	for _, p := range mp {
 		x += p[0]
@@ -64,20 +68,32 @@ func multiLineStringCentroid(mls orb.MultiLineString) orb.Point {
 		return orb.Point{}
 	}
 
+	validCount := 0
 	for _, ls := range mls {
 		c, d := lineStringCentroidDist(ls)
 		if d == math.Inf(1) {
 			continue
 		}
 
+		dist += d
+		validCount++
+
+		if d == 0 {
+			d = 1.0
+		}
+
 		point[0] += c[0] * d
 		point[1] += c[1] * d
-
-		dist += d
 	}
 
-	if dist == math.Inf(1) {
+	if validCount == 0 {
 		return orb.Point{}
+	}
+
+	if dist == math.Inf(1) || dist == 0.0 {
+		point[0] /= float64(validCount)
+		point[1] /= float64(validCount)
+		return point
 	}
 
 	point[0] /= dist
@@ -112,6 +128,10 @@ func lineStringCentroidDist(ls orb.LineString) (orb.Point, float64) {
 		point[0] += (p1[0] + p2[0]) / 2.0 * d
 		point[1] += (p1[1] + p2[1]) / 2.0 * d
 		dist += d
+	}
+
+	if dist == 0 {
+		return ls[0], 0
 	}
 
 	point[0] /= dist
@@ -178,6 +198,10 @@ func polygonCentroidArea(p orb.Polygon) (orb.Point, float64) {
 	}
 
 	totalArea := area - holeArea
+	if totalArea == 0 {
+		c, _ := lineStringCentroidDist(orb.LineString(p[0]))
+		return c, 0
+	}
 
 	centroid[0] = (area*centroid[0] - holeArea*holeCentroid[0]) / totalArea
 	centroid[1] = (area*centroid[1] - holeArea*holeCentroid[1]) / totalArea
@@ -196,6 +220,10 @@ func multiPolygonCentroidArea(mp orb.MultiPolygon) (orb.Point, float64) {
 		point[1] += c[1] * a
 
 		area += a
+	}
+
+	if area == 0 {
+		return orb.Point{}, 0
 	}
 
 	point[0] /= area
@@ -220,6 +248,10 @@ func collectionCentroidArea(c orb.Collection) (orb.Point, float64) {
 		point[1] += c[1] * a
 
 		area += a
+	}
+
+	if area == 0 {
+		return orb.Point{}, 0
 	}
 
 	point[0] /= area

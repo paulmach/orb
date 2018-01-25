@@ -26,6 +26,65 @@ func TestCentroidArea_MultiPoint(t *testing.T) {
 	}
 }
 
+func TestCentroidArea_LineString(t *testing.T) {
+	cases := []struct {
+		name   string
+		ls     orb.LineString
+		result orb.Point
+	}{
+		{
+			name:   "simple",
+			ls:     orb.LineString{{0, 0}, {3, 4}},
+			result: orb.Point{1.5, 2},
+		},
+		{
+			name:   "empty line",
+			ls:     orb.LineString{},
+			result: orb.Point{0, 0},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if c, _ := CentroidArea(tc.ls); !c.Equal(tc.result) {
+				t.Errorf("wrong centroid: %v != %v", c, tc.result)
+			}
+		})
+	}
+}
+
+func TestCentroidArea_MultiLineString(t *testing.T) {
+	cases := []struct {
+		name   string
+		ls     orb.MultiLineString
+		result orb.Point
+	}{
+		{
+			name:   "simple",
+			ls:     orb.MultiLineString{{{0, 0}, {3, 4}}},
+			result: orb.Point{1.5, 2},
+		},
+		{
+			name:   "two lines",
+			ls:     orb.MultiLineString{{{0, 0}, {0, 1}}, {{1, 0}, {1, 1}}},
+			result: orb.Point{0.5, 0.5},
+		},
+		{
+			name:   "multiple empty lines",
+			ls:     orb.MultiLineString{{{1, 0}}, {{2, 1}}},
+			result: orb.Point{1.5, 0.5},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if c, _ := CentroidArea(tc.ls); !c.Equal(tc.result) {
+				t.Errorf("wrong centroid: %v != %v", c, tc.result)
+			}
+		})
+	}
+}
+
 func TestCentroid_Ring(t *testing.T) {
 	cases := []struct {
 		name   string
@@ -56,6 +115,10 @@ func TestCentroid_Ring(t *testing.T) {
 			name:   "redudent points",
 			ring:   orb.Ring{{0, 0}, {1, 0}, {2, 0}, {1, 3}, {0, 0}},
 			result: orb.Point{1, 1},
+		},
+		{
+			name: "3 points",
+			ring: orb.Ring{{0, 0}, {1, 0}, {0, 0}},
 		},
 	}
 
@@ -101,6 +164,11 @@ func TestArea_Ring(t *testing.T) {
 			name:   "even number of points",
 			ring:   orb.Ring{{0, 0}, {1, 0}, {1, 1}, {0.4, 1}, {0, 1}, {0, 0}},
 			result: 1,
+		},
+		{
+			name:   "3 points",
+			ring:   orb.Ring{{0, 0}, {1, 0}, {0, 0}},
+			result: 0.0,
 		},
 		{
 			name:   "4 points",
@@ -172,6 +240,13 @@ func TestCentroidArea_Polygon(t *testing.T) {
 
 	if area != 11 {
 		t.Errorf("incorrect area: %v != 11", area)
+	}
+
+	// empty polygon
+	e := orb.Point{0.5, 1}
+	c, _ := CentroidArea(orb.Polygon{{{0, 1}, {1, 1}, {0, 1}}})
+	if !c.Equal(e) {
+		t.Errorf("incorrect point: %v != %v", c, e)
 	}
 }
 
