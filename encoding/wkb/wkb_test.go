@@ -62,4 +62,57 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 		t.Logf("%v", b)
 		t.Errorf("incorrent encoding")
 	}
+
+	// preallocation
+	if len(data) != geomLength(e) {
+		t.Errorf("prealloc length: %v != %v", len(data), geomLength(e))
+	}
+
+	// Scanner
+	var sg orb.Geometry
+
+	switch e.(type) {
+	case orb.Point:
+		p := orb.Point{}
+		err = Scanner(&p).Scan(b)
+		sg = p
+	case orb.MultiPoint:
+		mp := orb.MultiPoint{}
+		err = Scanner(&mp).Scan(b)
+		sg = mp
+	case orb.LineString:
+		ls := orb.LineString{}
+		err = Scanner(&ls).Scan(b)
+		sg = ls
+	case orb.MultiLineString:
+		mls := orb.MultiLineString{}
+		err = Scanner(&mls).Scan(b)
+		sg = mls
+	case orb.Polygon:
+		p := orb.Polygon{}
+		err = Scanner(&p).Scan(b)
+		sg = p
+	case orb.MultiPolygon:
+		mp := orb.MultiPolygon{}
+		err = Scanner(&mp).Scan(b)
+		sg = mp
+	case orb.Collection:
+		c := orb.Collection{}
+		err = Scanner(&c).Scan(b)
+		sg = c
+	default:
+		t.Fatalf("unknown type: %T", e)
+	}
+
+	if err != nil {
+		t.Errorf("scan error: %v", err)
+	}
+
+	if sg.GeoJSONType() != e.GeoJSONType() {
+		t.Errorf("scanning to wrong type: %v != %v", sg.GeoJSONType(), e.GeoJSONType())
+	}
+
+	if !orb.Equal(sg, e) {
+		t.Errorf("incorrect geometry: %v != %v", sg, e)
+	}
 }

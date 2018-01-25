@@ -36,7 +36,8 @@ type Encoder struct {
 
 // Marshal encodes the geometry with the given byte order.
 func Marshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) ([]byte, error) {
-	buf := bytes.NewBuffer(nil)
+
+	buf := bytes.NewBuffer(make([]byte, 0, geomLength(geom)))
 
 	e := NewEncoder(buf)
 	if len(byteOrder) > 0 {
@@ -183,4 +184,46 @@ func readByteOrderType(r io.Reader) (binary.ByteOrder, uint32, error) {
 	}
 
 	return byteOrder, typ, err
+}
+
+// geomLength helps to do preallocation during a marshal.
+func geomLength(geom orb.Geometry) int {
+	switch g := geom.(type) {
+	case orb.Point:
+		return 21
+	case orb.MultiPoint:
+		return 9 + 21*len(g)
+	case orb.LineString:
+		return 9 + 16*len(g)
+	case orb.MultiLineString:
+		sum := 0
+		for _, ls := range g {
+			sum += 9 + 16*len(ls)
+		}
+
+		return 9 + sum
+	case orb.Polygon:
+		sum := 0
+		for _, r := range g {
+			sum += 4 + 16*len(r)
+		}
+
+		return 9 + sum
+	case orb.MultiPolygon:
+		sum := 0
+		for _, c := range g {
+			sum += geomLength(c)
+		}
+
+		return 9 + sum
+	case orb.Collection:
+		sum := 0
+		for _, c := range g {
+			sum += geomLength(c)
+		}
+
+		return 9 + sum
+	}
+	return 0
+
 }
