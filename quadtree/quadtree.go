@@ -106,8 +106,8 @@ func (q *Quadtree) add(n *node, p orb.Pointer, point orb.Point, left, right, bot
 	return
 }
 
-// Remove will remove the pointer from the quadtree. By default it'll matching
-// using the points, but an FilterFunc can be provided for a more specific test
+// Remove will remove the pointer from the quadtree. By default it'll match
+// using the points, but a FilterFunc can be provided for a more specific test
 // if there are elements with the same point value in the tree. For example:
 //	func(pointer orb.Pointer) {
 //		return pointer.(*MyType).ID == lookingFor.ID

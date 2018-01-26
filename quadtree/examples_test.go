@@ -25,7 +25,7 @@ func ExampleQuadtree_Find() {
 	// nearest: [0.4930591659434973 0.5196585530161364]
 }
 
-func ExampleQuadtree_FindMatching() {
+func ExampleQuadtree_Matching() {
 	r := rand.New(rand.NewSource(42)) // to make things reproducible
 
 	type dataPoint struct {
