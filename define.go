@@ -28,3 +28,14 @@ type Projection func(Point) Point
 type Pointer interface {
 	Point() Point
 }
+
+// A Simplifier is something that can simplify geometry.
+type Simplifier interface {
+	Simplify(g Geometry) Geometry
+	LineString(ls LineString) LineString
+	MultiLineString(mls MultiLineString) MultiLineString
+	Ring(r Ring) Ring
+	Polygon(p Polygon) Polygon
+	MultiPolygon(mp MultiPolygon) MultiPolygon
+	Collection(c Collection) Collection
+}

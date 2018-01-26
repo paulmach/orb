@@ -9,6 +9,57 @@ import (
 
 var epsilon = 1e-6
 
+func TestDistanceFromSegment(t *testing.T) {
+	a := orb.Point{0, 0}
+	b := orb.Point{0, 10}
+
+	cases := []struct {
+		name   string
+		point  orb.Point
+		result float64
+	}{
+		{
+			name:   "point in middle",
+			point:  orb.Point{1, 5},
+			result: 1,
+		},
+		{
+			name:   "on line",
+			point:  orb.Point{0, 2},
+			result: 0,
+		},
+		{
+			name:   "past start",
+			point:  orb.Point{0, -5},
+			result: 5,
+		},
+		{
+			name:   "past end",
+			point:  orb.Point{0, 13},
+			result: 3,
+		},
+		{
+			name:   "triangle",
+			point:  orb.Point{3, 4},
+			result: 3,
+		},
+		{
+			name:   "triangle off end",
+			point:  orb.Point{3, -4},
+			result: 5,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			v := DistanceFromSegment(a, b, tc.point)
+			if v != tc.result {
+				t.Errorf("incorrect distance: %v != %v", v, tc.result)
+			}
+		})
+	}
+}
+
 func TestDistanceFromWithIndex(t *testing.T) {
 	for _, g := range orb.AllGeometries {
 		DistanceFromWithIndex(g, orb.Point{})
