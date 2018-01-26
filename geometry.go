@@ -37,7 +37,7 @@ func (c Collection) private()        {}
 
 // AllGeometries lists all possible types and values that a geometry
 // interface can be. It should be used only for testing to verify
-// function that accept a Geometry will work in all cases.
+// functions that accept a Geometry will work in all cases.
 var AllGeometries = []Geometry{
 	nil,
 	Point{},

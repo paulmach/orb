@@ -23,3 +23,8 @@ type DistanceFunc func(Point, Point) float64
 
 // A Projection a function that moves a point from one space to another.
 type Projection func(Point) Point
+
+// Pointer is something that can be represented by a point.
+type Pointer interface {
+	Point() Point
+}

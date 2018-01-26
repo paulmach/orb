@@ -215,11 +215,6 @@ func TestBoundIsZero(t *testing.T) {
 	if !bound.IsZero() {
 		t.Error("expected true, got false")
 	}
-
-	var r Bound
-	if !r.IsZero() {
-		t.Error("expected true, got false")
-	}
 }
 
 func TestBoundToRing(t *testing.T) {

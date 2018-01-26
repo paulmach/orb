@@ -6,9 +6,8 @@ import (
 
 var emptyBound = Bound{Min: Point{1, 1}, Max: Point{-1, -1}}
 
-// A Bound represents an enclosed "box" on the sphere.
-// It does not know anything about the anti-meridian (TODO).
-// With two random points you do something like:
+// A Bound represents a closed box or rectangle.
+// To create a bound with two points you can do something like:
 //	orb.MultiPoint{p1, p2}.Bound()
 type Bound struct {
 	Min, Max Point
@@ -101,12 +100,33 @@ func (b Bound) Intersects(bound Bound) bool {
 	return true
 }
 
+// Pad extends the bound in all directions by the given value.
+func (b Bound) Pad(d float64) Bound {
+	b.Min[0] -= d
+	b.Min[1] -= d
+
+	b.Max[0] += d
+	b.Max[1] += d
+
+	return b
+}
+
 // Center returns the center of the bounds by "averaging" the x and y coords.
 func (b Bound) Center() Point {
 	return Point{
 		(b.Min[0] + b.Max[0]) / 2.0,
 		(b.Min[1] + b.Max[1]) / 2.0,
 	}
+}
+
+// Width returns the right minus the left.
+func (b Bound) Width() float64 {
+	return b.Max[0] - b.Min[0]
+}
+
+// Height returns the top minus the bottom.
+func (b Bound) Height() float64 {
+	return b.Max[1] - b.Min[1]
 }
 
 // Top returns the top of the bound.
@@ -148,7 +168,7 @@ func (b Bound) IsEmpty() bool {
 
 // IsZero return true if the bound just includes just null island.
 func (b Bound) IsZero() bool {
-	return b == Bound{}
+	return b.Max == Point{} && b.Min == Point{}
 }
 
 // Bound returns the the same bound.

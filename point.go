@@ -3,6 +3,8 @@ package orb
 // A Point is a Lon/Lat 2d point.
 type Point [2]float64
 
+var _ Pointer = Point{}
+
 // GeoJSONType returns the GeoJSON type for the object.
 func (p Point) GeoJSONType() string {
 	return "Point"
@@ -16,6 +18,11 @@ func (p Point) Dimensions() int {
 // Bound returns a single point bound of the point.
 func (p Point) Bound() Bound {
 	return Bound{p, p}
+}
+
+// Point returns itself so it implements the Pointer interface.
+func (p Point) Point() Point {
+	return p
 }
 
 // Y returns the vertical coordinate of the point.
