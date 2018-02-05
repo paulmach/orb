@@ -23,3 +23,27 @@ To project it to and from WGS84 (standard lon/lat) use:
 
 	func (l Layer) ProjectToTile(tile maptile.Tile)
 	func (l Layer) ProjectToWGS84(tile maptile.Tile)
+
+### Encoding example
+
+```go
+// Start with a set of feature collections defining each layer in lon/lat (WGS84).
+collections := map[string]*geojson.FeatureCollection{}
+
+// Convert to a layers object and project to tile coordinates.
+layers := mvt.NewLayers(collections)
+layers.ProjectToTile(maptile.New(x, y, z))
+
+// Simplify the geometry now that it's in the tile coordinate space.
+layers.Simplify(simplify.DouglasPeucker(1.0))
+
+// Depending on use-case remove empty geometry, those two small to be
+// represented in this tile space, e.g. zero length line strings, empty polygons.
+layers.RemoveEmpty()
+
+// encoding using the Mapbox Vector Tile protobuf encoding.
+data, err := layers.Marshal() // this data is NOT gzipped.
+
+// Sometimes MVT data is stored and transfered gzip compressed. In that case:
+data, err := layers.MarshalGzipped()
+```
