@@ -5,6 +5,7 @@ import (
 )
 
 // Resample converts the line string into totalPoints-1 evenly spaced segments.
+// This function will modify the linestring input.
 func Resample(ls orb.LineString, df orb.DistanceFunc, totalPoints int) orb.LineString {
 	if totalPoints <= 0 {
 		return nil
@@ -22,6 +23,7 @@ func Resample(ls orb.LineString, df orb.DistanceFunc, totalPoints int) orb.LineS
 
 // ToInterval coverts the line string into evenly spaced points of
 // about the given distance.
+// This function will modify the linestring input.
 func ToInterval(ls orb.LineString, df orb.DistanceFunc, dist float64) orb.LineString {
 	if dist <= 0 {
 		return nil

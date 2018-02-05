@@ -18,7 +18,7 @@ The tile defines helper methods such as `Parent()`, `Children()`, `Siblings()`, 
 
 ### tilecover sub-package
 
-Still a work in progress but the goal is to provide geo.Geometry -> covering tile functions.
+Still a work in progress but the goal is to provide geo.Geometry -> covering tiles.
 
 #### Similar libraries in other languages:
 

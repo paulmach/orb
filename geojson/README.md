@@ -2,7 +2,7 @@ orb/geojson [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/geojso
 ===========
 
 This package **encodes and decodes** [GeoJSON](http://geojson.org/) into Go structs
-using the geometries in the [orb/geo](https://github.com/paulmach/orb/tree/master/geo) package.
+using the geometries in the [orb](https://github.com/paulmach/orb) package.
 Supports both the [json.Marshaler](http://golang.org/pkg/encoding/json/#Marshaler) and
 [json.Unmarshaler](http://golang.org/pkg/encoding/json/#Unmarshaler) interfaces.
 The package also provides helper functions such as `UnmarshalFeatureCollection` and `UnmarshalFeature`.
@@ -22,7 +22,7 @@ rawJSON := []byte(`
 	]
   }`)
 
-fc, _ := geojson.UnmarshalFeatureCollection(rawFeatureJSON)
+fc, _ := geojson.UnmarshalFeatureCollection(rawJSON)
 
 // or
 
@@ -30,14 +30,14 @@ fc := geojson.NewFeatureCollection()
 err := json.Unmarshal(rawJSON, &fc)
 
 // Geometry will be unmarshalled into the correct geo.Geometry type.
-point := fc.Features[0].Geometry.(geo.Point)
+point := fc.Features[0].Geometry.(orb.Point)
 ```
 
 #### Marshalling (Go -> JSON)
 
 ```go
 fc := geojson.NewFeatureCollection()
-fc.Append(geo.NewPoint(1, 2))
+fc.Append(orb.Point{1, 2})
 
 rawJSON, _ := fc.MarshalJSON()
 
