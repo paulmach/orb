@@ -103,7 +103,6 @@ func (q *Quadtree) add(n *node, p orb.Pointer, point orb.Point, left, right, bot
 
 	// proceed down to the child to see if it's a leaf yet and we can add the pointer there.
 	q.add(n.Children[i], p, point, left, right, bottom, top)
-	return
 }
 
 // Remove will remove the pointer from the quadtree. By default it'll match
