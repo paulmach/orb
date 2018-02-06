@@ -8,11 +8,11 @@ import (
 	"github.com/paulmach/orb"
 )
 
-// Clip will clip the geometry to the bounding box using the
+// Geometry will clip the geometry to the bounding box using the
 // correct functions for the type.
 // This operation will modify the input of '1d or 2d geometry' by using as a
 // scratch space so clone if necessary.
-func Clip(b orb.Bound, g orb.Geometry) orb.Geometry {
+func Geometry(b orb.Bound, g orb.Geometry) orb.Geometry {
 	if g == nil {
 		return nil
 	}
@@ -219,7 +219,7 @@ func MultiPolygon(b orb.Bound, mp orb.MultiPolygon) orb.MultiPolygon {
 func Collection(b orb.Bound, c orb.Collection) orb.Collection {
 	var result orb.Collection
 	for _, g := range c {
-		clipped := Clip(b, g)
+		clipped := Geometry(b, g)
 		if clipped != nil {
 			result = append(result, clipped)
 		}

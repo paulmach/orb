@@ -9,7 +9,7 @@ import (
 func TestClip(t *testing.T) {
 	bound := orb.Bound{Min: orb.Point{-1, -1}, Max: orb.Point{1, 1}}
 	for _, g := range orb.AllGeometries {
-		Clip(bound, g)
+		Geometry(bound, g)
 	}
 }
 

@@ -10,15 +10,15 @@ import (
 	"github.com/paulmach/orb/clip"
 )
 
-// SmartClip will do a smart more involved clipping and wrapping of the geometry.
+// Geometry will do a smart more involved clipping and wrapping of the geometry.
 // It will return simple OGC geometries.
-func SmartClip(box orb.Bound, g orb.Geometry, o orb.Orientation) orb.Geometry {
+func Geometry(box orb.Bound, g orb.Geometry, o orb.Orientation) orb.Geometry {
 	if g == nil {
 		return nil
 	}
 
 	if g.Dimensions() != 2 {
-		return clip.Clip(box, g)
+		return clip.Geometry(box, g)
 	}
 
 	var mp orb.MultiPolygon
@@ -30,11 +30,11 @@ func SmartClip(box orb.Bound, g orb.Geometry, o orb.Orientation) orb.Geometry {
 	case orb.MultiPolygon:
 		mp = MultiPolygon(box, g, o)
 	case orb.Bound:
-		return clip.Clip(box, g)
+		return clip.Geometry(box, g)
 	case orb.Collection:
 		var result orb.Collection
 		for _, c := range g {
-			c := SmartClip(box, c, o)
+			c := Geometry(box, c, o)
 			if c != nil {
 				result = append(result, c)
 			}
