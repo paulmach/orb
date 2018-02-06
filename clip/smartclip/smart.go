@@ -1,3 +1,5 @@
+// Package smartclip performs a more advanced clipping algorithm so
+// it can deal with correctly oriented open rings and polygon.
 package smartclip
 
 import (

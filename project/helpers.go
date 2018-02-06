@@ -1,3 +1,5 @@
+// Package project defines projections to and from Mercator and WGS84
+// along with helpers to apply them to orb geometry types.
 package project
 
 import "github.com/paulmach/orb"
@@ -10,7 +12,7 @@ func Geometry(g orb.Geometry, proj orb.Projection) orb.Geometry {
 
 	switch g := g.(type) {
 	case orb.Point:
-		return proj(g)
+		return Point(g, proj)
 	case orb.MultiPoint:
 		return MultiPoint(g, proj)
 	case orb.LineString:
@@ -30,6 +32,11 @@ func Geometry(g orb.Geometry, proj orb.Projection) orb.Geometry {
 	}
 
 	panic("geometry type not supported")
+}
+
+// Point is a helper to project an a point
+func Point(p orb.Point, proj orb.Projection) orb.Point {
+	return proj(p)
 }
 
 // MultiPoint is a helper to project an entire multi point.

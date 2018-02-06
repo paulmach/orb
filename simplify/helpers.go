@@ -1,4 +1,4 @@
-// Package simplify implements several reducing/simplifing function for `orb.Geometry` types.
+// Package simplify implements several reducing/simplifying functions for `orb.Geometry` types.
 package simplify
 
 import "github.com/paulmach/orb"

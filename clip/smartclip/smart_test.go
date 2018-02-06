@@ -245,7 +245,7 @@ func TestPolygon(t *testing.T) {
 			},
 		},
 		{
-			name:  "two non-continuious inner points on the boundary",
+			name:  "two non-continuous inner points on the boundary",
 			bound: oneSix,
 			input: orb.Polygon{
 				{{0, 2}, {4, 2}, {4, 7}},

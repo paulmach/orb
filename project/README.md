@@ -9,6 +9,8 @@ Project `orb.Point` to Mercator:
 
 	sf := orb.Point{-122.416667, 37.783333}
 	merc := project.Point(sf, project.WGS84.ToMercator)
+
+	fmt.Println(merc)
 	// Output:
 	// [-1.3627361035049736e+07 4.548863085837512e+06]
 
@@ -28,6 +30,7 @@ Find centroid of polygon in Mercator projection:
 	centroid, _ := planar.CentroidArea(merc)
 
 	centroid = project.Mercator.ToWGS84(centroid)
+
 	fmt.Println(centroid)
 	// Output:
 	// [-122.41574403384001 37.77909471899779]

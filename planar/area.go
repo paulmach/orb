@@ -1,3 +1,5 @@
+// Package planar computes properties on geometries assuming they are
+// in 2d euclidean space.
 package planar
 
 import (
@@ -9,7 +11,7 @@ import (
 
 // Area returns the area of the geometry in the 2d plane.
 func Area(g orb.Geometry) float64 {
-	// TOOD: make faster non-centroid version.
+	// TODO: make faster non-centroid version.
 	_, a := CentroidArea(g)
 	return a
 }

@@ -66,6 +66,9 @@ func ExampleFeatureCollection_MarshalJSON() {
 
 	// standard lib encoding/json package will also work
 	data, err = json.MarshalIndent(fc, "", " ")
+	if err != nil {
+		log.Fatalf("marshal error: %v", err)
+	}
 
 	fmt.Println(string(data))
 

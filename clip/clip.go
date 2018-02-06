@@ -132,7 +132,7 @@ func ring(box orb.Bound, in orb.Ring) orb.Ring {
 
 		in, out = out, in
 	}
-	in, out = out, in // swap back
+	out = in // swap back
 
 	if initClosed {
 		// need to make sure our output is also closed.

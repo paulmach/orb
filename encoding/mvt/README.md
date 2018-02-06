@@ -38,8 +38,9 @@ layers.ProjectToTile(maptile.New(x, y, z))
 layers.Simplify(simplify.DouglasPeucker(1.0))
 
 // Depending on use-case remove empty geometry, those two small to be
-// represented in this tile space, e.g. zero length line strings, empty polygons.
-layers.RemoveEmpty()
+// represented in this tile space.
+// In this case lines shorter than 1, and areas smaller than 1.
+layers.RemoveEmpty(1.0, 1.0)
 
 // encoding using the Mapbox Vector Tile protobuf encoding.
 data, err := layers.Marshal() // this data is NOT gzipped.

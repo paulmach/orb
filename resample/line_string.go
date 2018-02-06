@@ -1,3 +1,5 @@
+// Package resample has a couple functions for resampling line geometry
+// into more or less evenly spaces points.
 package resample
 
 import (

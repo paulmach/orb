@@ -1,3 +1,5 @@
+// Package maptile defines a Tile type and methods to work with
+// web map projected tile data.
 package maptile
 
 import (
