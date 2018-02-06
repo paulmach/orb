@@ -1,4 +1,4 @@
-encoding/wkb [![Godoc Reference](https://godoc.org/github.com/paulmach/orb?status.png)](https://godoc.org/github.com/paulmach/orb/encoding/wkb)
+encoding/wkb [![Godoc Reference](https://godoc.org/github.com/paulmach/orb?status.svg)](https://godoc.org/github.com/paulmach/orb/encoding/wkb)
 ============
 
 This package provides encoding and decoding of [WKB](http://edndoc.esri.com/arcsde/9.1/general_topics/wkb_representation.htm)

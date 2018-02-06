@@ -1,4 +1,4 @@
-orb/project [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/project?status.png)](https://godoc.org/github.com/paulmach/orb/project)
+orb/project [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/project?status.svg)](https://godoc.org/github.com/paulmach/orb/project)
 ===========
 
 Package orb/project has helper function for projection geometries.

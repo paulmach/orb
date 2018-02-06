@@ -1,4 +1,4 @@
-orb/tile [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/maptile?status.png)](https://godoc.org/github.com/paulmach/orb/maptile)
+orb/tile [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/maptile?status.svg)](https://godoc.org/github.com/paulmach/orb/maptile)
 ========
 
 Package orb/maptile provides types and methods for working with

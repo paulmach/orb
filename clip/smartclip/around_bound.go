@@ -44,7 +44,7 @@ func aroundBound(
 				Side:  pointSide(box, f),
 				Index: 0,
 			},
-			&endpoint{
+			{
 				Point: l,
 				Start: false,
 				Side:  pointSide(box, l),
@@ -137,7 +137,7 @@ func pointFor(b orb.Bound, code int) orb.Point {
 
 // nexts takes a bitcode index and jumps to the next corner.
 var nexts = map[orb.Orientation][11]int{
-	orb.CW: [11]int{
+	orb.CW: {
 		-1,
 		9, // 1
 		6, // 2
@@ -150,7 +150,7 @@ var nexts = map[orb.Orientation][11]int{
 		8,  // 9
 		2,  // 10
 	},
-	orb.CCW: [11]int{
+	orb.CCW: {
 		-1,
 		5,  // 1
 		10, // 2

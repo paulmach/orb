@@ -1,4 +1,4 @@
-encoding/mvt [![Godoc Reference](https://godoc.org/github.com/paulmach/orb?status.png)](https://godoc.org/github.com/paulmach/orb/encoding/mvt)
+encoding/mvt [![Godoc Reference](https://godoc.org/github.com/paulmach/orb?status.svg)](https://godoc.org/github.com/paulmach/orb/encoding/mvt)
 ============
 
 Package mvt provides functions for encoding and decoding

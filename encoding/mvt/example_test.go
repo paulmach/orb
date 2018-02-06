@@ -9,7 +9,7 @@ import (
 	"github.com/paulmach/orb/simplify"
 )
 
-func Example_Encode() {
+func ExampleMarshal() {
 	// Start with a set of feature collections defining each layer in lon/lat (WGS84).
 	collections := map[string]*geojson.FeatureCollection{}
 

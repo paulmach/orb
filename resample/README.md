@@ -1,4 +1,4 @@
-orb/resample [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/resample?status.png)](https://godoc.org/github.com/paulmach/orb/resample)
+orb/resample [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/resample?status.svg)](https://godoc.org/github.com/paulmach/orb/resample)
 ============
 
 Package orb/resample has a couple functions for resampling line geometry

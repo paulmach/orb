@@ -1,8 +1,19 @@
-orb [![Build Status](https://travis-ci.org/paulmach/orb.png?branch=master)](https://travis-ci.org/paulmach/orb) [![Godoc Reference](https://godoc.org/github.com/paulmach/orb?status.png)](https://godoc.org/github.com/paulmach/orb)
+orb [![Build Status](https://travis-ci.org/paulmach/orb.svg?branch=master)](https://travis-ci.org/paulmach/orb) [![Go Report Card](https://goreportcard.com/badge/github.com/paulmach/orb)](https://goreportcard.com/report/github.com/paulmach/orb) [![Godoc Reference](https://godoc.org/github.com/paulmach/orb?status.svg)](https://godoc.org/github.com/paulmach/orb)
 ======
 
-Orb is a package for working with 2D geo and planar/projected geometric data is Golang.
-It offers the following types:
+Package `orb` defines a set of types for working with 2d geo and planar/projected geometric data in Golang.
+There are a set of sub-packages that use these types to do interesting things.
+They each provider their own readme with extra info.
+
+## Interesting features
+
+* **Simple types** - allow for natural operations using the `make`, `append`, `len`, `[s:e]` builtins.
+* **GeoJSON** - support as part of the [`geojson`](geojson) sub-package.
+* **Mapbox Vector Tile** - encoding and decoding as part of the [`encoding/mvt`](encoding/mvt) sub-package.
+* **Direct to type from DB query results** - by scanning WKB data directly into types.
+* **Rich set of sub-packages** - including [`clipping`](clip), [`simplifing`](simplify), [`quadtree`](quadtree) and more.
+
+## Type definitions
 
 	type Point [2]float64
 	type MultiPoint []Point
@@ -18,13 +29,15 @@ It offers the following types:
 
 	type Bound struct { Min, Max Point }
 
-Defining these types as slices allows them to access in an idiomatic way
-using go's built-in functions such at `make`, `append`, `len`, `cap`
+Defining the types as slices allows them to be accessed in an idiomatic way
+using Go's built-in functions such at `make`, `append`, `len`
 and with slice notation like `[s:e]`. For example:
 
 	ls := make(orb.LineString, 0, 100)
 	ls = append(ls, orb.Point{1, 1})
 	point := ls[0]
+
+### Shared `Geometry` interface
 
 All of the base types implement the `orb.Geometry` interface defined as:
 
@@ -34,16 +47,16 @@ All of the base types implement the `orb.Geometry` interface defined as:
 		Bound() Bound
 	}
 
-This interface is accepted by functions in the sub-packages that act on the
+This interface is accepted by functions in the sub-packages which then act on the
 base types correctly. For example:
 
 	l := clip.Geometry(bound, geom)
 
-will using the appropriate clipping algorithm depending on if the input is a
-`orb.LineString` or a `orb.Polygon`.
+will use the appropriate clipping algorithm depending on if the input is 1d or 2d,
+e.g. a `orb.LineString` or a `orb.Polygon`.
 
 Only a few methods are defined directly on these type, for example `Clone`, `Equal`, `GeoJSONType`.
-Other operation that depend on geo vs. planar contexts are defined in the respective sub package.
+Other operation that depend on geo vs. planar contexts are defined in the respective sub-package.
 For example:
 
 * Computing the geo distance between two point:
@@ -58,9 +71,9 @@ For example:
 		poly := orb.Polygon{...}
 		centroid, area := planar.CentroidArea(poly)
 
-### GeoJSON
+## GeoJSON
 
-The [geojson](geojson) subpackage implements Marshalling and Unmarshalling of GeoJSON data.
+The [geojson](geojson) sub-package implements Marshalling and Unmarshalling of GeoJSON data.
 Features are defined as:
 
 	type Feature struct {
@@ -70,20 +83,21 @@ Features are defined as:
 		Properties Properties   `json:"properties"`
 	}
 
-Defining the geometry as an `orb.Geometry` interface along with subpackage functions
-accepting geometries allows for each to follow code. For example, clipping all the geometries
-in a collection:
+Defining the geometry as an `orb.Geometry` interface along with sub-package functions
+accepting geometries allows them to work together to create easy to follow code.
+For example, clipping all the geometries in a collection:
 
 	fc, err := geojson.UnmarshalFeatureCollection(data)
 	for _, f := range fc {
 		f.Geometry = clip.Geometry(bound, f.Geometry)
 	}
 
-### Mapbox Vector Tiles
+## Mapbox Vector Tiles
 
-The [encoding/mvt](encoding/mvt) subpackage implements Marshalling and
+The [encoding/mvt](encoding/mvt) sub-package implements Marshalling and
 Unmarshalling [MVT](https://www.mapbox.com/vector-tiles/) data.
-This package uses sets of `geojson.FeatureCollection` to define the layers. For example:
+This package uses sets of `geojson.FeatureCollection` to define the layers,
+keyed by the layer name. For example:
 
 	collections := map[string]*geojson.FeatureCollection{}
 
@@ -105,10 +119,10 @@ This package uses sets of `geojson.FeatureCollection` to define the layers. For 
 	// Sometimes MVT data is stored and transfered gzip compressed. In that case:
 	data, err := layers.MarshalGzipped()
 
-### Decoding WKB from a database query
+## Decoding WKB from a database query
 
 Geometries are usually returned from databases in WKB format. The [encoding/wkb](encoding/wkb)
-subpackage offers helpers to "scan" the data into the base types directly.
+sub-package offers helpers to "scan" the data into the base types directly.
 For example:
 
 	row := db.QueryRow("SELECT ST_AsBinary(point_column) FROM postgis_table")
@@ -118,7 +132,7 @@ For example:
 
 	db.Exec("INSERT INTO table (point_column) VALUES (?)", wkb.Value(p))
 
-### List of Subpackages
+## List of sub-package utilities
 
 * [`clip`](clip) - clipping geometry to a bounding box
 * [`encoding/mvt`](encoding/mvt) - encoded and decoding from [Mapbox Vector Tiles](https://www.mapbox.com/vector-tiles/)
