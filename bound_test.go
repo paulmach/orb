@@ -205,6 +205,27 @@ func TestBoundIsEmpty(t *testing.T) {
 	}
 }
 
+func TestBoundPad(t *testing.T) {
+	bound := Bound{Min: Point{1, 1}, Max: Point{2, 2}}
+
+	bound = bound.Pad(0.5)
+	if !bound.Min.Equal(Point{0.5, 0.5}) {
+		t.Errorf("incorrect min: %v", bound.Min)
+	}
+
+	if !bound.Max.Equal(Point{2.5, 2.5}) {
+		t.Errorf("incorrect min: %v", bound.Max)
+	}
+}
+
+func TestBoundCenter(t *testing.T) {
+	bound := Bound{Min: Point{1, 1}, Max: Point{2, 2}}
+
+	if c := bound.Center(); !c.Equal(Point{1.5, 1.5}) {
+		t.Errorf("incorrect center: %v", c)
+	}
+}
+
 func TestBoundIsZero(t *testing.T) {
 	bound := Bound{Min: Point{1, 2}, Max: Point{1, 2}}
 	if bound.IsZero() {
@@ -221,6 +242,14 @@ func TestBoundToRing(t *testing.T) {
 	bound := Bound{Min: Point{1, 1}, Max: Point{2, 2}}
 
 	if bound.ToRing().Orientation() != CCW {
+		t.Errorf("orientation should be ccw")
+	}
+}
+
+func TestBoundToPolygon(t *testing.T) {
+	bound := Bound{Min: Point{1, 1}, Max: Point{2, 2}}
+
+	if bound.ToPolygon()[0].Orientation() != CCW {
 		t.Errorf("orientation should be ccw")
 	}
 }

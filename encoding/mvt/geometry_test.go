@@ -1,6 +1,7 @@
 package mvt
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -111,6 +112,33 @@ func TestGeometry_Polygon(t *testing.T) {
 			compareGeometry(t, vectortile.Tile_POLYGON, tc.input, tc.output)
 		})
 	}
+
+	// should encode a ring as a polygon
+	ring := orb.Ring{{3, 6}, {8, 12}, {20, 34}, {3, 6}}
+
+	gt, data, err := encodeGeometry(ring)
+	if err != nil {
+		t.Fatalf("encode failed: %v", err)
+	}
+
+	if gt != vectortile.Tile_POLYGON {
+		t.Errorf("should be polygon type: %v", gt)
+	}
+
+	if !reflect.DeepEqual(data, []uint32{9, 6, 12, 18, 10, 12, 24, 44, 15}) {
+		t.Errorf("incorrect data: %v", data)
+	}
+
+	// should leave work for unclosed rings
+	_, data, _ = encodeGeometry(ring[:len(ring)-1])
+	if !reflect.DeepEqual(data, []uint32{9, 6, 12, 18, 10, 12, 24, 44, 15}) {
+		t.Errorf("incorrect data: %v", data)
+	}
+
+	_, data, _ = encodeGeometry(orb.Polygon{ring[:len(ring)-1]})
+	if !reflect.DeepEqual(data, []uint32{9, 6, 12, 18, 10, 12, 24, 44, 15}) {
+		t.Errorf("incorrect data: %v", data)
+	}
 }
 
 func TestGeometry_MultiPolygon(t *testing.T) {
@@ -152,6 +180,121 @@ func TestKeyValueEncoder_JSON(t *testing.T) {
 	value := decodeValue(kve.Values[i])
 	if value != "[1,2,3]" {
 		t.Errorf("should encode non standard types as json")
+	}
+}
+
+type stringer int
+
+func (s stringer) String() string {
+	return fmt.Sprintf("%d", s)
+}
+
+func TestEncodeValue(t *testing.T) {
+	cases := []struct {
+		name   string
+		input  interface{}
+		output interface{}
+	}{
+		{
+			name:   "string",
+			input:  "abc",
+			output: "abc",
+		},
+		{
+			name:   "stringer",
+			input:  stringer(10),
+			output: "10",
+		},
+		{
+			name:   "int",
+			input:  int(1),
+			output: float64(1),
+		},
+		{
+			name:   "int8",
+			input:  int8(2),
+			output: float64(2),
+		},
+		{
+			name:   "int16",
+			input:  int16(3),
+			output: float64(3),
+		},
+		{
+			name:   "int32",
+			input:  int32(4),
+			output: float64(4),
+		},
+		{
+			name:   "int64",
+			input:  int64(5),
+			output: float64(5),
+		},
+		{
+			name:   "uint",
+			input:  int(1),
+			output: float64(1),
+		},
+		{
+			name:   "uint8",
+			input:  int8(2),
+			output: float64(2),
+		},
+		{
+			name:   "uint16",
+			input:  int16(3),
+			output: float64(3),
+		},
+		{
+			name:   "uint32",
+			input:  int32(4),
+			output: float64(4),
+		},
+		{
+			name:   "uint64",
+			input:  int64(5),
+			output: float64(5),
+		},
+		{
+			name:   "float32",
+			input:  float32(6),
+			output: float64(6),
+		},
+		{
+			name:   "float64",
+			input:  float64(7),
+			output: float64(7),
+		},
+		{
+			name:   "bool",
+			input:  true,
+			output: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			val, err := encodeValue(tc.input)
+			if err != nil {
+				t.Fatalf("encode failure: %v", err)
+			}
+
+			result := decodeValue(val)
+			if !reflect.DeepEqual(result, tc.output) {
+				t.Errorf("incorrect value: %[1]T != %[2]T, %[1]v != %[2]v", result, tc.output)
+			}
+		})
+	}
+
+	// error if a weird type, but typical json decode result
+	input := map[string]interface{}{
+		"a": 1,
+		"b": 2,
+	}
+
+	_, err := encodeValue(input)
+	if err == nil {
+		t.Errorf("expecting error: %v", err)
 	}
 }
 
