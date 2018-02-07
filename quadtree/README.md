@@ -16,10 +16,12 @@ func (q *Quadtree) Remove(p orb.Pointer, eq FilterFunc) bool
 
 func (q *Quadtree) Find(p orb.Point) orb.Pointer
 func (q *Quadtree) Matching(p orb.Point, f FilterFunc) orb.Pointer
-func (q *Quadtree) KNearest(p orb.Point, k int, maxDistance ...float64) []orb.Pointer
-func (q *Quadtree) KNearestMatching(p orb.Point, k int, f FilterFunc, maxDistance ...float64) []orb.Pointer
+
+func (q *Quadtree) KNearest(buf []orb.Pointer, p orb.Point, k int, maxDistance ...float64) []orb.Pointer
+func (q *Quadtree) KNearestMatching(buf []orb.Pointer, p orb.Point, k int, f FilterFunc, maxDistance ...float64) []orb.Pointer
 
 func (q *Quadtree) InBound(buf []orb.Pointer, b orb.Bound) []orb.Pointer
+func (q *Quadtree) InBoundMatching(buf []orb.Pointer, b orb.Bound, f FilterFunc) []orb.Pointer
 ```
 
 ## Examples

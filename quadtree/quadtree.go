@@ -181,13 +181,6 @@ func (q *Quadtree) Find(p orb.Point) orb.Pointer {
 	return q.Matching(p, nil)
 }
 
-// KNearest returns k closest Value/Pointer in the quadtree.
-// This function is thread safe. Multiple goroutines can read from a pre-created tree.
-// This function allows defining a maximum distance in order to reduce search iterations.
-func (q *Quadtree) KNearest(p orb.Point, k int, maxDistance ...float64) []orb.Pointer {
-	return q.KNearestMatching(p, k, nil, maxDistance...)
-}
-
 // Matching returns the closest Value/Pointer in the quadtree for which
 // the given filter function returns true. This function is thread safe.
 // Multiple goroutines can read from a pre-created tree.
@@ -214,11 +207,20 @@ func (q *Quadtree) Matching(p orb.Point, f FilterFunc) orb.Pointer {
 	return v.closest.Value
 }
 
+// KNearest returns k closest Value/Pointer in the quadtree.
+// This function is thread safe. Multiple goroutines can read from a pre-created tree.
+// An optional buffer parameter is provided to allow for the reuse of result slice memory.
+// This function allows defining a maximum distance in order to reduce search iterations.
+func (q *Quadtree) KNearest(buf []orb.Pointer, p orb.Point, k int, maxDistance ...float64) []orb.Pointer {
+	return q.KNearestMatching(buf, p, k, nil, maxDistance...)
+}
+
 // KNearestMatching returns k closest Value/Pointer in the quadtree for which
 // the given filter function returns true. This function is thread safe.
-// Multiple goroutines can read from a pre-created tree.
+// Multiple goroutines can read from a pre-created tree. An optional buffer
+// parameter is provided to allow for the reuse of result slice memory.
 // This function allows defining a maximum distance in order to reduce search iterations.
-func (q *Quadtree) KNearestMatching(p orb.Point, k int, f FilterFunc, maxDistance ...float64) []orb.Pointer {
+func (q *Quadtree) KNearestMatching(buf []orb.Pointer, p orb.Point, k int, f FilterFunc, maxDistance ...float64) []orb.Pointer {
 	if q.root == nil {
 		return nil
 	}
@@ -245,11 +247,16 @@ func (q *Quadtree) KNearestMatching(p orb.Point, k int, f FilterFunc, maxDistanc
 	)
 
 	//repack result
-	result := make([]orb.Pointer, 0, k)
-	for _, element := range v.closest {
-		result = append(result, element.point)
+	if cap(buf) < len(v.closest) {
+		buf = make([]orb.Pointer, 0, len(v.closest))
+	} else {
+		buf = buf[:0]
 	}
-	return result
+
+	for _, element := range v.closest {
+		buf = append(buf, element.point)
+	}
+	return buf
 }
 
 // InBound returns a slice with all the pointers in the quadtree that are
@@ -257,6 +264,14 @@ func (q *Quadtree) KNearestMatching(p orb.Point, k int, f FilterFunc, maxDistanc
 // for the reuse of result slice memory. This function is thread safe.
 // Multiple goroutines can read from a pre-created tree.
 func (q *Quadtree) InBound(buf []orb.Pointer, b orb.Bound) []orb.Pointer {
+	return q.InBoundMatching(buf, b, nil)
+}
+
+// InBoundMatching returns a slice with all the pointers in the quadtree that are
+// within the given bound and matching the give filter function. An optional buffer
+// parameter is provided to allow for the reuse of result slice memory. This function
+// is thread safe.  Multiple goroutines can read from a pre-created tree.
+func (q *Quadtree) InBoundMatching(buf []orb.Pointer, b orb.Bound, f FilterFunc) []orb.Pointer {
 	if q.root == nil {
 		return nil
 	}
@@ -268,6 +283,7 @@ func (q *Quadtree) InBound(buf []orb.Pointer, b orb.Bound) []orb.Pointer {
 	v := &inBoundVisitor{
 		bound:    &b,
 		pointers: p,
+		filter:   f,
 	}
 
 	newVisit(v).Visit(q.root,
@@ -476,6 +492,7 @@ func (v *nearestVisitor) Visit(n *node) {
 type inBoundVisitor struct {
 	bound    *orb.Bound
 	pointers []orb.Pointer
+	filter   FilterFunc
 }
 
 func (v *inBoundVisitor) Bound() *orb.Bound {
@@ -487,6 +504,10 @@ func (v *inBoundVisitor) Point() (p orb.Point) {
 }
 
 func (v *inBoundVisitor) Visit(n *node) {
+	if v.filter != nil && !v.filter(n.Value) {
+		return
+	}
+
 	p := n.Value.Point()
 	if v.bound.Min[0] > p[0] || v.bound.Max[0] < p[0] ||
 		v.bound.Min[1] > p[1] || v.bound.Max[1] < p[1] {

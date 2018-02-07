@@ -189,7 +189,7 @@ func TestQuadtreeKNearest(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			v := q.KNearestMatching(tc.point, 2, filters[tc.filtered])
+			v := q.KNearestMatching(nil, tc.point, 2, filters[tc.filtered])
 			if len(v) != len(tc.expected) {
 				t.Errorf("incorrect response length: %d != %d", len(v), len(tc.expected))
 			}
@@ -243,24 +243,93 @@ func TestQuadtreeKNearest_DistanceLimit(t *testing.T) {
 		expected []orb.Point
 	}{
 		{
-			name:     "unfiltered",
-			filtered: false,
-			distance: 1,
-			point:    orb.Point{0.1, 0.1},
-			expected: []orb.Point{{0, 0}},
-		},
-		{
 			name:     "filtered",
 			filtered: true,
 			distance: 5,
 			point:    orb.Point{0.1, 0.1},
 			expected: []orb.Point{{1, 1}, {3, 3}},
 		},
+		{
+			name:     "unfiltered",
+			filtered: false,
+			distance: 1,
+			point:    orb.Point{0.1, 0.1},
+			expected: []orb.Point{{0, 0}},
+		},
 	}
 
+	var v []orb.Pointer
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			v := q.KNearestMatching(tc.point, 5, filters[tc.filtered], tc.distance)
+			v = q.KNearestMatching(v, tc.point, 5, filters[tc.filtered], tc.distance)
+			if len(v) != len(tc.expected) {
+				t.Errorf("incorrect response length: %d != %d", len(v), len(tc.expected))
+			}
+
+			result := make([]orb.Point, 0)
+			for _, p := range v {
+				result = append(result, p.Point())
+			}
+
+			sort.Slice(result, func(i, j int) bool {
+				return result[i][0] < result[j][0]
+			})
+
+			sort.Slice(tc.expected, func(i, j int) bool {
+				return tc.expected[i][0] < tc.expected[j][0]
+			})
+
+			if !reflect.DeepEqual(result, tc.expected) {
+				t.Log(result)
+				t.Log(tc.expected)
+				t.Errorf("incorrect results")
+			}
+		})
+	}
+}
+
+func TestQuadtreeInBoundMatching(t *testing.T) {
+	type dataPointer struct {
+		orb.Pointer
+		visible bool
+	}
+
+	q := New(orb.Bound{Max: orb.Point{5, 5}})
+	q.Add(dataPointer{orb.Point{0, 0}, false})
+	q.Add(dataPointer{orb.Point{1, 1}, true})
+	q.Add(dataPointer{orb.Point{2, 2}, false})
+	q.Add(dataPointer{orb.Point{3, 3}, true})
+	q.Add(dataPointer{orb.Point{4, 4}, false})
+	q.Add(dataPointer{orb.Point{5, 5}, true})
+
+	filters := map[bool]FilterFunc{
+		false: nil,
+		true:  func(p orb.Pointer) bool { return p.(dataPointer).visible },
+	}
+
+	cases := []struct {
+		name     string
+		filtered bool
+		expected []orb.Point
+	}{
+		{
+			name:     "unfiltered",
+			filtered: false,
+			expected: []orb.Point{{0, 0}, {1, 1}, {2, 2}},
+		},
+		{
+			name:     "filtered",
+			filtered: true,
+			expected: []orb.Point{{1, 1}},
+		},
+	}
+
+	bound := orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{2, 2}}
+
+	var v []orb.Pointer
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			v = q.InBoundMatching(v, bound, filters[tc.filtered])
 			if len(v) != len(tc.expected) {
 				t.Errorf("incorrect response length: %d != %d", len(v), len(tc.expected))
 			}
