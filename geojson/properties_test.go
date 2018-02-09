@@ -89,6 +89,12 @@ func TestPropertiesMustFloat64(t *testing.T) {
 	if i != 1.2 {
 		t.Errorf("should return proper property, without default")
 	}
+
+	f.Properties["int"] = 1 // force, json.Unmarshal always decodes to float64
+	i = f.Properties.MustFloat64("int")
+	if i != 1.0 {
+		t.Errorf("should work for ints")
+	}
 }
 
 func TestPropertiesMustString(t *testing.T) {
@@ -107,5 +113,21 @@ func TestPropertiesMustString(t *testing.T) {
 	s = f.Properties.MustString("string")
 	if s != "text" {
 		t.Errorf("should return proper property, without default")
+	}
+}
+
+func TestPropertiesClone(t *testing.T) {
+	props := Properties{
+		"one": 2,
+	}
+
+	clone := props.Clone()
+	if clone["one"] != 2 {
+		t.Errorf("should clone properties")
+	}
+
+	clone["one"] = 3
+	if props["one"] != 2 {
+		t.Errorf("should clone properties")
 	}
 }

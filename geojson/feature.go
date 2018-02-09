@@ -2,7 +2,6 @@ package geojson
 
 import (
 	"encoding/json"
-	"errors"
 
 	"github.com/paulmach/orb"
 )
@@ -32,34 +31,11 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 		ID:         f.ID,
 		Type:       "Feature",
 		Properties: f.Properties,
+		Geometry:   NewGeometry(f.Geometry),
 	}
 
 	if len(jf.Properties) == 0 {
 		jf.Properties = nil
-	}
-
-	if f.Geometry != nil {
-		var (
-			coords []byte
-			err    error
-		)
-
-		switch g := f.Geometry.(type) {
-		case orb.Ring:
-			coords, err = json.Marshal(orb.Polygon{g})
-		case orb.Bound:
-			coords, err = json.Marshal(g.ToPolygon())
-		default:
-			coords, err = json.Marshal(f.Geometry)
-		}
-		if err != nil {
-			return nil, err
-		}
-
-		jf.Geometry = &jsonGeometry{
-			Type:        f.Geometry.GeoJSONType(),
-			Coordinates: coords,
-		}
 	}
 
 	return json.Marshal(jf)
@@ -90,48 +66,15 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 		ID:         jf.ID,
 		Type:       jf.Type,
 		Properties: jf.Properties,
+		Geometry:   jf.Geometry.Coordinates,
 	}
 
-	switch jf.Geometry.Type {
-	case "Point":
-		p := orb.Point{}
-		err = json.Unmarshal(jf.Geometry.Coordinates, &p)
-		f.Geometry = p
-	case "MultiPoint":
-		mp := orb.MultiPoint{}
-		err = json.Unmarshal(jf.Geometry.Coordinates, &mp)
-		f.Geometry = mp
-	case "LineString":
-		ls := orb.LineString{}
-		err = json.Unmarshal(jf.Geometry.Coordinates, &ls)
-		f.Geometry = ls
-	case "MultiLineString":
-		mls := orb.MultiLineString{}
-		err = json.Unmarshal(jf.Geometry.Coordinates, &mls)
-		f.Geometry = mls
-	case "Polygon":
-		p := orb.Polygon{}
-		err = json.Unmarshal(jf.Geometry.Coordinates, &p)
-		f.Geometry = p
-	case "MultiPolygon":
-		mp := orb.MultiPolygon{}
-		err = json.Unmarshal(jf.Geometry.Coordinates, &mp)
-		f.Geometry = mp
-	default:
-		return errors.New("geojson: invalid geometry")
-	}
-
-	return err
+	return nil
 }
 
 type jsonFeature struct {
-	ID         interface{}   `json:"id,omitempty"`
-	Type       string        `json:"type"`
-	Geometry   *jsonGeometry `json:"geometry"`
-	Properties Properties    `json:"properties"`
-}
-
-type jsonGeometry struct {
-	Type        string          `json:"type"`
-	Coordinates json.RawMessage `json:"coordinates"`
+	ID         interface{} `json:"id,omitempty"`
+	Type       string      `json:"type"`
+	Geometry   *Geometry   `json:"geometry"`
+	Properties Properties  `json:"properties"`
 }

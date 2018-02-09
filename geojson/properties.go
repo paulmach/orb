@@ -24,7 +24,7 @@ func (p Properties) MustBool(key string, def ...bool) bool {
 		return def[0]
 	}
 
-	return false
+	panic("property not found")
 }
 
 // MustInt guarantees the return of an `int` (with optional default).
@@ -50,7 +50,7 @@ func (p Properties) MustInt(key string, def ...int) int {
 		return def[0]
 	}
 
-	return 0
+	panic("property not found")
 }
 
 // MustFloat64 guarantees the return of a `float64` (with optional default)
@@ -76,7 +76,7 @@ func (p Properties) MustFloat64(key string, def ...float64) float64 {
 		return def[0]
 	}
 
-	return 0.0
+	panic("property not found")
 }
 
 // MustString guarantees the return of a `string` (with optional default)
@@ -98,7 +98,7 @@ func (p Properties) MustString(key string, def ...string) string {
 		return def[0]
 	}
 
-	return ""
+	panic("property not found")
 }
 
 // Clone returns a shallow copy of the properties.
