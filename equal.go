@@ -24,15 +24,27 @@ func Equal(g1, g2 Geometry) bool {
 	case MultiLineString:
 		return g1.Equal(g2.(MultiLineString))
 	case Ring:
-		return g1.Equal(g2.(Ring))
+		g2, ok := g2.(Ring)
+		if !ok {
+			return false
+		}
+		return g1.Equal(g2)
 	case Polygon:
-		return g1.Equal(g2.(Polygon))
+		g2, ok := g2.(Polygon)
+		if !ok {
+			return false
+		}
+		return g1.Equal(g2)
 	case MultiPolygon:
 		return g1.Equal(g2.(MultiPolygon))
 	case Collection:
 		return g1.Equal(g2.(Collection))
 	case Bound:
-		return g1.Equal(g2.(Bound))
+		g2, ok := g2.(Bound)
+		if !ok {
+			return false
+		}
+		return g1.Equal(g2)
 	}
 
 	panic(fmt.Sprintf("geometry type not supported: %T", g1))
