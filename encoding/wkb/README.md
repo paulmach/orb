@@ -28,3 +28,13 @@ This package provides wrappers for `orb.Geometry` types that implement
 
 	db.Exec("INSERT INTO table (point_column) VALUES (?)",
 		wkb.Value(p))
+
+If you don't know the type of the geometry try something like
+
+	s := wkb.Scanner(nil)
+	err := row.Scan(&s)
+
+	switch g := s.Geometry.(type) {
+	case orb.Point:
+	case orb.LineString:
+	}

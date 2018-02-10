@@ -5,7 +5,6 @@ package wkb
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"io"
 
 	"github.com/paulmach/orb"
@@ -19,6 +18,13 @@ const (
 	multiLineStringType    uint32 = 5
 	multiPolygonType       uint32 = 6
 	geometryCollectionType uint32 = 7
+)
+
+const (
+	// limits so that bad data can't come in allocate way tons of memory.
+	// Well formed data with less elements will allocate the correct ammount just fine.
+	maxPointsAlloc = 5000
+	maxMultiAlloc  = 100
 )
 
 // DefaultByteOrder is the order used form marshalling or encoding
@@ -134,7 +140,12 @@ type Decoder struct {
 
 // Unmarshal will decode the type into a Geometry.
 func Unmarshal(b []byte) (orb.Geometry, error) {
-	return NewDecoder(bytes.NewReader(b)).Decode()
+	g, err := NewDecoder(bytes.NewReader(b)).Decode()
+	if err == io.EOF || err == io.ErrUnexpectedEOF {
+		return nil, ErrNotWKB
+	}
+
+	return g, err
 }
 
 // NewDecoder will create a new WKB decoder.
@@ -168,7 +179,7 @@ func (d *Decoder) Decode() (orb.Geometry, error) {
 		return readCollection(d.r, byteOrder)
 	}
 
-	return nil, fmt.Errorf("unknown geometry: %v", typ)
+	return nil, ErrUnsupportedGeometry
 }
 
 func readByteOrderType(r io.Reader) (binary.ByteOrder, uint32, error) {
@@ -182,8 +193,10 @@ func readByteOrderType(r io.Reader) (binary.ByteOrder, uint32, error) {
 	var byteOrder binary.ByteOrder
 	if bom[0] == 0 {
 		byteOrder = binary.BigEndian
-	} else {
+	} else if bom[0] == 1 {
 		byteOrder = binary.LittleEndian
+	} else {
+		return nil, 0, ErrNotWKB
 	}
 
 	// the type which is 4 bytes

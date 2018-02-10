@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	_ sql.Scanner  = scanner{}
+	_ sql.Scanner  = &GeometryScanner{}
 	_ driver.Value = value{}
 )
 
@@ -25,96 +25,74 @@ var (
 	// ErrIncorrectGeometry is returned when unmarshalling WKB data into the wrong type.
 	// For example, unmarshaling linestring data into a point.
 	ErrIncorrectGeometry = errors.New("wkb: incorrect geometry")
+
+	// ErrUnsupportedGeometry is returned when geometry type is not supported by this lib.
+	ErrUnsupportedGeometry = errors.New("wkb: unsupported geometry")
 )
 
-type scanner struct {
-	g interface{}
+// GeometryScanner is a thing that can scan in sql query results.
+type GeometryScanner struct {
+	g        interface{}
+	Geometry orb.Geometry
 }
 
-// Scanner accepts a pointer to an orb geoemtry like a Point or LineString
-// and will scan it from a sql.Query.
-func Scanner(g interface{}) sql.Scanner {
-	return scanner{g: g}
+// Scanner will return a GeometryScanner that can scan sql query results.
+// The geometryScanner.Geometry attribute will be set to the value.
+// If g is non-nil, it MUST be a pointer to an orb.Geometry
+// type like a Point or LineString. In that case the value will be written to g.
+func Scanner(g interface{}) *GeometryScanner {
+	return &GeometryScanner{g: g}
 }
 
-func (s scanner) Scan(d interface{}) error {
+// Scan will scan the input []byte data into a geometry.
+// This could be into the orb geometry type pointer or, if nil,
+// the scanner.Geometry attribute.
+func (s *GeometryScanner) Scan(d interface{}) error {
 	data, ok := d.([]byte)
 	if !ok {
 		return ErrUnsupportedDataType
 	}
 
 	switch g := s.g.(type) {
+	case nil:
+		m, err := Unmarshal(data)
+		if err != nil {
+			return err
+		}
+
+		s.Geometry = m
+		return nil
 	case *orb.Point:
-		if len(data) == 21 {
-			// the length of a point type in WKB
-		} else if len(data) == 25 {
-			// Most likely MySQL's SRID+WKB format.
-			// However, could be a line string or multipoint with only one point.
-			// But those would be invalid for parsing a point.
-			data = data[4:]
-		} else if len(data) == 0 {
-			// empty data, return empty go struct which in this case
-			// would be [0,0]
-			*g = orb.Point{}
-			return nil
-		}
-
-		m, err := Unmarshal(data)
+		p, err := scanPoint(data)
 		if err != nil {
 			return err
 		}
 
-		if p, ok := m.(orb.Point); ok {
-			*g = p
-			return nil
-		}
-
-		return ErrIncorrectGeometry
-
+		*g = p
+		return nil
 	case *orb.MultiPoint:
-		m, err := Unmarshal(data)
+		p, err := scanMultiPoint(data)
 		if err != nil {
 			return err
 		}
 
-		switch p := m.(type) {
-		case orb.Point:
-			*g = orb.MultiPoint{p}
-		case orb.MultiPoint:
-			*g = p
-		default:
-			return ErrIncorrectGeometry
-		}
-
+		*g = p
 		return nil
 	case *orb.LineString:
-		m, err := Unmarshal(data)
+		p, err := scanLineString(data)
 		if err != nil {
 			return err
 		}
 
-		if ls, ok := m.(orb.LineString); ok {
-			*g = ls
-			return nil
-		}
-
-		return ErrIncorrectGeometry
-
+		*g = p
+		return nil
 	case *orb.MultiLineString:
-		m, err := Unmarshal(data)
+		p, err := scanMultiLineString(data)
 		if err != nil {
 			return err
 		}
 
-		switch ls := m.(type) {
-		case orb.LineString:
-			*g = orb.MultiLineString{ls}
-		case orb.MultiLineString:
-			*g = ls
-		default:
-			return ErrIncorrectGeometry
-		}
-
+		*g = p
 		return nil
 	case *orb.Ring:
 		m, err := Unmarshal(data)
@@ -129,48 +107,156 @@ func (s scanner) Scan(d interface{}) error {
 
 		return ErrIncorrectGeometry
 	case *orb.Polygon:
-		m, err := Unmarshal(data)
+		m, err := scanPolygon(data)
 		if err != nil {
 			return err
 		}
 
-		if p, ok := m.(orb.Polygon); ok {
-			*g = p
-			return nil
-		}
-
-		return ErrIncorrectGeometry
+		*g = m
+		return nil
 	case *orb.MultiPolygon:
-		m, err := Unmarshal(data)
+		m, err := scanMultiPolygon(data)
 		if err != nil {
 			return err
 		}
 
-		switch p := m.(type) {
-		case orb.Polygon:
-			*g = orb.MultiPolygon{p}
-		case orb.MultiPolygon:
-			*g = p
-		default:
-			return ErrIncorrectGeometry
-		}
-
+		*g = m
 		return nil
 	case *orb.Collection:
+		m, err := scanCollection(data)
+		if err != nil {
+			return err
+		}
+
+		*g = m
+		return nil
+	case *orb.Bound:
 		m, err := Unmarshal(data)
 		if err != nil {
 			return err
 		}
 
-		if c, ok := m.(orb.Collection); ok {
-			*g = c
-			return nil
-		}
-
-		return ErrIncorrectGeometry
+		*g = m.Bound()
+		return nil
 	}
 
 	return ErrIncorrectGeometry
+}
+
+func scanPoint(data []byte) (orb.Point, error) {
+	m, err := Unmarshal(data)
+	if err != nil {
+		return orb.Point{}, err
+	}
+
+	switch p := m.(type) {
+	case orb.Point:
+		return p, nil
+	case orb.MultiPoint:
+		if len(p) == 1 {
+			return p[0], nil
+		}
+	}
+
+	return orb.Point{}, ErrIncorrectGeometry
+}
+
+func scanMultiPoint(data []byte) (orb.MultiPoint, error) {
+	m, err := Unmarshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	switch p := m.(type) {
+	case orb.Point:
+		return orb.MultiPoint{p}, nil
+	case orb.MultiPoint:
+		return p, nil
+	}
+
+	return nil, ErrIncorrectGeometry
+}
+
+func scanLineString(data []byte) (orb.LineString, error) {
+	m, err := Unmarshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	switch p := m.(type) {
+	case orb.LineString:
+		return p, nil
+	case orb.MultiLineString:
+		if len(p) == 1 {
+			return p[0], nil
+		}
+	}
+
+	return nil, ErrIncorrectGeometry
+}
+
+func scanMultiLineString(data []byte) (orb.MultiLineString, error) {
+	m, err := Unmarshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	switch ls := m.(type) {
+	case orb.LineString:
+		return orb.MultiLineString{ls}, nil
+	case orb.MultiLineString:
+		return ls, nil
+	}
+
+	return nil, ErrIncorrectGeometry
+}
+
+func scanPolygon(data []byte) (orb.Polygon, error) {
+	m, err := Unmarshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	switch p := m.(type) {
+	case orb.Polygon:
+		return p, nil
+	case orb.MultiPolygon:
+		if len(p) == 1 {
+			return p[0], nil
+		}
+	}
+
+	return nil, ErrIncorrectGeometry
+}
+
+func scanMultiPolygon(data []byte) (orb.MultiPolygon, error) {
+	m, err := Unmarshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	switch p := m.(type) {
+	case orb.Polygon:
+		return orb.MultiPolygon{p}, nil
+	case orb.MultiPolygon:
+		return p, nil
+	}
+
+	return nil, ErrIncorrectGeometry
+}
+
+func scanCollection(data []byte) (orb.Collection, error) {
+	m, err := Unmarshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	switch p := m.(type) {
+	case orb.Collection:
+		return p, nil
+	}
+
+	return nil, ErrIncorrectGeometry
 }
 
 type value struct {

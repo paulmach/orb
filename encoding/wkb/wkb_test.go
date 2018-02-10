@@ -15,6 +15,12 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
+func TestMustMarshal(t *testing.T) {
+	for _, g := range orb.AllGeometries {
+		MustMarshal(g, binary.BigEndian)
+	}
+}
+
 func BenchmarkEncode_Point(b *testing.B) {
 	g := orb.Point{1, 2}
 	e := NewEncoder(ioutil.Discard)
@@ -52,7 +58,12 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 		t.Errorf("incorrect geometry: %v != %v", g, e)
 	}
 
-	data, err := Marshal(g)
+	var data []byte
+	if b[0] == 0 {
+		data, err = Marshal(g, binary.BigEndian)
+	} else {
+		data, err = Marshal(g, binary.LittleEndian)
+	}
 	if err != nil {
 		t.Fatalf("marshal error: %v", err)
 	}
