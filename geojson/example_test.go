@@ -9,6 +9,35 @@ import (
 	"github.com/paulmach/orb/geojson"
 )
 
+func ExampleFeatureCollection_ForeignMembers() {
+	rawJSON := []byte(`
+  { "type": "FeatureCollection",
+	"features": [
+	  { "type": "Feature",
+		"geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+		"properties": {"prop0": "value0"}
+	  }
+	],
+	"title": "Title as Foreign Member"
+  }`)
+
+	type MyFeatureCollection struct {
+		geojson.FeatureCollection
+		Title string `json:"title"`
+	}
+
+	fc := &MyFeatureCollection{}
+	json.Unmarshal(rawJSON, &fc)
+
+	fmt.Println(fc.FeatureCollection.Features[0].Geometry)
+	fmt.Println(fc.Features[0].Geometry)
+	fmt.Println(fc.Title)
+	// Output:
+	// [102 0.5]
+	// [102 0.5]
+	// Title as Foreign Member
+}
+
 func ExampleUnmarshalFeatureCollection() {
 	rawJSON := []byte(`
 	  { "type": "FeatureCollection",
