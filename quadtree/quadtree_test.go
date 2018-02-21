@@ -189,6 +189,13 @@ func TestQuadtreeKNearest(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			if !tc.filtered {
+				v := q.KNearest(nil, tc.point, 2)
+				if len(v) != len(tc.expected) {
+					t.Errorf("incorrect response length: %d != %d", len(v), len(tc.expected))
+				}
+			}
+
 			v := q.KNearestMatching(nil, tc.point, 2, filters[tc.filtered])
 			if len(v) != len(tc.expected) {
 				t.Errorf("incorrect response length: %d != %d", len(v), len(tc.expected))

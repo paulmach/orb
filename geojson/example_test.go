@@ -9,7 +9,7 @@ import (
 	"github.com/paulmach/orb/geojson"
 )
 
-func ExampleFeatureCollection_ForeignMembers() {
+func ExampleFeatureCollection_foreignMembers() {
 	rawJSON := []byte(`
   { "type": "FeatureCollection",
 	"features": [
@@ -59,7 +59,7 @@ func ExampleUnmarshalFeatureCollection() {
 	// [102 0.5]
 }
 
-func ExampleUnmarshal() {
+func Example_unmarshal() {
 	rawJSON := []byte(`
 	  { "type": "FeatureCollection",
 	    "features": [

@@ -37,6 +37,10 @@ func newProjection(tile maptile.Tile, extent uint32) *projection {
 		}
 	}
 
+	return nonPowerOfTwoProjection(tile, extent)
+}
+
+func nonPowerOfTwoProjection(tile maptile.Tile, extent uint32) *projection {
 	// I really don't know why anyone would use a non-power of two extent,
 	// but technically it is supported.
 	e := float64(extent)

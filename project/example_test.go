@@ -8,7 +8,7 @@ import (
 	"github.com/paulmach/orb/project"
 )
 
-func ExamplePoint_ToMercator() {
+func ExamplePoint_toMercator() {
 	sf := orb.Point{-122.416667, 37.783333}
 	merc := project.Geometry(sf, project.WGS84.ToMercator)
 
