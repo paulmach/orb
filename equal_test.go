@@ -19,19 +19,23 @@ func TestEqual(t *testing.T) {
 }
 
 func TestEqualRing(t *testing.T) {
+	if Equal(Ring{}, LineString{}) {
+		t.Errorf("should return false since different types")
+	}
+
 	if Equal(Ring{}, Polygon{}) {
-		t.Errorf("should return false since different types ")
+		t.Errorf("should return false since different types")
 	}
 
 	if Equal(Polygon{}, Ring{}) {
-		t.Errorf("should return false since different types ")
+		t.Errorf("should return false since different types")
 	}
 
 	if Equal(Polygon{}, Bound{}) {
-		t.Errorf("should return false since different types ")
+		t.Errorf("should return false since different types")
 	}
 
 	if Equal(Bound{}, Polygon{}) {
-		t.Errorf("should return false since different types ")
+		t.Errorf("should return false since different types")
 	}
 }

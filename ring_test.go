@@ -4,34 +4,65 @@ import (
 	"testing"
 )
 
-func TestRingOrientation(t *testing.T) {
+func TestRing_Closed(t *testing.T) {
 	cases := []struct {
 		name   string
-		points []Point
+		ring   Ring
+		closed bool
+	}{
+		{
+			name:   "first must equal last",
+			ring:   Ring{{0, 0}, {3, 0}, {3, 4}, {0, 0}},
+			closed: true,
+		},
+		{
+			name:   "not closed if last point does not match",
+			ring:   Ring{{0, 0}, {3, 0}, {3, 4}},
+			closed: false,
+		},
+		{
+			name:   "length of ring doesn't matter",
+			ring:   Ring{{3, 0}, {3, 0}},
+			closed: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if v := tc.ring.Closed(); v != tc.closed {
+				t.Errorf("incorrect: %v != %v", v, tc.closed)
+			}
+		})
+	}
+}
+
+func TestRing_Orientation(t *testing.T) {
+	cases := []struct {
+		name   string
+		ring   Ring
 		result Orientation
 	}{
 		{
 			name:   "simple box, ccw",
-			points: []Point{{0, 0}, {0.001, 0}, {0.001, 0.001}, {0, 0.001}, {0, 0}},
+			ring:   Ring{{0, 0}, {0.001, 0}, {0.001, 0.001}, {0, 0.001}, {0, 0}},
 			result: CCW,
 		},
 		{
 			name:   "simple box, cw",
-			points: []Point{{0, 0}, {0, 0.001}, {0.001, 0.001}, {0.001, 0}, {0, 0}},
+			ring:   Ring{{0, 0}, {0, 0.001}, {0.001, 0.001}, {0.001, 0}, {0, 0}},
 			result: CW,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			ring := Ring(tc.points)
-			val := ring.Orientation()
+			val := tc.ring.Orientation()
 			if val != tc.result {
 				t.Errorf("wrong orientation: %v != %v", val, tc.result)
 			}
 
 			// should work without redudant last point.
-			ring = ring[:len(ring)-1]
+			ring := tc.ring[:len(tc.ring)-1]
 			val = ring.Orientation()
 			if val != tc.result {
 				t.Errorf("wrong orientation: %v != %v", val, tc.result)

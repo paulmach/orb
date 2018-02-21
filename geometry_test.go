@@ -18,6 +18,7 @@ func TestGeometryDimensions(t *testing.T) {
 		{Polygon{}, 2},
 		{MultiPolygon{}, 2},
 		{Bound{}, 2},
+		{Collection{Point{}, LineString{}}, 1},
 	}
 
 	for _, tc := range cases {
@@ -28,6 +29,7 @@ func TestGeometryDimensions(t *testing.T) {
 		})
 	}
 }
+
 func TestCollectionBound(t *testing.T) {
 	// from the empty Point we get the zero bound.
 	expected := Bound{}

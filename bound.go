@@ -119,16 +119,6 @@ func (b Bound) Center() Point {
 	}
 }
 
-// Width returns the right minus the left.
-func (b Bound) Width() float64 {
-	return b.Max[0] - b.Min[0]
-}
-
-// Height returns the top minus the bottom.
-func (b Bound) Height() float64 {
-	return b.Max[1] - b.Min[1]
-}
-
 // Top returns the top of the bound.
 func (b Bound) Top() float64 {
 	return b.Max[1]

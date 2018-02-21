@@ -7,7 +7,7 @@ import (
 	"github.com/paulmach/orb/planar"
 )
 
-func TestLineStringResample(t *testing.T) {
+func TestResample(t *testing.T) {
 	ls := orb.LineString{}
 	Resample(ls, planar.Distance, 10) // should not panic
 
@@ -67,17 +67,50 @@ func TestLineStringResample(t *testing.T) {
 	}
 }
 
-func TestLineStringResampleWithInterval(t *testing.T) {
-	ls := orb.LineString{{0, 0}, {0, 10}}
+func TestToInterval(t *testing.T) {
+	ls := orb.LineString{{0, 0}, {0, 1}, {0, 10}}
 
-	ls = ToInterval(ls, planar.Distance, 5.0)
-	if l := len(ls); l != 3 {
-		t.Errorf("incorrect length: %v != 3", l)
+	cases := []struct {
+		name     string
+		distance float64
+		line     orb.LineString
+		expected orb.LineString
+	}{
+		{
+			name:     "same number of points",
+			distance: 5.0,
+			expected: orb.LineString{{0, 0}, {0, 5}, {0, 10}},
+		},
+		{
+			name:     "dist less than 0",
+			distance: -5.0,
+			expected: nil,
+		},
+		{
+			name:     "dist less than 0",
+			distance: -5.0,
+			expected: nil,
+		},
+		{
+			name:     "return same if short line",
+			distance: 5.0,
+			line:     orb.LineString{{0, 0}},
+			expected: orb.LineString{{0, 0}},
+		},
 	}
 
-	expected := orb.Point{0, 5.0}
-	if v := ls[1]; !v.Equal(expected) {
-		t.Errorf("incorrect point: %v != %v", v, expected)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			in := ls.Clone()
+			if tc.line != nil {
+				in = tc.line
+			}
+
+			ls := ToInterval(in, planar.Distance, tc.distance)
+			if !ls.Equal(tc.expected) {
+				t.Errorf("incorrect point: %v != %v", ls, tc.expected)
+			}
+		})
 	}
 }
 

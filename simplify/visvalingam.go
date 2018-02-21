@@ -188,24 +188,6 @@ func (h minHeap) Update(item *visItem, area float64) {
 	}
 }
 
-func (h *minHeap) Remove(item *visItem) {
-	i := item.index
-
-	lastItem := (*h)[len(*h)-1]
-	*h = (*h)[:len(*h)-1]
-
-	if i != len(*h) {
-		lastItem.index = i
-		(*h)[i] = lastItem
-
-		if lastItem.area < item.area {
-			h.up(i)
-		} else {
-			h.down(i)
-		}
-	}
-}
-
 func (h minHeap) up(i int) {
 	object := h[i]
 	for i > 0 {
