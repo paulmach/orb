@@ -11,7 +11,8 @@ import (
 )
 
 // Geometry will do a smart more involved clipping and wrapping of the geometry.
-// It will return simple OGC geometries.
+// It will return simple OGC geometries. Rings that are NOT closed AND have an
+// endpoint in the bound will be implicitly closed.
 func Geometry(box orb.Bound, g orb.Geometry, o orb.Orientation) orb.Geometry {
 	if g == nil {
 		return nil
@@ -61,7 +62,8 @@ func Geometry(box orb.Bound, g orb.Geometry, o orb.Orientation) orb.Geometry {
 }
 
 // Ring will smart clip a ring to the boundary. This may result multiple rings so
-// a multipolygon is possible.
+// a multipolygon is possible. Rings that are NOT closed AND have an endpoint in
+// the bound will be implicitly closed.
 func Ring(box orb.Bound, r orb.Ring, o orb.Orientation) orb.MultiPolygon {
 	if len(r) == 0 {
 		return nil
@@ -82,6 +84,8 @@ func Ring(box orb.Bound, r orb.Ring, o orb.Orientation) orb.MultiPolygon {
 }
 
 // Polygon will smart clip a polygon to the bound.
+// Rings that are NOT closed AND have an endpoint in the bound will be
+// implicitly closed.
 func Polygon(box orb.Bound, p orb.Polygon, o orb.Orientation) orb.MultiPolygon {
 	if len(p) == 0 {
 		return nil
@@ -110,6 +114,8 @@ func Polygon(box orb.Bound, p orb.Polygon, o orb.Orientation) orb.MultiPolygon {
 }
 
 // MultiPolygon will smart clip a multipolygon to the bound.
+// Rings that are NOT closed AND have an endpoint in the bound will be
+// implicitly closed.
 func MultiPolygon(box orb.Bound, mp orb.MultiPolygon, o orb.Orientation) orb.MultiPolygon {
 	if len(mp) == 0 {
 		return nil
@@ -160,6 +166,9 @@ func MultiPolygon(box orb.Bound, mp orb.MultiPolygon, o orb.Orientation) orb.Mul
 func clipRings(box orb.Bound, rings []orb.Ring) (open []orb.LineString, closed []orb.Ring) {
 	var result []orb.LineString
 	for _, r := range rings {
+		if !r.Closed() && (box.Contains(r[0]) || box.Contains(r[len(r)-1])) {
+			r = append(r, r[0])
+		}
 		out := clip.LineString(box, orb.LineString(r), clip.OpenBound(true))
 		if len(out) == 0 {
 			continue // outside of bound
@@ -277,7 +286,7 @@ func smartWrap(box orb.Bound, input []orb.LineString, o orb.Orientation) orb.Mul
 	)
 
 	// this operation is O(n^2). Technically we could use a linked list
-	// and remove poitns instead of marking them as "used".
+	// and remove points instead of marking them as "used".
 	// However since n is 2x the number of segements I think we're okay.
 	for i := 0; i < 2*len(points); i++ {
 		ep := points[i%len(points)]

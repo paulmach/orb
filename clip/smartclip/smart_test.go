@@ -36,6 +36,24 @@ func TestRing(t *testing.T) {
 			expected: orb.MultiPolygon{{{{2, 2}, {3, 2}, {3, 3}, {2, 3}, {2, 2}}}},
 		},
 		{
+			name:     "not closed with endpoints inside bound",
+			bound:    oneSix,
+			input:    orb.Ring{{2, 2}, {8, 2}, {8, 3}, {2, 3}},
+			expected: orb.MultiPolygon{{{{2, 2}, {6, 2}, {6, 3}, {2, 3}, {2, 2}}}},
+		},
+		{
+			name:     "not closed with first endpoint inside bound",
+			bound:    oneSix,
+			input:    orb.Ring{{2, 2}, {8, 2}, {8, 3}, {0, 3}},
+			expected: orb.MultiPolygon{{{{6, 3}, {1, 3}, {1, 2.5}, {2, 2}, {6, 2}, {6, 3}}}},
+		},
+		{
+			name:     "not closed with last endpoint inside bound",
+			bound:    oneSix,
+			input:    orb.Ring{{0, 2}, {8, 2}, {8, 3}, {2, 3}},
+			expected: orb.MultiPolygon{{{{6, 3}, {2, 3}, {1, 2.5}, {1, 2}, {6, 2}, {6, 3}}}},
+		},
+		{
 			name:     "intersects one side",
 			bound:    oneSix,
 			input:    orb.Ring{{0, 2}, {2, 2}, {2, 3}, {0, 3}},
