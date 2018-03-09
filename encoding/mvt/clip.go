@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	// Default mapbox vector tile bounds used by mapbox-gl.
+	// MapboxGLDefaultExtentBound holds the default mapbox vector tile bounds used by mapbox-gl.
 	// (https://www.mapbox.com/mapbox-gl-js/style-spec/#sources-vector)
 	MapboxGLDefaultExtentBound = orb.Bound{
 		Min: orb.Point{-1 * DefaultExtent, -1 * DefaultExtent},
