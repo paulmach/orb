@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	// Default extent for mapbox vector tiles. (https://www.mapbox.com/vector-tiles/specification/)
 	DefaultExtent = 4096
 )
 
