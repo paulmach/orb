@@ -5,6 +5,13 @@ import (
 	"github.com/paulmach/orb/clip"
 )
 
+var (
+	MapboxGLDefaultExtentBound = orb.Bound{
+		Min: orb.Point{-1 * DefaultExtent, -1 * DefaultExtent},
+		Max: orb.Point{2*DefaultExtent - 1, 2*DefaultExtent - 1},
+	}
+)
+
 // Clip will clip all geometries in all layers to the given bounds.
 func (ls Layers) Clip(box orb.Bound) {
 	for _, l := range ls {
