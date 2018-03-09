@@ -6,6 +6,11 @@ import (
 	"github.com/paulmach/orb/project"
 )
 
+const (
+	// DefaultExtent for mapbox vector tiles. (https://www.mapbox.com/vector-tiles/specification/)
+	DefaultExtent = 4096
+)
+
 // Layer is intermediate MVT layer to be encoded/decoded or projected.
 type Layer struct {
 	Name     string
@@ -20,7 +25,7 @@ func NewLayer(name string, fc *geojson.FeatureCollection) *Layer {
 	return &Layer{
 		Name:     name,
 		Version:  1,
-		Extent:   4096,
+		Extent:   DefaultExtent,
 		Features: fc.Features,
 	}
 }

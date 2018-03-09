@@ -34,6 +34,10 @@ collections := map[string]*geojson.FeatureCollection{}
 layers := mvt.NewLayers(collections)
 layers.ProjectToTile(maptile.New(x, y, z))
 
+// In order to be used as source for MapboxGL geometries need to be clipped
+// to max allowed extent. (uncomment next line)
+// layers.Clip(mvt.MapboxGLDefaultExtentBound)
+
 // Simplify the geometry now that it's in the tile coordinate space.
 layers.Simplify(simplify.DouglasPeucker(1.0))
 
