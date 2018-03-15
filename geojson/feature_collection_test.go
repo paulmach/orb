@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
+
+	"github.com/paulmach/orb"
 )
 
 func TestNewFeatureCollection(t *testing.T) {
@@ -99,6 +102,23 @@ func TestUnmarshalFeatureCollection(t *testing.T) {
 
 	if !reflect.DeepEqual(raw, expected) {
 		t.Errorf("invalid marshalling: \n%v", string(data))
+	}
+
+	// not a feature collection
+	data, _ = NewFeature(orb.Point{}).MarshalJSON()
+	_, err = UnmarshalFeatureCollection(data)
+	if err == nil {
+		t.Error("should return error if not a feature collection")
+	}
+
+	if !strings.Contains(err.Error(), "not a feature collection") {
+		t.Errorf("incorrect error: %v", err)
+	}
+
+	// invalid json
+	_, err = UnmarshalFeatureCollection([]byte(`{"type": "FeatureCollection",`)) // truncated
+	if err == nil {
+		t.Errorf("should return error for invalid json")
 	}
 }
 

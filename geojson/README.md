@@ -37,7 +37,7 @@ point := fc.Features[0].Geometry.(orb.Point)
 
 ```go
 fc := geojson.NewFeatureCollection()
-fc.Append(orb.Point{1, 2})
+fc.Append(geojson.NewFeature(orb.Point{1, 2}))
 
 rawJSON, _ := fc.MarshalJSON()
 

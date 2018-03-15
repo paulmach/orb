@@ -3,6 +3,7 @@ package geojson
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/paulmach/orb"
@@ -57,6 +58,9 @@ func TestFeatureMarshal(t *testing.T) {
 	if !bytes.Contains(blob, []byte(`"properties":null`)) {
 		t.Errorf("json should set properties to null if there are none")
 	}
+	if !bytes.Contains(blob, []byte(`"type":"Feature"`)) {
+		t.Errorf("json should set properties to null if there are none")
+	}
 }
 
 func TestFeatureMarshalValue(t *testing.T) {
@@ -90,6 +94,29 @@ func TestUnmarshalFeature(t *testing.T) {
 
 	if len(f.Properties) != 1 {
 		t.Errorf("should have 1 property but got: %v", f.Properties)
+	}
+
+	// not a feature
+	data, _ := NewFeatureCollection().MarshalJSON()
+	_, err = UnmarshalFeature(data)
+	if err == nil {
+		t.Error("should return error if not a feature")
+	}
+
+	if !strings.Contains(err.Error(), "not a feature") {
+		t.Errorf("incorrect error: %v", err)
+	}
+
+	// invalid json
+	_, err = UnmarshalFeature([]byte(`{"type": "Feature",`)) // truncated
+	if err == nil {
+		t.Errorf("should return error for invalid json")
+	}
+
+	f = &Feature{}
+	err = f.UnmarshalJSON([]byte(`{"type": "Feature",`)) // truncated
+	if err == nil {
+		t.Errorf("should return error for invalid json")
 	}
 }
 

@@ -7,7 +7,10 @@ package geojson
 
 import (
 	"encoding/json"
+	"fmt"
 )
+
+const featureCollection = "FeatureCollection"
 
 // A FeatureCollection correlates to a GeoJSON feature collection.
 type FeatureCollection struct {
@@ -18,7 +21,7 @@ type FeatureCollection struct {
 // NewFeatureCollection creates and initializes a new feature collection.
 func NewFeatureCollection() *FeatureCollection {
 	return &FeatureCollection{
-		Type:     "FeatureCollection",
+		Type:     featureCollection,
 		Features: []*Feature{},
 	}
 }
@@ -33,10 +36,10 @@ func (fc *FeatureCollection) Append(feature *Feature) *FeatureCollection {
 // It will handle the encoding of all the child features and geometries.
 // Alternately one can call json.Marshal(fc) directly for the same result.
 func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
-	type featureCollection FeatureCollection
+	type tempFC FeatureCollection
 
-	c := featureCollection{
-		Type:     "FeatureCollection",
+	c := tempFC{
+		Type:     featureCollection,
 		Features: fc.Features,
 	}
 
@@ -53,6 +56,10 @@ func UnmarshalFeatureCollection(data []byte) (*FeatureCollection, error) {
 	err := json.Unmarshal(data, fc)
 	if err != nil {
 		return nil, err
+	}
+
+	if fc.Type != featureCollection {
+		return nil, fmt.Errorf("geojson: not a feature collection: type=%s", fc.Type)
 	}
 
 	return fc, nil

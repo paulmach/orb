@@ -86,6 +86,18 @@ func (g Geometry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(ng)
 }
 
+// UnmarshalGeometry decodes the data into a GeoJSON feature.
+// Alternately one can call json.Unmarshal(g) directly for the same result.
+func UnmarshalGeometry(data []byte) (*Geometry, error) {
+	g := &Geometry{}
+	err := json.Unmarshal(data, g)
+	if err != nil {
+		return nil, err
+	}
+
+	return g, nil
+}
+
 // UnmarshalJSON will unmarshal the correct geometry from the json structure.
 func (g *Geometry) UnmarshalJSON(data []byte) error {
 	jg := &jsonGeometry{}

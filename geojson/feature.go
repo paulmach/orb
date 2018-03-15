@@ -2,6 +2,7 @@ package geojson
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/paulmach/orb"
 )
@@ -60,6 +61,10 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &jf)
 	if err != nil {
 		return err
+	}
+
+	if jf.Type != "Feature" {
+		return fmt.Errorf("geojson: not a feature: type=%s", jf.Type)
 	}
 
 	*f = Feature{

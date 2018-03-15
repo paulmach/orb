@@ -142,8 +142,7 @@ func TestGeometryUnmarshal(t *testing.T) {
 			}
 
 			// unmarshal
-			g := &Geometry{}
-			err = g.UnmarshalJSON(data)
+			g, err := UnmarshalGeometry(data)
 			if err != nil {
 				t.Errorf("unmarshal error: %v", err)
 			}
@@ -154,6 +153,31 @@ func TestGeometryUnmarshal(t *testing.T) {
 				t.Log(tc.geom)
 			}
 		})
+	}
+
+	// invalid type
+	_, err := UnmarshalGeometry([]byte(`{
+		"type": "arc",
+		"coordinates": [[0, 0]]
+	}`))
+	if err == nil {
+		t.Errorf("should return error for invalid type")
+	}
+
+	if !strings.Contains(err.Error(), "invalid geometry") {
+		t.Errorf("incorrect error: %v", err)
+	}
+
+	// invalid json
+	_, err = UnmarshalGeometry([]byte(`{"type": "arc",`)) // truncated
+	if err == nil {
+		t.Errorf("should return error for invalid json")
+	}
+
+	g := &Geometry{}
+	err = g.UnmarshalJSON([]byte(`{"type": "arc",`)) // truncated
+	if err == nil {
+		t.Errorf("should return error for invalid json")
 	}
 }
 
@@ -242,7 +266,6 @@ func TestHelperTypes(t *testing.T) {
 			}
 
 			// invalid json should return error
-			geo = &Geometry{}
 			err = tc.output.(json.Unmarshaler).UnmarshalJSON([]byte(`{invalid}`))
 			if err == nil {
 				t.Errorf("should return error for invalid json")
@@ -255,7 +278,6 @@ func TestHelperTypes(t *testing.T) {
 				t.Errorf("unmarshal error: %v", err)
 			}
 
-			geo = &Geometry{}
 			err = tc.output.(json.Unmarshaler).UnmarshalJSON(data)
 			if err == nil {
 				t.Fatalf("should return error for invalid json")
