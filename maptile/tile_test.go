@@ -131,13 +131,13 @@ func TestFraction(t *testing.T) {
 	}
 
 	p = Fraction(orb.Point{180, 0}, 30)
-	if p[0] != 0 {
-		t.Errorf("should have right at zero: %f", p[0])
+	if p[0] != 1<<30 {
+		t.Errorf("incorrect x: %f != %v", p[0], 1<<30)
 	}
 
 	p = Fraction(orb.Point{360, 0}, 30)
-	if p[0] != 1<<29 {
-		t.Errorf("should have center: %f", p[0])
+	if p[0] != 1<<30+1<<29 {
+		t.Errorf("incorrect x: %f != %v", p[0], 1<<30+1<<29)
 	}
 }
 

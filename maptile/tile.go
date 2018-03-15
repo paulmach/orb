@@ -7,11 +7,24 @@ import (
 	"math/bits"
 
 	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/geojson"
 	"github.com/paulmach/orb/internal/mercator"
 )
 
 // Tiles is a set of tiles, later we can add methods to this.
 type Tiles []Tile
+
+// ToFeatureCollection converts the tiles into a feature collection.
+// This method is mostly useful for debugging output.
+func (ts Tiles) ToFeatureCollection() *geojson.FeatureCollection {
+	fc := geojson.NewFeatureCollection()
+	fc.Features = make([]*geojson.Feature, 0, len(ts))
+	for _, t := range ts {
+		fc.Append(geojson.NewFeature(t.Bound().ToPolygon()))
+	}
+
+	return fc
+}
 
 // Tile is an x, y, z web mercator tile.
 type Tile struct {
@@ -37,11 +50,6 @@ func At(ll orb.Point, z Zoom) Tile {
 		X: uint32(f[0]),
 		Y: uint32(f[1]),
 		Z: z,
-	}
-
-	// things
-	if t.Y >= 1<<z {
-		t.Y = (1 << z) - 1
 	}
 
 	return t
@@ -79,9 +87,6 @@ func (t Tile) Bound(tileBuffer ...float64) orb.Bound {
 	y := float64(t.Y)
 
 	minx := x - buffer
-	if minx < 0 {
-		minx = 0
-	}
 
 	miny := y - buffer
 	if miny < 0 {
@@ -90,12 +95,9 @@ func (t Tile) Bound(tileBuffer ...float64) orb.Bound {
 
 	lon1, lat1 := mercator.ToGeo(minx, miny, uint32(t.Z))
 
-	maxtiles := float64(uint32(1 << t.Z))
 	maxx := x + 1 + buffer
-	if maxx > maxtiles {
-		maxx = maxtiles
-	}
 
+	maxtiles := float64(uint32(1 << t.Z))
 	maxy := y + 1 + buffer
 	if maxy > maxtiles {
 		maxy = maxtiles
@@ -137,28 +139,19 @@ func (t Tile) Parent() Tile {
 }
 
 // Fraction returns the precise tile fraction at the given zoom.
-// Returns the range y range of [0, 2^zoom]. Will return 2^zoom if
-// the point is below 85.0511 S.
+// Will return 2^zoom-1 if the point is below 85.0511 S.
 func Fraction(ll orb.Point, z Zoom) orb.Point {
 	var p orb.Point
 
 	factor := uint32(1 << z)
 	maxtiles := float64(factor)
 
-	for ll[0] >= 180 {
-		ll[0] -= 360.0
-	}
-
-	for ll[0] < -180 {
-		ll[0] += 360.0
-	}
-
 	lng := ll[0]/360.0 + 0.5
 	p[0] = lng * maxtiles
 
 	// bound it because we have a top of the world problem
 	if ll[1] < -85.0511 {
-		p[1] = maxtiles
+		p[1] = maxtiles - 1
 	} else if ll[1] > 85.0511 {
 		p[1] = 0
 	} else {
