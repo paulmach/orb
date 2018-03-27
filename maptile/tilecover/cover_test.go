@@ -52,10 +52,6 @@ func TestTestdata(t *testing.T) {
 			name: "multipoint",
 			min:  1, max: 12,
 		},
-		// {
-		// 	name: "point",
-		// 	min:  1, max: 15,
-		// },
 		{
 			name: "polygon",
 			min:  1, max: 15,
@@ -93,11 +89,15 @@ func TestTestdata(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			f := loadFeature(t, "./testdata/"+tc.name+".geojson")
-			tiles := Geometry(f.Geometry, tc.max)
-			tiles = MergeUp(tiles, tc.min)
-
 			expected := loadFeatureCollection(t, "./testdata/"+tc.name+"_out.geojson")
-			compareFeatureCollections(t, tc.name, tiles.ToFeatureCollection(), expected)
+
+			tiles := Geometry(f.Geometry, tc.max)
+			result := MergeUp(tiles, tc.min).ToFeatureCollection()
+			compareFeatureCollections(t, tc.name, result, expected)
+
+			tiles = Geometry(f.Geometry, tc.max)
+			result = MergeUpPartial(tiles, tc.min, 4).ToFeatureCollection()
+			compareFeatureCollections(t, tc.name, result, expected)
 		})
 	}
 }
@@ -130,6 +130,8 @@ func TestCountries(t *testing.T) {
 func compareFeatureCollections(t testing.TB, name string, result, expected *geojson.FeatureCollection) {
 	sortFC(result)
 	sortFC(expected)
+
+	t.Helper()
 
 	if len(result.Features) != len(expected.Features) {
 		t.Errorf("feature count mismatch: %v != %v", len(result.Features), len(expected.Features))
