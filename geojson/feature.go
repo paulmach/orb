@@ -24,6 +24,15 @@ func NewFeature(geometry orb.Geometry) *Feature {
 	}
 }
 
+// Point implements the orb.Pointer interface so that Features can be used
+// with quadtrees. The point returned is the center of the Bound of the geometry.
+// To represent the geometry with another point you must create a wrapper type.
+func (f *Feature) Point() orb.Point {
+	return f.Geometry.Bound().Center()
+}
+
+var _ orb.Pointer = &Feature{}
+
 // MarshalJSON converts the feature object into the proper JSON.
 // It will handle the encoding of all the child geometries.
 // Alternately one can call json.Marshal(f) directly for the same result.
