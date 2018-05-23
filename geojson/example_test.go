@@ -7,7 +7,24 @@ import (
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/geojson"
+	"github.com/paulmach/orb/quadtree"
 )
+
+func ExampleFeature_Point() {
+	f := geojson.NewFeature(orb.Point{1, 1})
+	f.Properties["key"] = "value"
+
+	qt := quadtree.New(f.Geometry.Bound().Pad(1))
+	qt.Add(f) // add the feature to a quadtree
+
+	// type assert the feature back into a Feature from
+	// the orb.Pointer interface.
+	feature := qt.Find(orb.Point{0, 0}).(*geojson.Feature)
+	fmt.Printf("key=%s", feature.Properties["key"])
+
+	// Output:
+	// key=value
+}
 
 func ExampleFeatureCollection_foreignMembers() {
 	rawJSON := []byte(`
