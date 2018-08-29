@@ -134,10 +134,11 @@ func TestFeatureCollectionMarshalJSON(t *testing.T) {
 		t.Errorf("json should set features object to at least empty array")
 	}
 }
+
 func TestFeatureCollectionMarshal(t *testing.T) {
 	fc := NewFeatureCollection()
-	blob, err := json.Marshal(fc)
 	fc.Features = nil
+	blob, err := json.Marshal(fc)
 
 	if err != nil {
 		t.Fatalf("should marshal to json just fine but got %v", err)
@@ -145,6 +146,32 @@ func TestFeatureCollectionMarshal(t *testing.T) {
 
 	if !bytes.Contains(blob, []byte(`"features":[]`)) {
 		t.Errorf("json should set features object to at least empty array")
+	}
+}
+
+func TestFeatureCollectionMarshal_BBox(t *testing.T) {
+	fc := NewFeatureCollection()
+
+	// nil bbox
+	fc.BBox = nil
+	blob, err := json.Marshal(fc)
+	if err != nil {
+		t.Fatalf("should marshal to json just fine but got %v", err)
+	}
+
+	if bytes.Contains(blob, []byte(`"bbox"`)) {
+		t.Errorf("should not contain bbox attribute if empty")
+	}
+
+	// with a bbox
+	fc.BBox = []float64{1, 2, 3, 4}
+	blob, err = json.Marshal(fc)
+	if err != nil {
+		t.Fatalf("should marshal to json just fine but got %v", err)
+	}
+
+	if !bytes.Contains(blob, []byte(`"bbox":[1,2,3,4]`)) {
+		t.Errorf("did not marshal bbox correctly: %v", string(blob))
 	}
 }
 

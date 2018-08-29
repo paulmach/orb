@@ -30,6 +30,32 @@ func TestFeatureMarshalJSON(t *testing.T) {
 	}
 }
 
+func TestFeatureMarshalJSON_BBox(t *testing.T) {
+	f := NewFeature(orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{2, 2}})
+
+	// bbox empty
+	f.BBox = nil
+	blob, err := f.MarshalJSON()
+	if err != nil {
+		t.Fatalf("error marshalling to json: %v", err)
+	}
+
+	if bytes.Contains(blob, []byte(`"bbox"`)) {
+		t.Errorf("should not set the bbox value")
+	}
+
+	// some bbox
+	f.BBox = []float64{1, 2, 3, 4}
+	blob, err = f.MarshalJSON()
+	if err != nil {
+		t.Fatalf("error marshalling to json: %v", err)
+	}
+
+	if !bytes.Contains(blob, []byte(`"bbox":[1,2,3,4]`)) {
+		t.Errorf("should set type to polygon coords: %v", string(blob))
+	}
+}
+
 func TestFeatureMarshalJSON_Bound(t *testing.T) {
 	f := NewFeature(orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{2, 2}})
 	blob, err := f.MarshalJSON()
@@ -117,6 +143,24 @@ func TestUnmarshalFeature(t *testing.T) {
 	err = f.UnmarshalJSON([]byte(`{"type": "Feature",`)) // truncated
 	if err == nil {
 		t.Errorf("should return error for invalid json")
+	}
+}
+
+func TestUnmarshalFeature_BBox(t *testing.T) {
+	rawJSON := `
+	  { "type": "Feature",
+	    "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+		"bbox": [1,2,3,4],
+	    "properties": {"prop0": "value0"}
+	  }`
+
+	f, err := UnmarshalFeature([]byte(rawJSON))
+	if err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+
+	if !f.BBox.Valid() {
+		t.Errorf("bbox should be valid: %v", f.BBox)
 	}
 }
 

@@ -15,6 +15,7 @@ const featureCollection = "FeatureCollection"
 // A FeatureCollection correlates to a GeoJSON feature collection.
 type FeatureCollection struct {
 	Type     string     `json:"type"`
+	BBox     BBox       `json:"bbox,omitempty"`
 	Features []*Feature `json:"features"`
 }
 
@@ -40,6 +41,7 @@ func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
 
 	c := tempFC{
 		Type:     featureCollection,
+		BBox:     fc.BBox,
 		Features: fc.Features,
 	}
 

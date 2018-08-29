@@ -11,6 +11,7 @@ import (
 type Feature struct {
 	ID         interface{}  `json:"id,omitempty"`
 	Type       string       `json:"type"`
+	BBox       BBox         `json:"bbox,omitempty"`
 	Geometry   orb.Geometry `json:"geometry"`
 	Properties Properties   `json:"properties"`
 }
@@ -41,6 +42,7 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 		ID:         f.ID,
 		Type:       "Feature",
 		Properties: f.Properties,
+		BBox:       f.BBox,
 		Geometry:   NewGeometry(f.Geometry),
 	}
 
@@ -80,6 +82,7 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 		ID:         jf.ID,
 		Type:       jf.Type,
 		Properties: jf.Properties,
+		BBox:       jf.BBox,
 		Geometry:   jf.Geometry.Coordinates,
 	}
 
@@ -89,6 +92,7 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 type jsonFeature struct {
 	ID         interface{} `json:"id,omitempty"`
 	Type       string      `json:"type"`
+	BBox       BBox        `json:"bbox,omitempty"`
 	Geometry   *Geometry   `json:"geometry"`
 	Properties Properties  `json:"properties"`
 }
