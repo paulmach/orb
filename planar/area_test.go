@@ -107,6 +107,11 @@ func TestCentroid_Ring(t *testing.T) {
 			result: orb.Point{0.5, 0.5},
 		},
 		{
+			name:   "non-closed square, cw",
+			ring:   orb.Ring{{0, 0}, {0, 1}, {1, 1}, {1, 0}},
+			result: orb.Point{0.5, 0.5},
+		},
+		{
 			name:   "triangle, ccw",
 			ring:   orb.Ring{{0, 0}, {1, 0}, {1, 1}, {0, 1}, {0, 0}},
 			result: orb.Point{0.5, 0.5},
