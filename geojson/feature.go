@@ -9,7 +9,7 @@ import (
 
 // A Feature corresponds to GeoJSON feature object
 type Feature struct {
-	ID         interface{}  `json:"id,omitempty"`
+	ID         *uint64      `json:"id,omitempty"`
 	Type       string       `json:"type"`
 	BBox       BBox         `json:"bbox,omitempty"`
 	Geometry   orb.Geometry `json:"geometry"`
@@ -90,9 +90,9 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 }
 
 type jsonFeature struct {
-	ID         interface{} `json:"id,omitempty"`
-	Type       string      `json:"type"`
-	BBox       BBox        `json:"bbox,omitempty"`
-	Geometry   *Geometry   `json:"geometry"`
-	Properties Properties  `json:"properties"`
+	ID         *uint64    `json:"id,omitempty"`
+	Type       string     `json:"type"`
+	BBox       BBox       `json:"bbox,omitempty"`
+	Geometry   *Geometry  `json:"geometry"`
+	Properties Properties `json:"properties"`
 }

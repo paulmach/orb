@@ -63,12 +63,15 @@ func Marshal(layers Layers) ([]byte, error) {
 				return nil, errors.WithMessage(err, fmt.Sprintf("layer %s: feature %d: error encoding geometry", l.Name, i))
 			}
 
+			id := f.ID
+
 			tags, err := encodeProperties(kve, f.Properties)
 			if err != nil {
 				return nil, errors.WithMessage(err, fmt.Sprintf("layer %s: feature %d: error encoding properties", l.Name, i))
 			}
 
 			layer.Features = append(layer.Features, &vectortile.Tile_Feature{
+				Id:       id,
 				Tags:     tags,
 				Type:     &t,
 				Geometry: g,
@@ -137,7 +140,7 @@ func decode(vt *vectortile.Tile) (Layers, error) {
 				}
 
 				if f.Id != nil {
-					gjf.ID = int(*f.Id)
+					gjf.ID = f.Id
 				}
 
 				layer.Features = append(layer.Features, gjf)
