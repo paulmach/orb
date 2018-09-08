@@ -297,6 +297,167 @@ func loadGeoJSON(t testing.TB, tile maptile.Tile) map[string]*geojson.FeatureCol
 	return r
 }
 
+func TestMarshal_ID(t *testing.T) {
+	cases := []struct {
+		name string
+		id   interface{}
+		val  float64
+	}{
+		{
+			name: "int",
+			id:   int(86427531),
+			val:  86427531,
+		},
+		{
+			name: "int8",
+			id:   int8(123),
+			val:  123,
+		},
+		{
+			name: "int16",
+			id:   int16(6884),
+			val:  6884,
+		},
+		{
+			name: "int32",
+			id:   int32(123),
+			val:  123,
+		},
+		{
+			name: "int64",
+			id:   int64(12345678),
+			val:  12345678,
+		},
+		{
+			name: "uint",
+			id:   uint(86427531),
+			val:  86427531,
+		},
+		{
+			name: "uint8",
+			id:   uint8(123),
+			val:  123,
+		},
+		{
+			name: "uint16",
+			id:   uint16(6884),
+			val:  6884,
+		},
+		{
+			name: "uint32",
+			id:   uint32(123),
+			val:  123,
+		},
+		{
+			name: "uint64",
+			id:   uint64(12345678),
+			val:  12345678,
+		},
+		{
+			name: "float32",
+			id:   float32(123.45),
+			val:  123,
+		},
+		{
+			name: "float64",
+			id:   float64(123.45),
+			val:  123,
+		},
+		{
+			name: "string",
+			id:   "123456",
+			val:  123456,
+		},
+
+		// negatives
+		{
+			name: "negative string",
+			id:   "-123456",
+			val:  0, // nil
+		},
+		{
+			name: "negative int",
+			id:   int(-123456),
+			val:  0, // nil
+		},
+		{
+			name: "negative int64",
+			id:   int64(-123456),
+			val:  0, // nil
+		},
+		{
+			name: "negative float64",
+			id:   float64(-123456),
+			val:  0, // nil
+		},
+	}
+
+	f := geojson.NewFeature(orb.Point{1, 2})
+	f.Properties["type"] = "point"
+	fc := geojson.NewFeatureCollection().Append(f)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f.ID = tc.id
+
+			data, err := Marshal(NewLayers(map[string]*geojson.FeatureCollection{"roads": fc}))
+			if err != nil {
+				t.Errorf("marshal error: %v", err)
+			}
+
+			ls, err := Unmarshal(data)
+			if err != nil {
+				t.Errorf("unmarshal error: %v", err)
+			}
+
+			id := ls.ToFeatureCollections()["roads"].Features[0].ID
+			if tc.val > 0 {
+				if id.(float64) != tc.val {
+					t.Errorf("incorrect id: %v != %v", id, tc.val)
+				}
+			} else {
+				if id != nil {
+					t.Errorf("id should be nil: %v", id)
+				}
+			}
+		})
+	}
+
+	t.Run("unmarshaled int from json", func(t *testing.T) {
+		f.ID = 123
+
+		data, err := fc.MarshalJSON()
+		if err != nil {
+			t.Fatalf("json marshal error: %v", err)
+		}
+
+		fc, err = geojson.UnmarshalFeatureCollection(data)
+		if err != nil {
+			t.Fatalf("unmarshal json error: %v", err)
+		}
+
+		if _, ok := fc.Features[0].ID.(float64); !ok {
+			t.Errorf("json should unmarshal numbers to float64: %T", fc.Features[0].ID)
+		}
+
+		data, err = Marshal(NewLayers(map[string]*geojson.FeatureCollection{"roads": fc}))
+		if err != nil {
+			t.Errorf("marshal error: %v", err)
+		}
+
+		ls, err := Unmarshal(data)
+		if err != nil {
+			t.Errorf("unmarshal error: %v", err)
+		}
+
+		id := ls.ToFeatureCollections()["roads"].Features[0].ID
+		if _, ok := id.(float64); !ok {
+			// this is to be consistent with json decoding
+			t.Errorf("should unmarshal id to float64: %T", id)
+		}
+	})
+}
+
 func BenchmarkMarshal(b *testing.B) {
 	layers := NewLayers(loadGeoJSON(b, maptile.New(17896, 24449, 16)))
 
