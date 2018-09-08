@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
 	"github.com/paulmach/orb/geojson"
@@ -56,8 +57,6 @@ func Marshal(layers Layers) ([]byte, error) {
 
 		kve := newKeyValueEncoder()
 		for i, f := range l.Features {
-			// TODO: what to do about ids
-
 			t, g, err := encodeGeometry(f.Geometry)
 			if err != nil {
 				return nil, errors.WithMessage(err, fmt.Sprintf("layer %s: feature %d: error encoding geometry", l.Name, i))
@@ -69,6 +68,7 @@ func Marshal(layers Layers) ([]byte, error) {
 			}
 
 			layer.Features = append(layer.Features, &vectortile.Tile_Feature{
+				Id:       convertID(f.ID),
 				Tags:     tags,
 				Type:     &t,
 				Geometry: g,
@@ -137,7 +137,7 @@ func decode(vt *vectortile.Tile) (Layers, error) {
 				}
 
 				if f.Id != nil {
-					gjf.ID = int(*f.Id)
+					gjf.ID = float64(*f.Id)
 				}
 
 				layer.Features = append(layer.Features, gjf)
@@ -193,4 +193,58 @@ func decodeFeatureProperties(
 	}
 
 	return result
+}
+
+func convertID(id interface{}) *uint64 {
+	if id == nil {
+		return nil
+	}
+
+	switch id := id.(type) {
+	case int:
+		return convertIntID(id)
+	case int8:
+		return convertIntID(int(id))
+	case int16:
+		return convertIntID(int(id))
+	case int32:
+		return convertIntID(int(id))
+	case int64:
+		return convertIntID(int(id))
+	case uint:
+		v := uint64(id)
+		return &v
+	case uint8:
+		v := uint64(id)
+		return &v
+	case uint16:
+		v := uint64(id)
+		return &v
+	case uint32:
+		v := uint64(id)
+		return &v
+	case uint64:
+		v := uint64(id)
+		return &v
+	case float32:
+		return convertIntID(int(id))
+	case float64:
+		return convertIntID(int(id))
+	case string:
+		i, err := strconv.Atoi(id)
+		if err == nil {
+			return convertIntID(i)
+		}
+	}
+
+	return nil
+}
+
+func convertIntID(i int) *uint64 {
+	if i < 0 {
+		return nil
+	}
+
+	v := uint64(i)
+	return &v
 }
