@@ -52,3 +52,14 @@ data, err := layers.Marshal() // this data is NOT gzipped.
 // Sometimes MVT data is stored and transfered gzip compressed. In that case:
 data, err := layers.MarshalGzipped()
 ```
+
+### Feature IDs
+
+Since GeoJSON ids can be any number or string they won't necessarily map to vector tile uint64 ids.
+This is a common incompatibility between the two types.
+
+During marshaling the code tries to convert the geojson.Feature.ID to a positive integer, possibly parsing a string.
+If the number is negative, the id is omitted. If the number is a positive decimal the number is truncated.
+
+For unmarshaling the id will be converted into a float64 to be consistent with how
+the encoding/json package decodes numbers.
