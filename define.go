@@ -4,6 +4,9 @@ package orb
 // To keep things consistent, this value matches WGS84 Web Mercator (EPSG:3857).
 const EarthRadius = 6378137.0 // meters
 
+// DefaultRoundingFactor is the default rounding factor used by the Round func.
+var DefaultRoundingFactor = 1e6 // 6 decimal places
+
 // Orientation defines the order of the points in a polygon
 // or closed ring.
 type Orientation int8
