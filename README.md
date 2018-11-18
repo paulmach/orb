@@ -112,7 +112,7 @@ keyed by the layer name. For example:
 	// Simplify the geometry now that it's in tile coordinate space.
 	layers.Simplify(simplify.DouglasPeucker(1.0))
 
-	// Depending on use-case remove empty geometry, those two small to be
+	// Depending on use-case remove empty geometry, those too small to be
 	// represented in this tile space.
 	// In this case lines shorter than 1, and areas smaller than 2.
 	layers.RemoveEmpty(1.0, 2.0)
