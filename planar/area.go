@@ -193,8 +193,9 @@ func polygonCentroidArea(p orb.Polygon) (orb.Point, float64) {
 	weightedHoleCentroid := orb.Point{}
 	for i := 1; i < len(p); i++ {
 		hc, ha := ringCentroidArea(p[i])
+		ha = math.Abs(ha)
 
-		holeArea += math.Abs(ha)
+		holeArea += ha
 		weightedHoleCentroid[0] += hc[0] * ha
 		weightedHoleCentroid[1] += hc[1] * ha
 	}

@@ -231,28 +231,47 @@ func TestCentroid_RingAdv(t *testing.T) {
 }
 
 func TestCentroidArea_Polygon(t *testing.T) {
-	r1 := orb.Ring{{0, 0}, {4, 0}, {4, 3}, {0, 3}, {0, 0}}
-	r1.Reverse()
+	t.Run("polygon with hole", func(t *testing.T) {
+		r1 := orb.Ring{{0, 0}, {4, 0}, {4, 3}, {0, 3}, {0, 0}}
+		r1.Reverse()
 
-	r2 := orb.Ring{{2, 1}, {3, 1}, {3, 2}, {2, 2}, {2, 1}}
-	poly := orb.Polygon{r1, r2}
+		r2 := orb.Ring{{2, 1}, {3, 1}, {3, 2}, {2, 2}, {2, 1}}
+		poly := orb.Polygon{r1, r2}
 
-	centroid, area := CentroidArea(poly)
-	if !centroid.Equal(orb.Point{21.5 / 11.0, 1.5}) {
-		t.Errorf("%v", 21.5/11.0)
-		t.Errorf("incorrect centroid: %v", centroid)
-	}
+		centroid, area := CentroidArea(poly)
+		if !centroid.Equal(orb.Point{21.5 / 11.0, 1.5}) {
+			t.Errorf("%v", 21.5/11.0)
+			t.Errorf("incorrect centroid: %v", centroid)
+		}
 
-	if area != 11 {
-		t.Errorf("incorrect area: %v != 11", area)
-	}
+		if area != 11 {
+			t.Errorf("incorrect area: %v != 11", area)
+		}
+	})
 
-	// empty polygon
-	e := orb.Point{0.5, 1}
-	c, _ := CentroidArea(orb.Polygon{{{0, 1}, {1, 1}, {0, 1}}})
-	if !c.Equal(e) {
-		t.Errorf("incorrect point: %v != %v", c, e)
-	}
+	t.Run("no hole", func(t *testing.T) {
+		e := orb.Point{0.5, 1}
+		c, _ := CentroidArea(orb.Polygon{{{0, 1}, {1, 1}, {0, 1}}})
+		if !c.Equal(e) {
+			t.Errorf("incorrect point: %v != %v", c, e)
+		}
+	})
+
+	t.Run("empty right half", func(t *testing.T) {
+		poly := orb.Polygon{
+			{{0, 0}, {4, 0}, {4, 4}, {0, 4}, {0, 0}},
+			{{2, 0}, {2, 4}, {4, 4}, {4, 0}, {2, 0}},
+		}
+
+		centroid, area := CentroidArea(poly)
+		if v := (orb.Point{1, 2}); !centroid.Equal(v) {
+			t.Errorf("incorrect centroid: %v != %v", centroid, v)
+		}
+
+		if area != 8 {
+			t.Errorf("incorrect area: %v != 8", area)
+		}
+	})
 }
 
 func TestCentroidArea_Bound(t *testing.T) {
@@ -278,157 +297,5 @@ func TestCentroidArea_Bound(t *testing.T) {
 
 	if area != 0 {
 		t.Errorf("area should be zero: %f", area)
-	}
-}
-
-func TestCentroidArea_Hole(t *testing.T) {
-	geom := orb.Polygon{
-		{
-			{
-				-102.2690493,
-				40.9939916,
-			},
-			{
-				-102.268951,
-				40.9940453,
-			},
-			{
-				-102.2690464,
-				40.9941449,
-			},
-			{
-				-102.2689287,
-				40.9942091,
-			},
-			{
-				-102.2688078,
-				40.9940829,
-			},
-			{
-				-102.2684138,
-				40.9942979,
-			},
-			{
-				-102.2683195,
-				40.9941995,
-			},
-			{
-				-102.2684496,
-				40.9941286,
-			},
-			{
-				-102.2683239,
-				40.9939973,
-			},
-			{
-				-102.2682875,
-				40.9940171,
-			},
-			{
-				-102.2682667,
-				40.9939954,
-			},
-			{
-				-102.2680722,
-				40.9941015,
-			},
-			{
-				-102.2679264,
-				40.9939493,
-			},
-			{
-				-102.2680433,
-				40.9938855,
-			},
-			{
-				-102.268059,
-				40.9939019,
-			},
-			{
-				-102.2682353,
-				40.9938057,
-			},
-			{
-				-102.2682124,
-				40.9937818,
-			},
-			{
-				-102.2682594,
-				40.9937561,
-			},
-			{
-				-102.2682808,
-				40.9937785,
-			},
-			{
-				-102.2683036,
-				40.993766,
-			},
-			{
-				-102.2683272,
-				40.9937907,
-			},
-			{
-				-102.2685813,
-				40.9936521,
-			},
-			{
-				-102.2688361,
-				40.9939181,
-			},
-			{
-				-102.2689632,
-				40.9938488,
-			},
-			{
-				-102.2690246,
-				40.993913,
-			},
-			{
-				-102.2689913,
-				40.9939311,
-			},
-			{
-				-102.2690493,
-				40.9939916,
-			},
-		},
-		{
-			{
-				-102.2687189,
-				40.9939914,
-			},
-			{
-				-102.2685563,
-				40.9938227,
-			},
-			{
-				-102.2684289,
-				40.9938926,
-			},
-			{
-				-102.2684666,
-				40.9939317,
-			},
-			{
-				-102.2684333,
-				40.99395,
-			},
-			{
-				-102.2685582,
-				40.9940796,
-			},
-			{
-				-102.2687189,
-				40.9939914,
-			},
-		},
-	}
-	centroid, _ := CentroidArea(geom)
-
-	bounds := geom.Bound()
-
-	if !bounds.Contains(centroid) {
-		t.Errorf("centroid not within the bounds of holey polygon: %v", centroid)
 	}
 }
