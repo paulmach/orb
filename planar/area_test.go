@@ -224,9 +224,15 @@ func TestCentroid_RingAdv(t *testing.T) {
 	// |     |
 	// +-----+
 
+	centroid, area := CentroidArea(ring)
+
 	expected := orb.Point{1.5, 0.45}
-	if c, _ := CentroidArea(ring); !c.Equal(expected) {
-		t.Errorf("incorrect centroid: %v != %v", c, expected)
+	if !centroid.Equal(expected) {
+		t.Errorf("incorrect centroid: %v != %v", centroid, expected)
+	}
+
+	if area != -2.5 {
+		t.Errorf("incorrect area: %v != 2.5", area)
 	}
 }
 
@@ -249,7 +255,7 @@ func TestCentroidArea_Polygon(t *testing.T) {
 		}
 	})
 
-	t.Run("no hole", func(t *testing.T) {
+	t.Run("collapsed", func(t *testing.T) {
 		e := orb.Point{0.5, 1}
 		c, _ := CentroidArea(orb.Polygon{{{0, 1}, {1, 1}, {0, 1}}})
 		if !c.Equal(e) {
