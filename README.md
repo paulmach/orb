@@ -134,7 +134,7 @@ For example:
 	var p orb.Point
 	err := row.Scan(wkb.Scanner(&p))
 
-	db.Exec("INSERT INTO table (point_column) VALUES (?)", wkb.Value(p))
+	db.Exec("INSERT INTO table (point_column) VALUES (ST_GeomFromWKB(?))", wkb.Value(p))
 
 ## List of sub-package utilities
 
