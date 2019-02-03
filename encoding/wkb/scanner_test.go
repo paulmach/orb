@@ -2,6 +2,7 @@ package wkb
 
 import (
 	"bytes"
+	"reflect"
 	"testing"
 
 	"github.com/paulmach/orb"
@@ -26,6 +27,10 @@ func TestScanNil(t *testing.T) {
 		if err != nil {
 			t.Errorf("should noop for nil data: %v", err)
 		}
+
+		if s.Valid {
+			t.Errorf("valid should be false for nil values")
+		}
 	})
 
 	t.Run("scan nil byte interface", func(t *testing.T) {
@@ -36,6 +41,10 @@ func TestScanNil(t *testing.T) {
 		err := s.Scan(b)
 		if err != nil {
 			t.Errorf("should noop for nil data: %v", err)
+		}
+
+		if s.Valid {
+			t.Errorf("valid should be false for nil values")
 		}
 	})
 }
@@ -71,6 +80,14 @@ func TestScanPoint(t *testing.T) {
 				t.Errorf("unequal data")
 				t.Log(p)
 				t.Log(tc.expected)
+			}
+
+			if p != s.Geometry {
+				t.Errorf("should set to scanner's geometry attribute")
+			}
+
+			if !s.Valid {
+				t.Errorf("should set valid to true")
 			}
 		})
 	}
@@ -113,6 +130,14 @@ func TestScanPoint_Errors(t *testing.T) {
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
+
+			if s.Geometry != nil {
+				t.Errorf("geometry should be nil on errors")
+			}
+
+			if s.Valid {
+				t.Errorf("valid should be false on errors")
+			}
 		})
 	}
 }
@@ -149,6 +174,14 @@ func TestScanMultiPoint(t *testing.T) {
 				t.Log(mp)
 				t.Log(tc.expected)
 			}
+
+			if !reflect.DeepEqual(mp, s.Geometry) {
+				t.Errorf("should set to scanner's geometry attribute")
+			}
+
+			if !s.Valid {
+				t.Errorf("should set valid to true")
+			}
 		})
 	}
 }
@@ -183,6 +216,14 @@ func TestScanMultiPoint_Errors(t *testing.T) {
 			err := s.Scan(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
+			}
+
+			if s.Geometry != nil {
+				t.Errorf("geometry should be nil on errors")
+			}
+
+			if s.Valid {
+				t.Errorf("valid should be false on errors")
 			}
 		})
 	}
@@ -220,6 +261,14 @@ func TestScanLineString(t *testing.T) {
 				t.Log(ls)
 				t.Log(tc.expected)
 			}
+
+			if !reflect.DeepEqual(ls, s.Geometry) {
+				t.Errorf("should set to scanner's geometry attribute")
+			}
+
+			if !s.Valid {
+				t.Errorf("should set valid to true")
+			}
 		})
 	}
 }
@@ -254,6 +303,14 @@ func TestScanLineString_Errors(t *testing.T) {
 			err := s.Scan(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
+			}
+
+			if s.Geometry != nil {
+				t.Errorf("geometry should be nil on errors")
+			}
+
+			if s.Valid {
+				t.Errorf("valid should be false on errors")
 			}
 		})
 	}
@@ -296,6 +353,14 @@ func TestScanMultiLineString(t *testing.T) {
 				t.Log(mls)
 				t.Log(tc.expected)
 			}
+
+			if !reflect.DeepEqual(mls, s.Geometry) {
+				t.Errorf("should set to scanner's geometry attribute")
+			}
+
+			if !s.Valid {
+				t.Errorf("should set valid to true")
+			}
 		})
 	}
 }
@@ -331,6 +396,14 @@ func TestScanMultiLineString_Errors(t *testing.T) {
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
+
+			if s.Geometry != nil {
+				t.Errorf("geometry should be nil on errors")
+			}
+
+			if s.Valid {
+				t.Errorf("valid should be false on errors")
+			}
 		})
 	}
 }
@@ -361,6 +434,14 @@ func TestScanRing(t *testing.T) {
 				t.Errorf("unequal data")
 				t.Log(r)
 				t.Log(tc.expected)
+			}
+
+			if !reflect.DeepEqual(r, s.Geometry) {
+				t.Errorf("should set to scanner's geometry attribute")
+			}
+
+			if !s.Valid {
+				t.Errorf("should set valid to true")
 			}
 		})
 	}
@@ -396,6 +477,14 @@ func TestScanRing_Errors(t *testing.T) {
 			err := s.Scan(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
+			}
+
+			if s.Geometry != nil {
+				t.Errorf("geometry should be nil on errors")
+			}
+
+			if s.Valid {
+				t.Errorf("valid should be false on errors")
 			}
 		})
 	}
@@ -433,6 +522,14 @@ func TestScanPolygon(t *testing.T) {
 				t.Log(p)
 				t.Log(tc.expected)
 			}
+
+			if !reflect.DeepEqual(p, s.Geometry) {
+				t.Errorf("should set to scanner's geometry attribute")
+			}
+
+			if !s.Valid {
+				t.Errorf("should set valid to true")
+			}
 		})
 	}
 }
@@ -467,6 +564,14 @@ func TestScanPolygon_Errors(t *testing.T) {
 			err := s.Scan(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
+			}
+
+			if s.Geometry != nil {
+				t.Errorf("geometry should be nil on errors")
+			}
+
+			if s.Valid {
+				t.Errorf("valid should be false on errors")
 			}
 		})
 	}
@@ -509,6 +614,14 @@ func TestScanMultiPolygon(t *testing.T) {
 				t.Log(mp)
 				t.Log(tc.expected)
 			}
+
+			if !reflect.DeepEqual(mp, s.Geometry) {
+				t.Errorf("should set to scanner's geometry attribute")
+			}
+
+			if !s.Valid {
+				t.Errorf("should set valid to true")
+			}
 		})
 	}
 }
@@ -544,6 +657,14 @@ func TestScanMultiPolygon_Errors(t *testing.T) {
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
+
+			if s.Geometry != nil {
+				t.Errorf("geometry should be nil on errors")
+			}
+
+			if s.Valid {
+				t.Errorf("valid should be false on errors")
+			}
 		})
 	}
 }
@@ -574,6 +695,14 @@ func TestScanCollection(t *testing.T) {
 				t.Errorf("unequal data")
 				t.Log(c)
 				t.Log(tc.expected)
+			}
+
+			if !reflect.DeepEqual(c, s.Geometry) {
+				t.Errorf("should set to scanner's geometry attribute")
+			}
+
+			if !s.Valid {
+				t.Errorf("should set valid to true")
 			}
 		})
 	}
@@ -609,6 +738,14 @@ func TestScanCollection_Errors(t *testing.T) {
 			err := s.Scan(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
+			}
+
+			if s.Geometry != nil {
+				t.Errorf("geometry should be nil on errors")
+			}
+
+			if s.Valid {
+				t.Errorf("valid should be false on errors")
 			}
 		})
 	}
@@ -681,6 +818,14 @@ func TestScanBound(t *testing.T) {
 				t.Log(b)
 				t.Log(tc.expected)
 			}
+
+			if !reflect.DeepEqual(b, s.Geometry) {
+				t.Errorf("should set to scanner's geometry attribute")
+			}
+
+			if !s.Valid {
+				t.Errorf("should set valid to true")
+			}
 		})
 	}
 }
@@ -710,6 +855,14 @@ func TestScanBound_Errors(t *testing.T) {
 			err := s.Scan(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
+			}
+
+			if s.Geometry != nil {
+				t.Errorf("geometry should be nil on errors")
+			}
+
+			if s.Valid {
+				t.Errorf("valid should be false on errors")
 			}
 		})
 	}
