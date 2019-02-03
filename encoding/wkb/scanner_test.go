@@ -17,6 +17,27 @@ func TestScanNil(t *testing.T) {
 	if !orb.Equal(s.Geometry, testPoint) {
 		t.Errorf("incorrect geometry: %v != %v", s.Geometry, testPoint)
 	}
+
+	t.Run("scan nil data", func(t *testing.T) {
+		var p orb.Point
+		s := Scanner(&p)
+
+		err := s.Scan(nil)
+		if err != nil {
+			t.Errorf("should noop for nil data: %v", err)
+		}
+	})
+
+	t.Run("scan nil byte interface", func(t *testing.T) {
+		var p orb.Point
+		s := Scanner(&p)
+
+		var b []byte
+		err := s.Scan(b)
+		if err != nil {
+			t.Errorf("should noop for nil data: %v", err)
+		}
+	})
 }
 
 func TestScanPoint(t *testing.T) {
