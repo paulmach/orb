@@ -48,9 +48,17 @@ func Scanner(g interface{}) *GeometryScanner {
 // This could be into the orb geometry type pointer or, if nil,
 // the scanner.Geometry attribute.
 func (s *GeometryScanner) Scan(d interface{}) error {
+	if d == nil {
+		return nil
+	}
+
 	data, ok := d.([]byte)
 	if !ok {
 		return ErrUnsupportedDataType
+	}
+
+	if data == nil {
+		return nil
 	}
 
 	switch g := s.g.(type) {
