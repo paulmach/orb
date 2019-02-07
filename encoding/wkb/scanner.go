@@ -331,5 +331,9 @@ func Value(g orb.Geometry) driver.Valuer {
 }
 
 func (v value) Value() (driver.Value, error) {
-	return Marshal(v.v)
+	val, err := Marshal(v.v)
+	if val == nil {
+		return nil, err
+	}
+	return val, err
 }

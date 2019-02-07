@@ -66,6 +66,10 @@ func Marshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) ([]byte, error) {
 		return nil, err
 	}
 
+	if buf.Len() == 0 {
+		return nil, nil
+	}
+
 	return buf.Bytes(), nil
 }
 
@@ -89,9 +93,38 @@ func (e *Encoder) Encode(geom orb.Geometry) error {
 		return nil
 	}
 
-	// deal with types that are not supported by wkb
 	switch g := geom.(type) {
+	// nil values should not write any data. Empty sizes will still
+	// write and empty version of that type.
+	case orb.MultiPoint:
+		if g == nil {
+			return nil
+		}
+	case orb.LineString:
+		if g == nil {
+			return nil
+		}
+	case orb.MultiLineString:
+		if g == nil {
+			return nil
+		}
+	case orb.Polygon:
+		if g == nil {
+			return nil
+		}
+	case orb.MultiPolygon:
+		if g == nil {
+			return nil
+		}
+	case orb.Collection:
+		if g == nil {
+			return nil
+		}
+	// deal with types that are not supported by wkb
 	case orb.Ring:
+		if g == nil {
+			return nil
+		}
 		geom = orb.Polygon{g}
 	case orb.Bound:
 		geom = g.ToPolygon()
@@ -248,6 +281,6 @@ func geomLength(geom orb.Geometry) int {
 
 		return 9 + sum
 	}
-	return 0
 
+	return 0
 }
