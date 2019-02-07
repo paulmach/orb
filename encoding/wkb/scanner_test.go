@@ -869,14 +869,86 @@ func TestScanBound_Errors(t *testing.T) {
 }
 
 func TestValue(t *testing.T) {
-	val, err := Value(testPoint).Value()
-	if err != nil {
-		t.Errorf("value error: %v", err)
+	t.Run("marshalls geometry", func(t *testing.T) {
+		val, err := Value(testPoint).Value()
+		if err != nil {
+			t.Errorf("value error: %v", err)
+		}
+
+		if !bytes.Equal(val.([]byte), testPointData) {
+			t.Errorf("incorrect marshal")
+			t.Log(val)
+			t.Log(testPointData)
+		}
+	})
+
+	t.Run("nil value in should set nil value", func(t *testing.T) {
+		val, err := Value(nil).Value()
+		if err != nil {
+			t.Errorf("value error: %v", err)
+		}
+
+		if val != nil {
+			t.Errorf("should be nil value: %[1]T, %[1]v", val)
+		}
+	})
+}
+
+func TestValue_nil(t *testing.T) {
+	var (
+		mp    orb.MultiPoint
+		ls    orb.LineString
+		mls   orb.MultiLineString
+		r     orb.Ring
+		poly  orb.Polygon
+		mpoly orb.MultiPolygon
+		c     orb.Collection
+	)
+
+	cases := []struct {
+		name string
+		geom orb.Geometry
+	}{
+		{
+			name: "nil multi point",
+			geom: mp,
+		},
+		{
+			name: "nil line string",
+			geom: ls,
+		},
+		{
+			name: "nil multi line string",
+			geom: mls,
+		},
+		{
+			name: "nil ring",
+			geom: r,
+		},
+		{
+			name: "nil polygon",
+			geom: poly,
+		},
+		{
+			name: "nil multi polygon",
+			geom: mpoly,
+		},
+		{
+			name: "nil collection",
+			geom: c,
+		},
 	}
 
-	if !bytes.Equal(val.([]byte), testPointData) {
-		t.Errorf("incorrect marshal")
-		t.Log(val)
-		t.Log(testPointData)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			val, err := Value(tc.geom).Value()
+			if err != nil {
+				t.Errorf("value error: %v", err)
+			}
+
+			if val != nil {
+				t.Errorf("should be nil value: %[1]T, %[1]v", val)
+			}
+		})
 	}
 }
