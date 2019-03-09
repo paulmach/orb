@@ -13,12 +13,13 @@ func readCollection(r io.Reader, bom binary.ByteOrder) (orb.Collection, error) {
 		return nil, err
 	}
 
-	if num > maxMultiAlloc {
+	alloc := num
+	if alloc > maxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		num = maxMultiAlloc
+		alloc = maxMultiAlloc
 	}
+	result := make(orb.Collection, 0, alloc)
 
-	result := make(orb.Collection, 0, num)
 	for i := 0; i < int(num); i++ {
 		geom, err := NewDecoder(r).Decode()
 		if err != nil {

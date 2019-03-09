@@ -15,12 +15,13 @@ func readPolygon(r io.Reader, bom binary.ByteOrder) (orb.Polygon, error) {
 		return nil, err
 	}
 
-	if num > maxMultiAlloc {
+	alloc := num
+	if alloc > maxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		num = maxMultiAlloc
+		alloc = maxMultiAlloc
 	}
+	result := make(orb.Polygon, 0, alloc)
 
-	result := make(orb.Polygon, 0, num)
 	for i := 0; i < int(num); i++ {
 		ls, err := readLineString(r, bom)
 		if err != nil {
@@ -64,12 +65,13 @@ func readMultiPolygon(r io.Reader, bom binary.ByteOrder) (orb.MultiPolygon, erro
 		return nil, err
 	}
 
-	if num > maxMultiAlloc {
+	alloc := num
+	if alloc > maxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		num = maxMultiAlloc
+		alloc = maxMultiAlloc
 	}
+	result := make(orb.MultiPolygon, 0, alloc)
 
-	result := make(orb.MultiPolygon, 0, num)
 	for i := 0; i < int(num); i++ {
 		byteOrder, typ, err := readByteOrderType(r)
 		if err != nil {

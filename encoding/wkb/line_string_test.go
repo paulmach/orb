@@ -94,6 +94,11 @@ var (
 )
 
 func TestMultiLineString(t *testing.T) {
+	large := orb.MultiLineString{}
+	for i := 0; i < maxMultiAlloc+100; i++ {
+		large = append(large, orb.LineString{})
+	}
+
 	cases := []struct {
 		name     string
 		data     []byte
@@ -108,6 +113,11 @@ func TestMultiLineString(t *testing.T) {
 			name:     "single multi line string",
 			data:     testMultiLineStringSingleData,
 			expected: testMultiLineStringSingle,
+		},
+		{
+			name:     "large",
+			data:     MustMarshal(large),
+			expected: large,
 		},
 	}
 
