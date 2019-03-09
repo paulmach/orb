@@ -29,6 +29,11 @@ var (
 )
 
 func TestPolygon(t *testing.T) {
+	large := orb.Polygon{}
+	for i := 0; i < maxMultiAlloc+100; i++ {
+		large = append(large, orb.Ring{})
+	}
+
 	cases := []struct {
 		name     string
 		data     []byte
@@ -38,6 +43,11 @@ func TestPolygon(t *testing.T) {
 			name:     "polygon",
 			data:     testPolygonData,
 			expected: testPolygon,
+		},
+		{
+			name:     "large",
+			data:     MustMarshal(large),
+			expected: large,
 		},
 		{
 			name: "two ring polygon",
@@ -155,6 +165,11 @@ var (
 )
 
 func TestMultiPolygon(t *testing.T) {
+	large := orb.MultiPolygon{}
+	for i := 0; i < maxMultiAlloc+100; i++ {
+		large = append(large, orb.Polygon{})
+	}
+
 	cases := []struct {
 		name     string
 		data     []byte
@@ -169,6 +184,11 @@ func TestMultiPolygon(t *testing.T) {
 			name:     "single multi polygon",
 			data:     testMultiPolygonSingleData,
 			expected: testMultiPolygonSingle,
+		},
+		{
+			name:     "large",
+			data:     MustMarshal(large),
+			expected: large,
 		},
 		{
 			name: "three polygons",

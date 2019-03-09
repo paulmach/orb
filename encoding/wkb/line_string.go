@@ -60,12 +60,13 @@ func readMultiLineString(r io.Reader, bom binary.ByteOrder) (orb.MultiLineString
 		return nil, err
 	}
 
-	if num > maxMultiAlloc {
+	alloc := num
+	if alloc > maxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		num = maxMultiAlloc
+		alloc = maxMultiAlloc
 	}
+	result := make(orb.MultiLineString, 0, alloc)
 
-	result := make(orb.MultiLineString, 0, num)
 	for i := 0; i < int(num); i++ {
 		byteOrder, typ, err := readByteOrderType(r)
 		if err != nil {

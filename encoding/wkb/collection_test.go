@@ -30,6 +30,11 @@ var (
 )
 
 func TestCollection(t *testing.T) {
+	large := orb.Collection{}
+	for i := 0; i < maxMultiAlloc+100; i++ {
+		large = append(large, orb.Point{float64(i), float64(-i)})
+	}
+
 	cases := []struct {
 		name     string
 		data     []byte
@@ -39,6 +44,11 @@ func TestCollection(t *testing.T) {
 			name:     "collection",
 			data:     testCollectionData,
 			expected: testCollection,
+		},
+		{
+			name:     "large",
+			data:     MustMarshal(large),
+			expected: large,
 		},
 	}
 
