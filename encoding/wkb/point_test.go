@@ -86,6 +86,11 @@ var (
 )
 
 func TestMultiPoint(t *testing.T) {
+	large := orb.MultiPoint{}
+	for i := 0; i < maxPointsAlloc+100; i++ {
+		large = append(large, orb.Point{float64(i), float64(-i)})
+	}
+
 	cases := []struct {
 		name     string
 		data     []byte
@@ -100,6 +105,11 @@ func TestMultiPoint(t *testing.T) {
 			name:     "single multi point",
 			data:     testMultiPointSingleData,
 			expected: testMultiPointSingle,
+		},
+		{
+			name:     "large multi point",
+			data:     MustMarshal(large),
+			expected: large,
 		},
 	}
 

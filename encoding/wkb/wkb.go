@@ -23,7 +23,7 @@ const (
 const (
 	// limits so that bad data can't come in allocate way tons of memory.
 	// Well formed data with less elements will allocate the correct amount just fine.
-	maxPointsAlloc = 5000
+	maxPointsAlloc = 10000
 	maxMultiAlloc  = 100
 )
 
