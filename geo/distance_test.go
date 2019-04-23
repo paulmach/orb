@@ -89,3 +89,23 @@ func TestMidpoint(t *testing.T) {
 		t.Errorf("expected %v, got %v", answer, m)
 	}
 }
+
+func TestIntermediatePoint(t *testing.T) {
+	p1 := orb.Point{-77.035382, 38.898269}
+	p2 := orb.Point{-77.011250, 38.889789}
+
+	data := [3][3]float64{
+		{0.25, -77.02934845975295, 38.896149465676906},
+		{0.50, -77.02331527966795, 38.894029620874510},
+		{0.75, -77.01728245974898, 38.891909465634875},
+	}
+	for _, d := range data {
+		f := d[0]
+		answer := orb.Point{d[1], d[2]}
+
+		p := IntermediatePoint(p1, p2, f)
+		if d := Distance(p, answer); d > 1 {
+			t.Errorf("expected %v for f = %v; got %v", answer, f, p)
+		}
+	}
+}

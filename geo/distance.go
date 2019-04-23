@@ -69,3 +69,31 @@ func Midpoint(p, p2 orb.Point) orb.Point {
 
 	return r
 }
+
+// IntermediatePoint returns a point along the great circle from a point (p) toward
+// a destination (p2). f is a number from 0 to 1 specifying the amount to proceed
+// along that path (0 = source, 1 = destination).
+func IntermediatePoint(p, p2 orb.Point, f float64) orb.Point {
+	// This is based on the intermediatePointTo function from:
+	// http://www.movable-type.co.uk/scripts/latlong.html
+	p1XRad, p1YRad := deg2rad(p.X()), deg2rad(p.Y())
+	p2XRad, p2YRad := deg2rad(p2.X()), deg2rad(p2.Y())
+
+	dX := p2XRad - p1XRad
+	dY := p2YRad - p1YRad
+
+	a := math.Sin(dY/2)*math.Sin(dY/2) + math.Cos(p1YRad)*math.Cos(p2YRad)*math.Sin(dX/2)*math.Sin(dX/2)
+	d := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+
+	A := math.Sin((1-f)*d) / math.Sin(d)
+	B := math.Sin(f*d) / math.Sin(d)
+
+	x := A*math.Cos(p1YRad)*math.Cos(p1XRad) + B*math.Cos(p2YRad)*math.Cos(p2XRad)
+	y := A*math.Cos(p1YRad)*math.Sin(p1XRad) + B*math.Cos(p2YRad)*math.Sin(p2XRad)
+	z := A*math.Sin(p1YRad) + B*math.Sin(p2YRad)
+
+	y3 := math.Atan2(z, math.Sqrt(x*x+y*y))
+	x3 := math.Atan2(y, x)
+
+	return orb.Point{rad2deg(x3), rad2deg(y3)}
+}
