@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/paulmach/orb"
 )
@@ -89,6 +90,23 @@ func TestFeatureMarshal(t *testing.T) {
 	}
 }
 
+func TestFeatureWhenMarshal(t *testing.T) {
+	f := NewFeature(orb.Point{1, 2})
+	tt := time.Now()
+	f.When = &When{"Instant", &tt}
+	blob, err := json.Marshal(f)
+	if err != nil {
+		t.Fatalf("should marshal to json just fine but got %v", err)
+	}
+
+	if !bytes.Contains(blob, []byte(`"when":`)) {
+		t.Errorf("json should contain 'when' node")
+	}
+	if !bytes.Contains(blob, []byte(`"@type":"Instant"`)) {
+		t.Errorf("json should have 'when.@type' attribute")
+	}
+}
+
 func TestFeatureMarshalValue(t *testing.T) {
 	f := NewFeature(orb.Point{1, 2})
 	blob, err := json.Marshal(*f)
@@ -106,7 +124,8 @@ func TestUnmarshalFeature(t *testing.T) {
 	rawJSON := `
 	  { "type": "Feature",
 	    "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
-	    "properties": {"prop0": "value0"}
+		"properties": {"prop0": "value0"},
+		"when": {"@type": "Instant", "datetime": "2019-01-02T15:04:05Z"}
 	  }`
 
 	f, err := UnmarshalFeature([]byte(rawJSON))
@@ -151,7 +170,8 @@ func TestUnmarshalFeature_BBox(t *testing.T) {
 	  { "type": "Feature",
 	    "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
 		"bbox": [1,2,3,4],
-	    "properties": {"prop0": "value0"}
+	    "properties": {"prop0": "value0"},
+		"when": {"@type": "Instant", "datetime": "2009-07-12T05:03:01Z"}
 	  }`
 
 	f, err := UnmarshalFeature([]byte(rawJSON))

@@ -14,6 +14,7 @@ type Feature struct {
 	BBox       BBox         `json:"bbox,omitempty"`
 	Geometry   orb.Geometry `json:"geometry"`
 	Properties Properties   `json:"properties"`
+	When       *When         `json:"when,omitempty"`
 }
 
 // NewFeature creates and initializes a GeoJSON feature given the required attributes.
@@ -44,6 +45,7 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 		Properties: f.Properties,
 		BBox:       f.BBox,
 		Geometry:   NewGeometry(f.Geometry),
+		When:       f.When,
 	}
 
 	if len(jf.Properties) == 0 {
@@ -84,6 +86,7 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 		Properties: jf.Properties,
 		BBox:       jf.BBox,
 		Geometry:   jf.Geometry.Coordinates,
+		When:       jf.When,
 	}
 
 	return nil
@@ -93,6 +96,7 @@ type jsonFeature struct {
 	ID         interface{} `json:"id,omitempty"`
 	Type       string      `json:"type"`
 	BBox       BBox        `json:"bbox,omitempty"`
-	Geometry   *Geometry   `json:"geometry"`
+	Geometry   *Geometry   `json:"geometry,omitempty"`
 	Properties Properties  `json:"properties"`
+	When       *When       `json:"when,omitempty"`
 }
