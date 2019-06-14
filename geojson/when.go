@@ -2,7 +2,8 @@ package geojson
 
 import "time"
 
-// When is a datetime info bound to Features objects
+// "When" is a datetime info bound to Features objects
+// Geojson spec at https://github.com/geojson/geojson-ld
 
 type When struct {
 	Type         string           `json:"@type,omitempty"`
@@ -20,3 +21,4 @@ func (w *When) Valid() bool {
 	}
 	return false
 }
+
