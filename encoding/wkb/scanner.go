@@ -3,7 +3,9 @@ package wkb
 import (
 	"database/sql"
 	"database/sql/driver"
+	"encoding/hex"
 	"errors"
+	"fmt"
 
 	"github.com/paulmach/orb"
 )
@@ -91,6 +93,17 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 
 	if data == nil {
 		return nil
+	}
+
+	// go-pg will return ST_AsBinary(*) data as `\xhexencoded` which
+	// needs to be converted to true binary for further decoding.
+	// Code detects the \x prefix and then converts the rest from Hex to binary.
+	if len(data) > 2 && data[0] == byte('\\') && data[1] == byte('x') {
+		n, err := hex.Decode(data, data[2:])
+		if err != nil {
+			return fmt.Errorf("thought the data was hex, but it is not: %v", err)
+		}
+		data = data[:n]
 	}
 
 	switch g := s.g.(type) {
