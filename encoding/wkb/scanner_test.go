@@ -49,6 +49,38 @@ func TestScanNil(t *testing.T) {
 	})
 }
 
+func TestScanHexData(t *testing.T) {
+	cases := []struct {
+		name     string
+		data     []byte
+		expected orb.Point
+	}{
+		{
+			name:     "point",
+			data:     []byte(`\x0101000000e0d57267266e4840b22ac24d46b50240`),
+			expected: orb.Point{48.860547, 2.338513},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := orb.Point{}
+			s := Scanner(&p)
+
+			err := s.Scan(tc.data)
+			if err != nil {
+				t.Fatalf("scan error: %v", err)
+			}
+
+			if !p.Equal(tc.expected) {
+				t.Errorf("unequal data")
+				t.Log(p)
+				t.Log(tc.expected)
+			}
+		})
+	}
+}
+
 func TestScanPoint(t *testing.T) {
 	cases := []struct {
 		name     string
