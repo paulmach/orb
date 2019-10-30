@@ -146,6 +146,26 @@ func TestUnmarshalFeature(t *testing.T) {
 	}
 }
 
+func TestUnmarshalFeature_missingGeometry(t *testing.T) {
+	t.Run("empty geometry", func(t *testing.T) {
+		rawJSON := `{ "type": "Feature", "geometry": {} }`
+
+		_, err := UnmarshalFeature([]byte(rawJSON))
+		if err != ErrInvalidGeometry {
+			t.Fatalf("incorrect unmarshal error: %v", err)
+		}
+	})
+
+	t.Run("missing geometry", func(t *testing.T) {
+		rawJSON := `{ "type": "Feature" }`
+
+		_, err := UnmarshalFeature([]byte(rawJSON))
+		if err != ErrInvalidGeometry {
+			t.Fatalf("incorrect unmarshal error: %v", err)
+		}
+	})
+}
+
 func TestUnmarshalFeature_BBox(t *testing.T) {
 	rawJSON := `
 	  { "type": "Feature",

@@ -78,6 +78,10 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("geojson: not a feature: type=%s", jf.Type)
 	}
 
+	if jf.Geometry == nil || jf.Geometry.Coordinates == nil {
+		return ErrInvalidGeometry
+	}
+
 	*f = Feature{
 		ID:         jf.ID,
 		Type:       jf.Type,
