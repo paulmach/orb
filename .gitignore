@@ -1,0 +1,7 @@
+
+# binaries
+cmd/__debug_bin
+cmd/*/__debug_bin
+cmd/vt2geojson/vt2geojson
+
+
