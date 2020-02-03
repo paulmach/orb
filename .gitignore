@@ -6,3 +6,6 @@ cmd/vt2geojson/vt2geojson
 
 # vscode
 .vscode/
+
+# mac
+*.DS_Store
