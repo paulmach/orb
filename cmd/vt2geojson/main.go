@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/paulmach/orb/geojson"
+	"github.com/paulmach/orb/maptile"
+
 	"github.com/paulmach/orb/encoding/mvt"
 )
 
@@ -55,11 +58,33 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if len(flags.layer) == 0 {
+	if flags.summary {
 		for _, l := range layers {
 			fmt.Printf("layer %s, version %d, extent %d, features %d\n", l.Name, l.Version, l.Extent, len(l.Features))
 		}
 		return
 	}
-	//fmt.Print(layers)
+
+	// project all the geometries in all the layers backed to WGS84 from the extent and mercator projection.
+	tile := maptile.New(uint32(flags.x), uint32(flags.y), maptile.Zoom(flags.z))
+	layers.ProjectToWGS84(tile)
+
+	// convert to geojson FeatureCollection
+	featureCollections := layers.ToFeatureCollections()
+	newFeatureCollection := geojson.NewFeatureCollection()
+	if len(flags.layer) > 0 { // only specified layer
+		v, found := featureCollections[flags.layer]
+		if found {
+			newFeatureCollection.Features = append(newFeatureCollection.Features, v.Features...)
+		}
+	} else { // all layers
+		for _, v := range featureCollections {
+			newFeatureCollection.Features = append(newFeatureCollection.Features, v.Features...)
+		}
+	}
+	geojsonContent, err := newFeatureCollection.MarshalJSON()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", geojsonContent)
 }
