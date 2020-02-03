@@ -43,10 +43,8 @@ func main() {
 	flag.Parse()
 
 	if len(flags.mvtSource) == 0 {
-		log.Fatalf("Please specify the mvt source by '-mvt'")
+		log.Fatalf("Please specify the mvt file or URI by '-mvt'")
 	}
-
-	//TODO: parse mvt contents to geojson
 
 	content, err := readMVTContent(flags.mvtSource)
 	if err != nil {
