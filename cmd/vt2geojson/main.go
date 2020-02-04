@@ -14,10 +14,14 @@ import (
 	"github.com/paulmach/orb/encoding/mvt"
 )
 
-func readMVTContent(mvtSource string) ([]byte, error) {
+func loadMVT(mvtSource string) ([]byte, error) {
 
 	if strings.Index(mvtSource, "http") >= 0 { // download from URL
-		resp, err := http.Get(mvtSource)
+		tr := &http.Transport{
+			DisableCompression: true, // disable the silently decompression
+		}
+		client := &http.Client{Transport: tr}
+		resp, err := client.Get(mvtSource)
 		if err != nil {
 			return nil, err
 		}
@@ -39,6 +43,13 @@ func readMVTContent(mvtSource string) ([]byte, error) {
 	return content, nil
 }
 
+func unmarshalMVT(mvtContent []byte, gzipped bool) (mvt.Layers, error) {
+	if gzipped {
+		return mvt.UnmarshalGzipped(mvtContent)
+	}
+	return mvt.Unmarshal(mvtContent)
+}
+
 func main() {
 	flag.Parse()
 
@@ -46,12 +57,12 @@ func main() {
 		log.Fatalf("Please specify the mvt file or URI by '-mvt'")
 	}
 
-	content, err := readMVTContent(flags.mvtSource)
+	content, err := loadMVT(flags.mvtSource)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	layers, err := mvt.Unmarshal(content)
+	layers, err := unmarshalMVT(content, flags.gzipped)
 	if err != nil {
 		log.Fatal(err)
 	}

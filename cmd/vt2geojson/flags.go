@@ -9,6 +9,7 @@ var flags struct {
 	x         uint
 	y         uint
 	z         uint
+	gzipped   bool
 }
 
 func init() {
@@ -18,4 +19,5 @@ func init() {
 	flag.UintVar(&flags.x, "x", 0, "Tile x coordinate")
 	flag.UintVar(&flags.y, "y", 0, "Tile x coordinate")
 	flag.UintVar(&flags.z, "z", 0, "Tile zoom level.")
+	flag.BoolVar(&flags.gzipped, "gzipped", true, "Whether uncompress the '.mvt' by gzip or not. '.mvt' comes from mapbox server is always gzipped, whatever with the 'Accept-Encoding: gzip' or not.")
 }
