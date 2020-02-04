@@ -4,10 +4,40 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"regexp"
+	"strconv"
 
 	"github.com/paulmach/orb/geojson"
 	"github.com/paulmach/orb/maptile"
 )
+
+// tryParseTileXYZ try to get x,y,z by parse 'z/x/y.mvt' or 'z/x/y.vector.pbf' from URL
+func tryParseTileXYZ(mvtSource string) (maptile.Tile, error) {
+	re := regexp.MustCompile(`([0-9]{1,2})/([0-9]+)/([0-9]+)(?:\.mvt|\.vector\.pbf)`)
+	sub := re.FindStringSubmatch(mvtSource)
+	if len(sub) < 4 { // match fail
+		return maptile.Tile{}, fmt.Errorf("can not parse z,x,y from mvt %s", mvtSource)
+	}
+
+	var z, x, y uint64
+	var err error
+	if z, err = strconv.ParseUint(sub[1], 10, 32); err != nil {
+		return maptile.Tile{}, fmt.Errorf("parse %s to z failed, err: %v", sub[1], err)
+	}
+	if x, err = strconv.ParseUint(sub[2], 10, 32); err != nil {
+		return maptile.Tile{}, fmt.Errorf("parse %s to x failed, err: %v", sub[2], err)
+	}
+	if y, err = strconv.ParseUint(sub[3], 10, 32); err != nil {
+		return maptile.Tile{}, fmt.Errorf("parse %s to y failed, err: %v", sub[3], err)
+	}
+
+	tile := maptile.New(uint32(x), uint32(y), maptile.Zoom(z))
+	if !tile.Valid() {
+		return tile, fmt.Errorf("parsed tile %v is not valid", tile)
+	}
+
+	return tile, nil
+}
 
 func main() {
 	flag.Parse()
@@ -32,7 +62,18 @@ func main() {
 	}
 
 	// project all the geometries in all the layers backed to WGS84 from the extent and mercator projection.
-	tile := maptile.New(uint32(flags.x), uint32(flags.y), maptile.Zoom(flags.z))
+	var tile maptile.Tile
+	if flags.x == 0 && flags.y == 0 && flags.z == 0 { // if all x,y,z are NOT set, try to parse from URL
+		tile, err = tryParseTileXYZ(flags.mvtSource)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else { // otherwise use the flags set directly
+		tile = maptile.New(uint32(flags.x), uint32(flags.y), maptile.Zoom(flags.z))
+		if !tile.Valid() {
+			log.Fatalf("Invalid flags x,y,z: %d,%d,%d", flags.x, flags.y, flags.z)
+		}
+	}
 	layers.ProjectToWGS84(tile)
 
 	// convert to geojson FeatureCollection
