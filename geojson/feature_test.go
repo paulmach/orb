@@ -146,6 +146,23 @@ func TestUnmarshalFeature(t *testing.T) {
 	}
 }
 
+func TestUnmarshalFeature_GeometryCollection(t *testing.T) {
+	rawJSON := `
+	  { "type": "Feature",
+	    "geometry": {"type":"GeometryCollection","geometries":[{"type": "Point", "coordinates": [102.0, 0.5]}]}
+	  }`
+
+	f, err := UnmarshalFeature([]byte(rawJSON))
+	if err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+
+	wantType := orb.Collection{}.GeoJSONType()
+	if f.Geometry.GeoJSONType() != wantType {
+		t.Fatalf("invalid GeoJSONType: %v", f.Geometry.GeoJSONType())
+	}
+}
+
 func TestUnmarshalFeature_missingGeometry(t *testing.T) {
 	t.Run("empty geometry", func(t *testing.T) {
 		rawJSON := `{ "type": "Feature", "geometry": {} }`
