@@ -130,7 +130,7 @@ func decode(vt *vectortile.Tile) (Layers, error) {
 
 			properties := decodeFeatureProperties(l.Keys, l.Values, f.Tags)
 
-			if len(properties) != 0 && geom != nil {
+			if geom != nil {
 				gjf := &geojson.Feature{
 					Geometry:   geom,
 					Properties: properties,
