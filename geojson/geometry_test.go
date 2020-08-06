@@ -179,6 +179,16 @@ func TestGeometryUnmarshal(t *testing.T) {
 	if err == nil {
 		t.Errorf("should return error for invalid json")
 	}
+
+	// invalid type (null)
+	_, err = UnmarshalGeometry([]byte(`null`))
+	if err == nil {
+		t.Errorf("should return error for invalid type")
+	}
+
+	if !strings.Contains(err.Error(), "invalid geometry") {
+		t.Errorf("incorrect error: %v", err)
+	}
 }
 
 func TestHelperTypes(t *testing.T) {
