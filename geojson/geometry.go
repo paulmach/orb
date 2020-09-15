@@ -3,7 +3,6 @@ package geojson
 import (
 	"encoding/json"
 	"errors"
-
 	"github.com/paulmach/orb"
 )
 
@@ -139,6 +138,8 @@ func (g *Geometry) UnmarshalJSON(data []byte) error {
 	default:
 		return ErrInvalidGeometry
 	}
+
+	g.Type = g.Geometry().GeoJSONType()
 
 	return nil
 }
