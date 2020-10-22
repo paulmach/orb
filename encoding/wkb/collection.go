@@ -1,15 +1,14 @@
 package wkb
 
 import (
-	"encoding/binary"
 	"io"
 
 	"github.com/paulmach/orb"
 )
 
-func readCollection(r io.Reader, bom binary.ByteOrder) (orb.Collection, error) {
-	var num uint32
-	if err := binary.Read(r, bom, &num); err != nil {
+func readCollection(r io.Reader, order byteOrder, buf []byte) (orb.Collection, error) {
+	num, err := readUint32(r, order, buf[:4])
+	if err != nil {
 		return nil, err
 	}
 

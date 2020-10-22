@@ -1,7 +1,6 @@
 package wkb
 
 import (
-	"encoding/binary"
 	"errors"
 	"io"
 	"math"
@@ -9,9 +8,9 @@ import (
 	"github.com/paulmach/orb"
 )
 
-func readLineString(r io.Reader, bom binary.ByteOrder) (orb.LineString, error) {
-	var num uint32
-	if err := binary.Read(r, bom, &num); err != nil {
+func readLineString(r io.Reader, order byteOrder, buf []byte) (orb.LineString, error) {
+	num, err := readUint32(r, order, buf[:4])
+	if err != nil {
 		return nil, err
 	}
 
@@ -23,7 +22,7 @@ func readLineString(r io.Reader, bom binary.ByteOrder) (orb.LineString, error) {
 	result := make(orb.LineString, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		p, err := readPoint(r, bom)
+		p, err := readPoint(r, order, buf)
 		if err != nil {
 			return nil, err
 		}
@@ -54,9 +53,9 @@ func (e *Encoder) writeLineString(ls orb.LineString) error {
 	return nil
 }
 
-func readMultiLineString(r io.Reader, bom binary.ByteOrder) (orb.MultiLineString, error) {
-	var num uint32
-	if err := binary.Read(r, bom, &num); err != nil {
+func readMultiLineString(r io.Reader, order byteOrder, buf []byte) (orb.MultiLineString, error) {
+	num, err := readUint32(r, order, buf[:4])
+	if err != nil {
 		return nil, err
 	}
 
@@ -68,7 +67,7 @@ func readMultiLineString(r io.Reader, bom binary.ByteOrder) (orb.MultiLineString
 	result := make(orb.MultiLineString, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		byteOrder, typ, err := readByteOrderType(r)
+		lOrder, typ, err := readByteOrderType(r, buf)
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +76,7 @@ func readMultiLineString(r io.Reader, bom binary.ByteOrder) (orb.MultiLineString
 			return nil, errors.New("expect multilines to contains lines, did not find a line")
 		}
 
-		ls, err := readLineString(r, byteOrder)
+		ls, err := readLineString(r, lOrder, buf)
 		if err != nil {
 			return nil, err
 		}

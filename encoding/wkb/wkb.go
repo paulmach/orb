@@ -10,6 +10,14 @@ import (
 	"github.com/paulmach/orb"
 )
 
+// byteOrder represents little or big endian encoding.
+// We don't use binary.ByteOrder because that is an interface
+// that leaks to the heap all over the place.
+type byteOrder int
+
+const bigEndian byteOrder = 0
+const littleEndian byteOrder = 1
+
 const (
 	pointType              uint32 = 1
 	lineStringType         uint32 = 2
@@ -190,57 +198,69 @@ func NewDecoder(r io.Reader) *Decoder {
 
 // Decode will decode the next geometry off of the steam.
 func (d *Decoder) Decode() (orb.Geometry, error) {
-	byteOrder, typ, err := readByteOrderType(d.r)
+	buf := make([]byte, 8)
+	order, typ, err := readByteOrderType(d.r, buf)
 	if err != nil {
 		return nil, err
 	}
 
 	switch typ {
 	case pointType:
-		return readPoint(d.r, byteOrder)
+		return readPoint(d.r, order, buf)
 	case multiPointType:
-		return readMultiPoint(d.r, byteOrder)
+		return readMultiPoint(d.r, order, buf)
 	case lineStringType:
-		return readLineString(d.r, byteOrder)
+		return readLineString(d.r, order, buf)
 	case multiLineStringType:
-		return readMultiLineString(d.r, byteOrder)
+		return readMultiLineString(d.r, order, buf)
 	case polygonType:
-		return readPolygon(d.r, byteOrder)
+		return readPolygon(d.r, order, buf)
 	case multiPolygonType:
-		return readMultiPolygon(d.r, byteOrder)
+		return readMultiPolygon(d.r, order, buf)
 	case geometryCollectionType:
-		return readCollection(d.r, byteOrder)
+		return readCollection(d.r, order, buf)
 	}
 
 	return nil, ErrUnsupportedGeometry
 }
 
-func readByteOrderType(r io.Reader) (binary.ByteOrder, uint32, error) {
-	var bom = make([]byte, 1)
-
-	// the bom is the first byte
-	if _, err := r.Read(bom); err != nil {
-		return nil, 0, err
+func readByteOrderType(r io.Reader, buf []byte) (byteOrder, uint32, error) {
+	// the byte order is the first byte
+	if _, err := r.Read(buf[:1]); err != nil {
+		return 0, 0, err
 	}
 
-	var byteOrder binary.ByteOrder
-	if bom[0] == 0 {
-		byteOrder = binary.BigEndian
-	} else if bom[0] == 1 {
-		byteOrder = binary.LittleEndian
+	var order byteOrder
+	if buf[0] == 0 {
+		order = bigEndian
+	} else if buf[0] == 1 {
+		order = littleEndian
 	} else {
-		return nil, 0, ErrNotWKB
+		return 0, 0, ErrNotWKB
 	}
 
 	// the type which is 4 bytes
-	var typ uint32
-
-	err := binary.Read(r, byteOrder, &typ)
+	typ, err := readUint32(r, order, buf[:4])
 	if err != nil {
-		return nil, 0, err
+		return 0, 0, err
 	}
 
-	return byteOrder, typ, err
+	return order, typ, nil
+}
+
+func readUint32(r io.Reader, order byteOrder, buf []byte) (uint32, error) {
+	if _, err := io.ReadFull(r, buf); err != nil {
+		return 0, err
+	}
+
+	var val uint32
+	if order == littleEndian {
+		val = binary.LittleEndian.Uint32(buf)
+	} else {
+		val = binary.BigEndian.Uint32(buf)
+	}
+
+	return val, nil
 }
 
 // geomLength helps to do preallocation during a marshal.

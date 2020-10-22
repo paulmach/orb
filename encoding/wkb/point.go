@@ -9,15 +9,18 @@ import (
 	"github.com/paulmach/orb"
 )
 
-func readPoint(r io.Reader, bom binary.ByteOrder) (orb.Point, error) {
+func readPoint(r io.Reader, order byteOrder, buf []byte) (orb.Point, error) {
 	var p orb.Point
 
-	if err := binary.Read(r, bom, &p[0]); err != nil {
-		return orb.Point{}, err
-	}
-
-	if err := binary.Read(r, bom, &p[1]); err != nil {
-		return orb.Point{}, err
+	for i := 0; i < 2; i++ {
+		if _, err := io.ReadFull(r, buf); err != nil {
+			return orb.Point{}, err
+		}
+		if order == littleEndian {
+			p[i] = math.Float64frombits(binary.LittleEndian.Uint64(buf))
+		} else {
+			p[i] = math.Float64frombits(binary.BigEndian.Uint64(buf))
+		}
 	}
 
 	return p, nil
@@ -36,9 +39,9 @@ func (e *Encoder) writePoint(p orb.Point) error {
 	return err
 }
 
-func readMultiPoint(r io.Reader, bom binary.ByteOrder) (orb.MultiPoint, error) {
-	var num uint32 // Number of points.
-	if err := binary.Read(r, bom, &num); err != nil {
+func readMultiPoint(r io.Reader, order byteOrder, buf []byte) (orb.MultiPoint, error) {
+	num, err := readUint32(r, order, buf[:4])
+	if err != nil {
 		return nil, err
 	}
 
@@ -50,7 +53,7 @@ func readMultiPoint(r io.Reader, bom binary.ByteOrder) (orb.MultiPoint, error) {
 	result := make(orb.MultiPoint, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		byteOrder, typ, err := readByteOrderType(r)
+		pOrder, typ, err := readByteOrderType(r, buf)
 		if err != nil {
 			return nil, err
 		}
@@ -59,7 +62,7 @@ func readMultiPoint(r io.Reader, bom binary.ByteOrder) (orb.MultiPoint, error) {
 			return nil, errors.New("expect multipoint to contains points, did not find a point")
 		}
 
-		p, err := readPoint(r, byteOrder)
+		p, err := readPoint(r, pOrder, buf)
 		if err != nil {
 			return nil, err
 		}

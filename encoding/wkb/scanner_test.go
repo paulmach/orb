@@ -984,3 +984,14 @@ func TestValue_nil(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkScan_LineString(b *testing.B) {
+	ls := make(orb.LineString, 0, 1000)
+	s := Scanner(&ls)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		s.Scan(testLineStringData)
+	}
+}
