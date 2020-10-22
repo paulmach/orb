@@ -89,6 +89,11 @@ func TestTestdata(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			f := loadFeature(t, "./testdata/"+tc.name+".geojson")
+
+			// ts := Geometry(f.Geometry, tc.max)
+			// blob, _ := json.MarshalIndent(MergeUp(ts, tc.min).ToFeatureCollection(), "", "  ")
+			// ioutil.WriteFile("./testdata/"+tc.name+"_out.geojson", blob, 0644)
+
 			expected := loadFeatureCollection(t, "./testdata/"+tc.name+"_out.geojson")
 
 			tiles := Geometry(f.Geometry, tc.max)
