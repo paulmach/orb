@@ -64,7 +64,7 @@ func TestScanHexData(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p := orb.Point{}
+			var p orb.Point
 			s := Scanner(&p)
 
 			err := s.Scan(tc.data)
@@ -101,7 +101,7 @@ func TestScanPoint(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p := orb.Point{}
+			var p orb.Point
 			s := Scanner(&p)
 			err := s.Scan(tc.data)
 			if err != nil {
@@ -156,7 +156,7 @@ func TestScanPoint_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p := orb.Point{}
+			var p orb.Point
 			s := Scanner(&p)
 			err := s.Scan(tc.data)
 			if err != tc.err {
@@ -194,7 +194,7 @@ func TestScanMultiPoint(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mp := orb.MultiPoint{}
+			var mp orb.MultiPoint
 			s := Scanner(&mp)
 			err := s.Scan(tc.data)
 			if err != nil {
@@ -243,7 +243,7 @@ func TestScanMultiPoint_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mp := orb.MultiPoint{}
+			var mp orb.MultiPoint
 			s := Scanner(&mp)
 			err := s.Scan(tc.data)
 			if err != tc.err {
@@ -281,7 +281,7 @@ func TestScanLineString(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			ls := orb.LineString{}
+			var ls orb.LineString
 			s := Scanner(&ls)
 			err := s.Scan(tc.data)
 			if err != nil {
@@ -323,14 +323,14 @@ func TestScanLineString_Errors(t *testing.T) {
 		},
 		{
 			name: "not wkb",
-			data: []byte{0, 0, 0, 0, 1, 192, 94},
+			data: []byte{0, 0, 0, 0, 2, 192, 94},
 			err:  ErrNotWKB,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			ls := orb.LineString{}
+			var ls orb.LineString
 			s := Scanner(&ls)
 			err := s.Scan(tc.data)
 			if err != tc.err {
@@ -373,7 +373,7 @@ func TestScanMultiLineString(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mls := orb.MultiLineString{}
+			var mls orb.MultiLineString
 			s := Scanner(&mls)
 			err := s.Scan(tc.data)
 			if err != nil {
@@ -415,14 +415,14 @@ func TestScanMultiLineString_Errors(t *testing.T) {
 		},
 		{
 			name: "not wkb",
-			data: []byte{0, 0, 0, 0, 1, 192, 94},
+			data: []byte{0, 0, 0, 0, 5, 192, 94},
 			err:  ErrNotWKB,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mls := orb.MultiLineString{}
+			var mls orb.MultiLineString
 			s := Scanner(&mls)
 			err := s.Scan(tc.data)
 			if err != tc.err {
@@ -455,7 +455,7 @@ func TestScanRing(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := orb.Ring{}
+			var r orb.Ring
 			s := Scanner(&r)
 			err := s.Scan(tc.data)
 			if err != nil {
@@ -504,8 +504,8 @@ func TestScanRing_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p := orb.Ring{}
-			s := Scanner(&p)
+			var r orb.Ring
+			s := Scanner(&r)
 			err := s.Scan(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
@@ -542,7 +542,7 @@ func TestScanPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p := orb.Polygon{}
+			var p orb.Polygon
 			s := Scanner(&p)
 			err := s.Scan(tc.data)
 			if err != nil {
@@ -584,14 +584,14 @@ func TestScanPolygon_Errors(t *testing.T) {
 		},
 		{
 			name: "not wkb",
-			data: []byte{0, 0, 0, 0, 1, 192, 94},
+			data: []byte{0, 0, 0, 0, 3, 192, 94},
 			err:  ErrNotWKB,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p := orb.Polygon{}
+			var p orb.Polygon
 			s := Scanner(&p)
 			err := s.Scan(tc.data)
 			if err != tc.err {
@@ -634,7 +634,7 @@ func TestScanMultiPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mp := orb.MultiPolygon{}
+			var mp orb.MultiPolygon
 			s := Scanner(&mp)
 			err := s.Scan(tc.data)
 			if err != nil {
@@ -676,15 +676,15 @@ func TestScanMultiPolygon_Errors(t *testing.T) {
 		},
 		{
 			name: "not wkb",
-			data: []byte{0, 0, 0, 0, 1, 192, 94},
+			data: []byte{0, 0, 0, 0, 6, 192, 94},
 			err:  ErrNotWKB,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p := orb.MultiPolygon{}
-			s := Scanner(&p)
+			var mp orb.MultiPolygon
+			s := Scanner(&mp)
 			err := s.Scan(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
@@ -716,7 +716,7 @@ func TestScanCollection(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := orb.Collection{}
+			var c orb.Collection
 			s := Scanner(&c)
 			err := s.Scan(tc.data)
 			if err != nil {
@@ -758,15 +758,15 @@ func TestScanCollection_Errors(t *testing.T) {
 		},
 		{
 			name: "not wkb",
-			data: []byte{0, 0, 0, 0, 1, 192, 94},
+			data: []byte{0, 0, 0, 0, 7, 192, 94},
 			err:  ErrNotWKB,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p := orb.Collection{}
-			s := Scanner(&p)
+			var c orb.Collection
+			s := Scanner(&c)
 			err := s.Scan(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
@@ -838,7 +838,7 @@ func TestScanBound(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			b := orb.Bound{}
+			var b orb.Bound
 			s := Scanner(&b)
 			err := s.Scan(tc.data)
 			if err != nil {
@@ -882,8 +882,8 @@ func TestScanBound_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p := orb.Bound{}
-			s := Scanner(&p)
+			var b orb.Bound
+			s := Scanner(&b)
 			err := s.Scan(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
@@ -985,13 +985,204 @@ func TestValue_nil(t *testing.T) {
 	}
 }
 
-func BenchmarkScan_LineString(b *testing.B) {
-	ls := make(orb.LineString, 0, 1000)
-	s := Scanner(&ls)
+func BenchmarkScan_point(b *testing.B) {
+	p := orb.Point{1, 2}
+	data, err := Marshal(p)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var r orb.Point
+	s := Scanner(&r)
 
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		s.Scan(testLineStringData)
+		err := s.Scan(data)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkDecode_point(b *testing.B) {
+	p := orb.Point{1, 2}
+	data, err := Marshal(p)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	r := bytes.NewReader(data)
+	d := NewDecoder(r)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := d.Decode()
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		r.Reset(data)
+	}
+}
+
+func BenchmarkScan_lineString(b *testing.B) {
+	var ls orb.LineString
+	for i := 0; i < 100; i++ {
+		ls = append(ls, orb.Point{float64(i), float64(i)})
+	}
+	data, err := Marshal(ls)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var r orb.LineString
+	s := Scanner(&r)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err := s.Scan(data)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkDecode_lineString(b *testing.B) {
+	var ls orb.LineString
+	for i := 0; i < 100; i++ {
+		ls = append(ls, orb.Point{float64(i), float64(i)})
+	}
+	data, err := Marshal(ls)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	r := bytes.NewReader(data)
+	d := NewDecoder(r)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := d.Decode()
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		r.Reset(data)
+	}
+}
+
+func BenchmarkScan_multiLineString(b *testing.B) {
+	var mls orb.MultiLineString
+	for i := 0; i < 10; i++ {
+		var ls orb.LineString
+		for j := 0; j < 100; j++ {
+			ls = append(ls, orb.Point{float64(i), float64(i)})
+		}
+		mls = append(mls, ls)
+	}
+	data, err := Marshal(mls)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var r orb.MultiLineString
+	s := Scanner(&r)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err := s.Scan(data)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkDecode_multiLineString(b *testing.B) {
+	var mls orb.MultiLineString
+	for i := 0; i < 10; i++ {
+		var ls orb.LineString
+		for j := 0; j < 100; j++ {
+			ls = append(ls, orb.Point{float64(i), float64(i)})
+		}
+		mls = append(mls, ls)
+	}
+	data, err := Marshal(mls)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	r := bytes.NewReader(data)
+	d := NewDecoder(r)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := d.Decode()
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		r.Reset(data)
+	}
+}
+
+func BenchmarkScan_polygon(b *testing.B) {
+	var p orb.Polygon
+	for i := 0; i < 1; i++ {
+		var r orb.Ring
+		for j := 0; j < 6; j++ {
+			r = append(r, orb.Point{float64(i), float64(i)})
+		}
+		p = append(p, r)
+	}
+	data, err := Marshal(p)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var r orb.Polygon
+	s := Scanner(&r)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err := s.Scan(data)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkDecode_polygon(b *testing.B) {
+	var p orb.Polygon
+	for i := 0; i < 1; i++ {
+		var r orb.Ring
+		for j := 0; j < 6; j++ {
+			r = append(r, orb.Point{float64(i), float64(i)})
+		}
+		p = append(p, r)
+	}
+	data, err := Marshal(p)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	r := bytes.NewReader(data)
+	d := NewDecoder(r)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := d.Decode()
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		r.Reset(data)
 	}
 }

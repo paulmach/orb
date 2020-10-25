@@ -49,13 +49,24 @@ func BenchmarkEncode_LineString(b *testing.B) {
 func compare(t testing.TB, e orb.Geometry, b []byte) {
 	t.Helper()
 
+	// Decoder
 	g, err := NewDecoder(bytes.NewReader(b)).Decode()
 	if err != nil {
-		t.Fatalf("read error: %v", err)
+		t.Fatalf("decoder: read error: %v", err)
 	}
 
 	if !orb.Equal(g, e) {
-		t.Errorf("incorrect geometry: %v != %v", g, e)
+		t.Errorf("decoder: incorrect geometry: %v != %v", g, e)
+	}
+
+	// Umarshal
+	g, err = Unmarshal(b)
+	if err != nil {
+		t.Fatalf("unmarshal: read error: %v", err)
+	}
+
+	if !orb.Equal(g, e) {
+		t.Errorf("unmarshal: incorrect geometry: %v != %v", g, e)
 	}
 
 	var data []byte
@@ -71,7 +82,7 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 	if !bytes.Equal(data, b) {
 		t.Logf("%v", data)
 		t.Logf("%v", b)
-		t.Errorf("incorrent encoding")
+		t.Errorf("marshal: incorrent encoding")
 	}
 
 	// preallocation
@@ -84,31 +95,31 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 
 	switch e.(type) {
 	case orb.Point:
-		p := orb.Point{}
+		var p orb.Point
 		err = Scanner(&p).Scan(b)
 		sg = p
 	case orb.MultiPoint:
-		mp := orb.MultiPoint{}
+		var mp orb.MultiPoint
 		err = Scanner(&mp).Scan(b)
 		sg = mp
 	case orb.LineString:
-		ls := orb.LineString{}
+		var ls orb.LineString
 		err = Scanner(&ls).Scan(b)
 		sg = ls
 	case orb.MultiLineString:
-		mls := orb.MultiLineString{}
+		var mls orb.MultiLineString
 		err = Scanner(&mls).Scan(b)
 		sg = mls
 	case orb.Polygon:
-		p := orb.Polygon{}
+		var p orb.Polygon
 		err = Scanner(&p).Scan(b)
 		sg = p
 	case orb.MultiPolygon:
-		mp := orb.MultiPolygon{}
+		var mp orb.MultiPolygon
 		err = Scanner(&mp).Scan(b)
 		sg = mp
 	case orb.Collection:
-		c := orb.Collection{}
+		var c orb.Collection
 		err = Scanner(&c).Scan(b)
 		sg = c
 	default:
@@ -124,6 +135,6 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 	}
 
 	if !orb.Equal(sg, e) {
-		t.Errorf("incorrect geometry: %v != %v", sg, e)
+		t.Errorf("scan: incorrect geometry: %v != %v", sg, e)
 	}
 }
