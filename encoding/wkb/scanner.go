@@ -64,7 +64,7 @@ type GeometryScanner struct {
 //
 //	var point orb.Point
 //	s := wkb.Scanner(&point)
-//	err := db.QueryRow("SELECT latlon FROM foo WHERE id=?", id).Scan(s)
+//	err := db.QueryRow("SELECT latlon FROM foo WHERE id=?", id).Scan(&s)
 //	...
 //	if s.Valid {
 //	  // use p

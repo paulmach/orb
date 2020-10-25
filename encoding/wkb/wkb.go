@@ -1,5 +1,5 @@
 // Package wkb is for decoding ESRI's Well Known Binary (WKB) format
-// sepcification at http://edndoc.esri.com/arcsde/9.1/general_topics/wkb_representation.htm
+// sepcification at https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary
 package wkb
 
 import (
@@ -29,13 +29,13 @@ const (
 )
 
 const (
-	// limits so that bad data can't come in allocate way tons of memory.
+	// limits so that bad data can't come in and preallocate tons of memory.
 	// Well formed data with less elements will allocate the correct amount just fine.
 	maxPointsAlloc = 10000
 	maxMultiAlloc  = 100
 )
 
-// DefaultByteOrder is the order used form marshalling or encoding
+// DefaultByteOrder is the order used for marshalling or encoding
 // is none is specified.
 var DefaultByteOrder binary.ByteOrder = binary.LittleEndian
 
@@ -61,7 +61,6 @@ func MustMarshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) []byte {
 
 // Marshal encodes the geometry with the given byte order.
 func Marshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) ([]byte, error) {
-
 	buf := bytes.NewBuffer(make([]byte, 0, geomLength(geom)))
 
 	e := NewEncoder(buf)
@@ -81,7 +80,7 @@ func Marshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// NewEncoder creates a new Encoder for the given writer
+// NewEncoder creates a new Encoder for the given writer.
 func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{
 		w:     w,
@@ -103,7 +102,7 @@ func (e *Encoder) Encode(geom orb.Geometry) error {
 
 	switch g := geom.(type) {
 	// nil values should not write any data. Empty sizes will still
-	// write and empty version of that type.
+	// write an empty version of that type.
 	case orb.MultiPoint:
 		if g == nil {
 			return nil
@@ -196,7 +195,7 @@ func NewDecoder(r io.Reader) *Decoder {
 	}
 }
 
-// Decode will decode the next geometry off of the steam.
+// Decode will decode the next geometry off of the stream.
 func (d *Decoder) Decode() (orb.Geometry, error) {
 	buf := make([]byte, 8)
 	order, typ, err := readByteOrderType(d.r, buf)
