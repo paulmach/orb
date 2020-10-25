@@ -8,6 +8,33 @@ import (
 	"github.com/paulmach/orb"
 )
 
+func unmarshalPolygon(order byteOrder, data []byte) (orb.Polygon, error) {
+	if len(data) < 4 {
+		return nil, ErrNotWKB
+	}
+	num := unmarshalUint32(order, data)
+	data = data[4:]
+
+	alloc := num
+	if alloc > maxMultiAlloc {
+		// invalid data can come in here and allocate tons of memory.
+		alloc = maxMultiAlloc
+	}
+	result := make(orb.Polygon, 0, alloc)
+
+	for i := 0; i < int(num); i++ {
+		ps, err := unmarshalPoints(order, data)
+		if err != nil {
+			return nil, err
+		}
+
+		data = data[16*len(ps)+4:]
+		result = append(result, orb.Ring(ps))
+	}
+
+	return result, nil
+}
+
 func readPolygon(r io.Reader, order byteOrder, buf []byte) (orb.Polygon, error) {
 	num, err := readUint32(r, order, buf[:4])
 	if err != nil {
@@ -56,6 +83,38 @@ func (e *Encoder) writePolygon(p orb.Polygon) error {
 		}
 	}
 	return nil
+}
+
+func unmarshalMultiPolygon(order byteOrder, data []byte) (orb.MultiPolygon, error) {
+	if len(data) < 4 {
+		return nil, ErrNotWKB
+	}
+	num := unmarshalUint32(order, data)
+	data = data[4:]
+
+	alloc := num
+	if alloc > maxMultiAlloc {
+		// invalid data can come in here and allocate tons of memory.
+		alloc = maxMultiAlloc
+	}
+	result := make(orb.MultiPolygon, 0, alloc)
+
+	for i := 0; i < int(num); i++ {
+		p, err := scanPolygon(data)
+		if err != nil {
+			return nil, err
+		}
+
+		l := 9
+		for _, r := range p {
+			l += 4 + 16*len(r)
+		}
+		data = data[l:]
+
+		result = append(result, p)
+	}
+
+	return result, nil
 }
 
 func readMultiPolygon(r io.Reader, order byteOrder, buf []byte) (orb.MultiPolygon, error) {

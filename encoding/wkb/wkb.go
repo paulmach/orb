@@ -179,13 +179,35 @@ type Decoder struct {
 }
 
 // Unmarshal will decode the type into a Geometry.
-func Unmarshal(b []byte) (orb.Geometry, error) {
-	g, err := NewDecoder(bytes.NewReader(b)).Decode()
-	if err == io.EOF || err == io.ErrUnexpectedEOF {
-		return nil, ErrNotWKB
+func Unmarshal(data []byte) (orb.Geometry, error) {
+	order, typ, err := unmarshalByteOrderType(data)
+	if err != nil {
+		return nil, err
 	}
 
-	return g, err
+	switch typ {
+	case pointType:
+		return unmarshalPoint(order, data[5:])
+	case multiPointType:
+		return unmarshalMultiPoint(order, data[5:])
+	case lineStringType:
+		return unmarshalLineString(order, data[5:])
+	case multiLineStringType:
+		return unmarshalMultiLineString(order, data[5:])
+	case polygonType:
+		return unmarshalPolygon(order, data[5:])
+	case multiPolygonType:
+		return unmarshalMultiPolygon(order, data[5:])
+	case geometryCollectionType:
+		g, err := NewDecoder(bytes.NewReader(data)).Decode()
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
+			return nil, ErrNotWKB
+		}
+
+		return g, err
+	}
+
+	return nil, ErrUnsupportedGeometry
 }
 
 // NewDecoder will create a new WKB decoder.
@@ -251,15 +273,33 @@ func readUint32(r io.Reader, order byteOrder, buf []byte) (uint32, error) {
 	if _, err := io.ReadFull(r, buf); err != nil {
 		return 0, err
 	}
+	return unmarshalUint32(order, buf), nil
+}
 
-	var val uint32
-	if order == littleEndian {
-		val = binary.LittleEndian.Uint32(buf)
-	} else {
-		val = binary.BigEndian.Uint32(buf)
+func unmarshalByteOrderType(buf []byte) (byteOrder, uint32, error) {
+	if len(buf) < 6 {
+		return 0, 0, ErrNotWKB
 	}
 
-	return val, nil
+	var order byteOrder
+	if buf[0] == 0 {
+		order = bigEndian
+	} else if buf[0] == 1 {
+		order = littleEndian
+	} else {
+		return 0, 0, ErrNotWKB
+	}
+
+	// the type which is 4 bytes
+	typ := unmarshalUint32(order, buf[1:])
+	return order, typ, nil
+}
+
+func unmarshalUint32(order byteOrder, buf []byte) uint32 {
+	if order == littleEndian {
+		return binary.LittleEndian.Uint32(buf)
+	}
+	return binary.BigEndian.Uint32(buf)
 }
 
 // geomLength helps to do preallocation during a marshal.

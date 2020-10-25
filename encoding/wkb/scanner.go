@@ -1,11 +1,13 @@
 package wkb
 
 import (
+	"bytes"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/paulmach/orb"
 )
@@ -217,17 +219,21 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 }
 
 func scanPoint(data []byte) (orb.Point, error) {
-	m, err := Unmarshal(data)
+	order, typ, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return orb.Point{}, err
 	}
 
-	switch p := m.(type) {
-	case orb.Point:
-		return p, nil
-	case orb.MultiPoint:
-		if len(p) == 1 {
-			return p[0], nil
+	switch typ {
+	case pointType:
+		return unmarshalPoint(order, data[5:])
+	case multiPointType:
+		mp, err := unmarshalMultiPoint(order, data[5:])
+		if err != nil {
+			return orb.Point{}, err
+		}
+		if len(mp) == 1 {
+			return mp[0], nil
 		}
 	}
 
@@ -251,17 +257,21 @@ func scanMultiPoint(data []byte) (orb.MultiPoint, error) {
 }
 
 func scanLineString(data []byte) (orb.LineString, error) {
-	m, err := Unmarshal(data)
+	order, typ, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return nil, err
 	}
 
-	switch p := m.(type) {
-	case orb.LineString:
-		return p, nil
-	case orb.MultiLineString:
-		if len(p) == 1 {
-			return p[0], nil
+	switch typ {
+	case lineStringType:
+		return unmarshalLineString(order, data[5:])
+	case multiLineStringType:
+		mls, err := unmarshalMultiLineString(order, data[5:])
+		if err != nil {
+			return nil, err
+		}
+		if len(mls) == 1 {
+			return mls[0], nil
 		}
 	}
 
@@ -269,33 +279,42 @@ func scanLineString(data []byte) (orb.LineString, error) {
 }
 
 func scanMultiLineString(data []byte) (orb.MultiLineString, error) {
-	m, err := Unmarshal(data)
+	order, typ, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return nil, err
 	}
 
-	switch ls := m.(type) {
-	case orb.LineString:
+	switch typ {
+	case lineStringType:
+		ls, err := unmarshalLineString(order, data[5:])
+		if err != nil {
+			return nil, err
+		}
+
 		return orb.MultiLineString{ls}, nil
-	case orb.MultiLineString:
-		return ls, nil
+	case multiLineStringType:
+		return unmarshalMultiLineString(order, data[5:])
 	}
 
 	return nil, ErrIncorrectGeometry
 }
 
 func scanPolygon(data []byte) (orb.Polygon, error) {
-	m, err := Unmarshal(data)
+	order, typ, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return nil, err
 	}
 
-	switch p := m.(type) {
-	case orb.Polygon:
-		return p, nil
-	case orb.MultiPolygon:
-		if len(p) == 1 {
-			return p[0], nil
+	switch typ {
+	case polygonType:
+		return unmarshalPolygon(order, data[5:])
+	case multiPolygonType:
+		mp, err := unmarshalMultiPolygon(order, data[5:])
+		if err != nil {
+			return nil, err
+		}
+		if len(mp) == 1 {
+			return mp[0], nil
 		}
 	}
 
@@ -303,23 +322,31 @@ func scanPolygon(data []byte) (orb.Polygon, error) {
 }
 
 func scanMultiPolygon(data []byte) (orb.MultiPolygon, error) {
-	m, err := Unmarshal(data)
+	order, typ, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return nil, err
 	}
 
-	switch p := m.(type) {
-	case orb.Polygon:
+	switch typ {
+	case polygonType:
+		p, err := unmarshalPolygon(order, data[5:])
+		if err != nil {
+			return nil, err
+		}
 		return orb.MultiPolygon{p}, nil
-	case orb.MultiPolygon:
-		return p, nil
+	case multiPolygonType:
+		return unmarshalMultiPolygon(order, data[5:])
 	}
 
 	return nil, ErrIncorrectGeometry
 }
 
 func scanCollection(data []byte) (orb.Collection, error) {
-	m, err := Unmarshal(data)
+	m, err := NewDecoder(bytes.NewReader(data)).Decode()
+	if err == io.EOF || err == io.ErrUnexpectedEOF {
+		return nil, ErrNotWKB
+	}
+
 	if err != nil {
 		return nil, err
 	}

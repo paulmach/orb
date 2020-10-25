@@ -19,8 +19,9 @@ func readCollection(r io.Reader, order byteOrder, buf []byte) (orb.Collection, e
 	}
 	result := make(orb.Collection, 0, alloc)
 
+	d := NewDecoder(r)
 	for i := 0; i < int(num); i++ {
-		geom, err := NewDecoder(r).Decode()
+		geom, err := d.Decode()
 		if err != nil {
 			return nil, err
 		}
