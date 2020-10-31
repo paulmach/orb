@@ -8,6 +8,8 @@ import (
 	"github.com/paulmach/orb"
 )
 
+var SRID = []byte{215, 15, 0, 0}
+
 func TestScanNil(t *testing.T) {
 	s := Scanner(nil)
 	err := s.Scan(testPointData)
@@ -93,8 +95,18 @@ func TestScanPoint(t *testing.T) {
 			expected: testPoint,
 		},
 		{
+			name:     "point with MySQL SRID",
+			data:     append(SRID, testPointData...),
+			expected: testPoint,
+		},
+		{
 			name:     "single multi-point",
 			data:     testMultiPointSingleData,
+			expected: testMultiPointSingle[0],
+		},
+		{
+			name:     "single multi-point with MySQL SRID",
+			data:     append(SRID, testMultiPointSingleData...),
 			expected: testMultiPointSingle[0],
 		},
 	}
@@ -152,6 +164,11 @@ func TestScanPoint_Errors(t *testing.T) {
 			data: testLineStringData,
 			err:  ErrIncorrectGeometry,
 		},
+		{
+			name: "incorrect geometry with MySQL SRID",
+			data: append(SRID, testLineStringData...),
+			err:  ErrIncorrectGeometry,
+		},
 	}
 
 	for _, tc := range cases {
@@ -183,6 +200,11 @@ func TestScanMultiPoint(t *testing.T) {
 		{
 			name:     "multi point",
 			data:     testMultiPointData,
+			expected: testMultiPoint,
+		},
+		{
+			name:     "multi point with MySQL SRID",
+			data:     append(SRID, testMultiPointData...),
 			expected: testMultiPoint,
 		},
 		{
@@ -270,6 +292,11 @@ func TestScanLineString(t *testing.T) {
 		{
 			name:     "line string",
 			data:     testLineStringData,
+			expected: testLineString,
+		},
+		{
+			name:     "line string with MySQL SRID",
+			data:     append(SRID, testLineStringData...),
 			expected: testLineString,
 		},
 		{
@@ -362,6 +389,11 @@ func TestScanMultiLineString(t *testing.T) {
 		{
 			name:     "multi line string",
 			data:     testMultiLineStringData,
+			expected: testMultiLineString,
+		},
+		{
+			name:     "multi line string with MySQL SRID",
+			data:     append(SRID, testMultiLineStringData...),
 			expected: testMultiLineString,
 		},
 		{
@@ -534,6 +566,11 @@ func TestScanPolygon(t *testing.T) {
 			expected: testPolygon,
 		},
 		{
+			name:     "polygon with MySQL SRID",
+			data:     append(SRID, testPolygonData...),
+			expected: testPolygon,
+		},
+		{
 			name:     "single multi polygon",
 			data:     testMultiPolygonSingleData,
 			expected: testMultiPolygonSingle[0],
@@ -618,6 +655,11 @@ func TestScanMultiPolygon(t *testing.T) {
 		{
 			name:     "multi polygon",
 			data:     testMultiPolygonData,
+			expected: testMultiPolygon,
+		},
+		{
+			name:     "multi polygon with MySQL SRID",
+			data:     append(SRID, testMultiPolygonData...),
 			expected: testMultiPolygon,
 		},
 		{

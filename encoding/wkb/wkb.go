@@ -180,7 +180,7 @@ type Decoder struct {
 
 // Unmarshal will decode the type into a Geometry.
 func Unmarshal(data []byte) (orb.Geometry, error) {
-	order, typ, err := unmarshalByteOrderType(data)
+	order, typ, data, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return nil, err
 	}
@@ -276,7 +276,28 @@ func readUint32(r io.Reader, order byteOrder, buf []byte) (uint32, error) {
 	return unmarshalUint32(order, buf), nil
 }
 
-func unmarshalByteOrderType(buf []byte) (byteOrder, uint32, error) {
+func unmarshalByteOrderType(buf []byte) (byteOrder, uint32, []byte, error) {
+	order, typ, err := byteOrderType(buf)
+	if err == nil {
+		return order, typ, buf, nil
+	}
+
+	if len(buf) < 6 {
+		return 0, 0, nil, err
+	}
+
+	// The prefix is incorrect, let's see if this is data in
+	// MySQL's SRID+WKB format. So truncate the SRID prefix.
+	buf = buf[4:]
+	order, typ, err = byteOrderType(buf)
+	if err != nil || typ > 7 {
+		return 0, 0, nil, ErrNotWKB
+	}
+
+	return order, typ, buf, nil
+}
+
+func byteOrderType(buf []byte) (byteOrder, uint32, error) {
 	if len(buf) < 6 {
 		return 0, 0, ErrNotWKB
 	}

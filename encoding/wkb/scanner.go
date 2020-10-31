@@ -73,6 +73,11 @@ type GeometryScanner struct {
 //	} else {
 //	  // NULL value
 //	}
+//
+// Scanning directly from MySQL columns is supported. By default MySQL returns geometry
+// data as WKB but prefixed with a 4 byte SRID. To support this, if the data is not
+// valid WKB, the code will strip the first 4 bytes and try again.
+// This works for most use cases.
 func Scanner(g interface{}) *GeometryScanner {
 	return &GeometryScanner{g: g}
 }
@@ -219,7 +224,7 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 }
 
 func scanPoint(data []byte) (orb.Point, error) {
-	order, typ, err := unmarshalByteOrderType(data)
+	order, typ, data, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return orb.Point{}, err
 	}
@@ -257,7 +262,7 @@ func scanMultiPoint(data []byte) (orb.MultiPoint, error) {
 }
 
 func scanLineString(data []byte) (orb.LineString, error) {
-	order, typ, err := unmarshalByteOrderType(data)
+	order, typ, data, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +284,7 @@ func scanLineString(data []byte) (orb.LineString, error) {
 }
 
 func scanMultiLineString(data []byte) (orb.MultiLineString, error) {
-	order, typ, err := unmarshalByteOrderType(data)
+	order, typ, data, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return nil, err
 	}
@@ -300,7 +305,7 @@ func scanMultiLineString(data []byte) (orb.MultiLineString, error) {
 }
 
 func scanPolygon(data []byte) (orb.Polygon, error) {
-	order, typ, err := unmarshalByteOrderType(data)
+	order, typ, data, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return nil, err
 	}
@@ -322,7 +327,7 @@ func scanPolygon(data []byte) (orb.Polygon, error) {
 }
 
 func scanMultiPolygon(data []byte) (orb.MultiPolygon, error) {
-	order, typ, err := unmarshalByteOrderType(data)
+	order, typ, data, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return nil, err
 	}

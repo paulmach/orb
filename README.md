@@ -136,6 +136,11 @@ For example:
 
 	db.Exec("INSERT INTO table (point_column) VALUES (ST_GeomFromWKB(?))", wkb.Value(p))
 
+Scanning directly from MySQL columns is supported. By default MySQL returns geometry
+data as WKB but prefixed with a 4 byte SRID. To support this, if the data is not
+valid WKB, the code will strip the first 4 bytes, the SRID, and try again.
+This works for most use cases.
+
 ## List of sub-package utilities
 
 * [`clip`](clip) - clipping geometry to a bounding box

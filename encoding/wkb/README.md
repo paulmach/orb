@@ -38,3 +38,8 @@ If you don't know the type of the geometry try something like
 	case orb.Point:
 	case orb.LineString:
 	}
+
+Scanning directly from MySQL columns is supported. By default MySQL returns geometry
+data as WKB but prefixed with a 4 byte SRID. To support this, if the data is not
+valid WKB, the code will strip the first 4 bytes, the SRID, and try again.
+This works for most use cases.
