@@ -3,6 +3,7 @@ package geojson
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"strings"
 	"testing"
 
@@ -273,5 +274,44 @@ func TestMarshalRing(t *testing.T) {
 	if !bytes.Equal(data, []byte(`{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[0,0],[1,1],[2,1],[0,0]]]},"properties":null}`)) {
 		t.Errorf("data not correct")
 		t.Logf("%v", string(data))
+	}
+}
+
+func BenchmarkFeatureMarshalJSON(b *testing.B) {
+	data, err := ioutil.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
+	if err != nil {
+		b.Fatalf("could not open file: %v", err)
+	}
+
+	tile := map[string]*FeatureCollection{}
+	err = json.Unmarshal(data, &tile)
+	if err != nil {
+		b.Fatalf("could not unmarshal: %v", err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := json.Marshal(tile)
+		if err != nil {
+			b.Fatalf("marshal error: %v", err)
+		}
+	}
+}
+
+func BenchmarkFeatureUnmarshalJSON(b *testing.B) {
+	data, err := ioutil.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
+	if err != nil {
+		b.Fatalf("could not open file: %v", err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		tile := map[string]*FeatureCollection{}
+		err = json.Unmarshal(data, &tile)
+		if err != nil {
+			b.Fatalf("could not unmarshal: %v", err)
+		}
 	}
 }
