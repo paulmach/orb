@@ -14,12 +14,12 @@ The package also provides helper functions such as `UnmarshalFeatureCollection` 
 ```go
 rawJSON := []byte(`
   { "type": "FeatureCollection",
-	"features": [
-	  { "type": "Feature",
-		"geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
-		"properties": {"prop0": "value0"}
-	  }
-	]
+    "features": [
+      { "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+        "properties": {"prop0": "value0"}
+      }
+    ]
   }`)
 
 fc, _ := geojson.UnmarshalFeatureCollection(rawJSON)
@@ -43,6 +43,30 @@ rawJSON, _ := fc.MarshalJSON()
 
 // or
 blob, _ := json.Marshal(fc)
+```
+
+#### Foreign/extra members in a feature collection
+
+```go
+rawJSON := []byte(`
+  { "type": "FeatureCollection",
+    "generator": "myapp",
+    "timestamp": "2020-06-15T01:02:03Z",
+    "features": [
+      { "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+        "properties": {"prop0": "value0"}
+      }
+    ]
+  }`)
+
+fc, _ := geojson.UnmarshalFeatureCollection(rawJSON)
+
+fc.ExtraMembers["generator"] // == "myApp"
+fc.ExtraMembers["timestamp"] // == "2020-06-15T01:02:03Z"
+
+// Marshalling will include values in `ExtraMembers` in the
+// base featureCollection object.
 ```
 
 ## Feature Properties
