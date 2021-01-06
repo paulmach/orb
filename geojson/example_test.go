@@ -28,29 +28,22 @@ func ExampleFeature_Point() {
 
 func ExampleFeatureCollection_foreignMembers() {
 	rawJSON := []byte(`
-  { "type": "FeatureCollection",
-	"features": [
-	  { "type": "Feature",
-		"geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
-		"properties": {"prop0": "value0"}
-	  }
-	],
-	"title": "Title as Foreign Member"
-  }`)
+	  { "type": "FeatureCollection",
+	    "features": [
+	      { "type": "Feature",
+	        "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+	        "properties": {"prop0": "value0"}
+	      }
+	    ],
+	    "title": "Title as Foreign Member"
+	  }`)
 
-	type MyFeatureCollection struct {
-		geojson.FeatureCollection
-		Title string `json:"title"`
-	}
-
-	fc := &MyFeatureCollection{}
+	fc := geojson.NewFeatureCollection()
 	json.Unmarshal(rawJSON, &fc)
 
-	fmt.Println(fc.FeatureCollection.Features[0].Geometry)
 	fmt.Println(fc.Features[0].Geometry)
-	fmt.Println(fc.Title)
+	fmt.Println(fc.ExtraMembers["title"])
 	// Output:
-	// [102 0.5]
 	// [102 0.5]
 	// Title as Foreign Member
 }
@@ -120,7 +113,6 @@ func ExampleFeatureCollection_MarshalJSON() {
 
 	// Output:
 	// {
-	//  "type": "FeatureCollection",
 	//  "features": [
 	//   {
 	//    "type": "Feature",
@@ -133,6 +125,7 @@ func ExampleFeatureCollection_MarshalJSON() {
 	//    },
 	//    "properties": null
 	//   }
-	//  ]
+	//  ],
+	//  "type": "FeatureCollection"
 	// }
 }

@@ -188,3 +188,34 @@ func TestFeatureCollectionMarshalValue(t *testing.T) {
 		t.Errorf("json should set features object to at least empty array")
 	}
 }
+
+func TestFeatureCollectionMarshalJSON_extraMembers(t *testing.T) {
+	rawJSON := `
+	  { "type": "FeatureCollection",
+		"foo": "bar",
+	    "features": [
+	      { "type": "Feature",
+	        "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+	        "properties": {"prop0": "value0"}
+	      }
+	     ]
+	  }`
+
+	fc, err := UnmarshalFeatureCollection([]byte(rawJSON))
+	if err != nil {
+		t.Fatalf("should unmarshal feature collection without issue, err %v", err)
+	}
+
+	if v := fc.ExtraMembers.MustString("foo", ""); v != "bar" {
+		t.Errorf("missing extra: foo: %v", v)
+	}
+
+	data, err := fc.MarshalJSON()
+	if err != nil {
+		t.Fatalf("unable to marshal: %v", err)
+	}
+
+	if !bytes.Contains(data, []byte(`"foo":"bar"`)) {
+		t.Fatalf("extras not in marshalled data")
+	}
+}

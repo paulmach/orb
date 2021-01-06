@@ -1,7 +1,8 @@
 /*
-Package geojson is a library for encoding and decoding GeoJSON into Go structs using
-the geometries in the orb package. Supports both the json.Marshaler and json.Unmarshaler
-interfaces as well as helper functions such as `UnmarshalFeatureCollection` and `UnmarshalFeature`.
+Package geojson is a library for encoding and decoding GeoJSON into Go structs
+using the geometries in the orb package. Supports both the json.Marshaler and
+json.Unmarshaler interfaces as well as helper functions such as
+`UnmarshalFeatureCollection` and `UnmarshalFeature`.
 */
 package geojson
 
@@ -17,6 +18,10 @@ type FeatureCollection struct {
 	Type     string     `json:"type"`
 	BBox     BBox       `json:"bbox,omitempty"`
 	Features []*Feature `json:"features"`
+
+	// ExtraMembers can be used to encoded/decode extra key/members in
+	// the base of the feature collection.
+	ExtraMembers Properties `json:"-"`
 }
 
 // NewFeatureCollection creates and initializes a new feature collection.
@@ -37,31 +42,82 @@ func (fc *FeatureCollection) Append(feature *Feature) *FeatureCollection {
 // It will handle the encoding of all the child features and geometries.
 // Alternately one can call json.Marshal(fc) directly for the same result.
 func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
-	type tempFC FeatureCollection
-
-	c := tempFC{
-		Type:     featureCollection,
-		BBox:     fc.BBox,
-		Features: fc.Features,
+	var tmp map[string]interface{}
+	if fc.ExtraMembers != nil {
+		tmp = fc.ExtraMembers.Clone()
+	} else {
+		tmp = make(map[string]interface{}, 3)
 	}
 
-	if c.Features == nil {
-		c.Features = []*Feature{}
+	tmp["type"] = featureCollection
+	if fc.BBox != nil {
+		tmp["bbox"] = fc.BBox
 	}
-	return json.Marshal(c)
+	if fc.Features == nil {
+		tmp["features"] = []*Feature{}
+	} else {
+		tmp["features"] = fc.Features
+	}
+
+	return json.Marshal(tmp)
+}
+
+// UnmarshalJSON decodes the data into a GeoJSON feature collection.
+func (fc *FeatureCollection) UnmarshalJSON(data []byte) error {
+	tmp := make(map[string]json.RawMessage, 4)
+
+	err := json.Unmarshal(data, &tmp)
+	if err != nil {
+		return err
+	}
+
+	*fc = FeatureCollection{}
+	for key, value := range tmp {
+		switch key {
+		case "type":
+			err := json.Unmarshal(value, &fc.Type)
+			if err != nil {
+				return err
+			}
+		case "bbox":
+			err := json.Unmarshal(value, &fc.BBox)
+			if err != nil {
+				return err
+			}
+		case "features":
+			err := json.Unmarshal(value, &fc.Features)
+			if err != nil {
+				return err
+			}
+		default:
+			if fc.ExtraMembers == nil {
+				fc.ExtraMembers = Properties{}
+			}
+
+			var val interface{}
+			err := json.Unmarshal(value, &val)
+			if err != nil {
+				return err
+			}
+			fc.ExtraMembers[key] = val
+		}
+	}
+
+	if fc.Type != featureCollection {
+		return fmt.Errorf("geojson: not a feature collection: type=%s", fc.Type)
+	}
+
+	return nil
 }
 
 // UnmarshalFeatureCollection decodes the data into a GeoJSON feature collection.
 // Alternately one can call json.Unmarshal(fc) directly for the same result.
 func UnmarshalFeatureCollection(data []byte) (*FeatureCollection, error) {
 	fc := &FeatureCollection{}
-	err := json.Unmarshal(data, fc)
+
+	err := fc.UnmarshalJSON(data)
 	if err != nil {
 		return nil, err
-	}
-
-	if fc.Type != featureCollection {
-		return nil, fmt.Errorf("geojson: not a feature collection: type=%s", fc.Type)
 	}
 
 	return fc, nil
