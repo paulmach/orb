@@ -20,7 +20,8 @@ type FeatureCollection struct {
 	Features []*Feature `json:"features"`
 
 	// ExtraMembers can be used to encoded/decode extra key/members in
-	// the base of the feature collection.
+	// the base of the feature collection. Note that keys of "type", "bbox"
+	// and "features" will not work as those are reserved by the GeoJSON spec.
 	ExtraMembers Properties `json:"-"`
 }
 
@@ -41,6 +42,8 @@ func (fc *FeatureCollection) Append(feature *Feature) *FeatureCollection {
 // MarshalJSON converts the feature collection object into the proper JSON.
 // It will handle the encoding of all the child features and geometries.
 // Alternately one can call json.Marshal(fc) directly for the same result.
+// Items in the ExtraMembers map will be included in the base of the
+// feature collection object.
 func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
 	var tmp map[string]interface{}
 	if fc.ExtraMembers != nil {
@@ -50,6 +53,7 @@ func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
 	}
 
 	tmp["type"] = featureCollection
+	delete(tmp, "bbox")
 	if fc.BBox != nil {
 		tmp["bbox"] = fc.BBox
 	}
@@ -63,6 +67,7 @@ func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON decodes the data into a GeoJSON feature collection.
+// Extra/foreign members will be put into the `ExtraMembers` attribute.
 func (fc *FeatureCollection) UnmarshalJSON(data []byte) error {
 	tmp := make(map[string]json.RawMessage, 4)
 

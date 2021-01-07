@@ -43,7 +43,60 @@ func ExampleFeatureCollection_foreignMembers() {
 
 	fmt.Println(fc.Features[0].Geometry)
 	fmt.Println(fc.ExtraMembers["title"])
+
+	data, _ := json.Marshal(fc)
+	fmt.Println(string(data))
+
 	// Output:
+	// [102 0.5]
+	// Title as Foreign Member
+	// {"features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[102,0.5]},"properties":{"prop0":"value0"}}],"title":"Title as Foreign Member","type":"FeatureCollection"}
+}
+
+// MyFeatureCollection is a depricated/no longer supported way to extract
+// foreign/extra members from a feature collection. Now an UnmarshalJSON
+// method, like below, is required for it to work.
+type MyFeatureCollection struct {
+	geojson.FeatureCollection
+	Title string `json:"title"`
+}
+
+// UnmarshalJSON implemented as below is now required for the extra members
+// to be decoded directly into the type.
+func (fc *MyFeatureCollection) UnmarshalJSON(data []byte) error {
+	err := json.Unmarshal(data, &fc.FeatureCollection)
+	if err != nil {
+		return err
+	}
+
+	fc.Title = fc.ExtraMembers.MustString("title", "")
+	return nil
+}
+
+func ExampleFeatureCollection_foreignMembersCustom() {
+	// Note: this approach to handling foreign/extra members requires
+	// implementing an `UnmarshalJSON` method on the new type.
+	// See MyFeatureCollection type and its UnmarshalJSON function above.
+
+	rawJSON := []byte(`
+	  { "type": "FeatureCollection",
+	    "features": [
+	      { "type": "Feature",
+	        "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+	        "properties": {"prop0": "value0"}
+	      }
+	    ],
+	    "title": "Title as Foreign Member"
+	  }`)
+
+	fc := &MyFeatureCollection{}
+	json.Unmarshal(rawJSON, &fc)
+
+	fmt.Println(fc.FeatureCollection.Features[0].Geometry)
+	fmt.Println(fc.Features[0].Geometry)
+	fmt.Println(fc.Title)
+	// Output:
+	// [102 0.5]
 	// [102 0.5]
 	// Title as Foreign Member
 }
