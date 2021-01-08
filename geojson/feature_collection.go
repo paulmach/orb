@@ -69,7 +69,7 @@ func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON decodes the data into a GeoJSON feature collection.
 // Extra/foreign members will be put into the `ExtraMembers` attribute.
 func (fc *FeatureCollection) UnmarshalJSON(data []byte) error {
-	tmp := make(map[string]json.RawMessage, 4)
+	tmp := make(map[string]nocopyRawMessage, 4)
 
 	err := json.Unmarshal(data, &tmp)
 	if err != nil {

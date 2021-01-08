@@ -57,7 +57,7 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 // Alternately one can call json.Unmarshal(f) directly for the same result.
 func UnmarshalFeature(data []byte) (*Feature, error) {
 	f := &Feature{}
-	err := json.Unmarshal(data, f)
+	err := f.UnmarshalJSON(data)
 	if err != nil {
 		return nil, err
 	}
