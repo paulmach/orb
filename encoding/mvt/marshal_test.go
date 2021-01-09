@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/encoding/mvt/vectortile"
 	"github.com/paulmach/orb/geojson"
 	"github.com/paulmach/orb/maptile"
 )
@@ -481,27 +480,6 @@ func BenchmarkUnmarshal(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		Unmarshal(data)
-	}
-}
-
-func BenchmarkDecode(b *testing.B) {
-	layers := NewLayers(loadGeoJSON(b, maptile.New(17896, 24449, 16)))
-	data, err := Marshal(layers)
-	if err != nil {
-		b.Fatalf("marshal error: %v", err)
-	}
-
-	vt := &vectortile.Tile{}
-	err = vt.Unmarshal(data)
-	if err != nil {
-		b.Fatalf("unmarshal error: %v", err)
-	}
-
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		decode(vt)
 	}
 }
 
