@@ -1,10 +1,22 @@
 package geojson
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/paulmach/orb"
 )
+
+func TestBBox(t *testing.T) {
+	ls := orb.LineString{{1, 3}, {0, 4}}
+	b := ls.Bound()
+
+	bbox := NewBBox(b)
+	expected := BBox{0, 3, 1, 4}
+	if !reflect.DeepEqual(bbox, expected) {
+		t.Errorf("incorrect result: %v != %v", bbox, expected)
+	}
+}
 
 func TestBBoxValid(t *testing.T) {
 	cases := []struct {

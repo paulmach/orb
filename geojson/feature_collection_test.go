@@ -122,6 +122,55 @@ func TestUnmarshalFeatureCollection(t *testing.T) {
 	}
 }
 
+func TestUnmarshalFeatureCollection_errors(t *testing.T) {
+	t.Run("type not a string", func(t *testing.T) {
+		rawJSON := `
+		  { "type": { "foo":"bar" },
+		    "features": [
+		      { "type": "Feature",
+		        "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+		        "properties": {"prop0": "value0"}
+		      }
+		     ]
+		  }`
+
+		_, err := UnmarshalFeatureCollection([]byte(rawJSON))
+		if _, ok := err.(*json.UnmarshalTypeError); !ok {
+			t.Fatalf("wrong error: %T: %v", err, err)
+		}
+	})
+
+	t.Run("bbox invalid", func(t *testing.T) {
+		rawJSON := `
+		  { "type": "FeatureCollection",
+		    "bbox": { "foo":"bar" },
+		    "features": [
+		      { "type": "Feature",
+		        "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+		        "properties": {"prop0": "value0"}
+		      }
+		     ]
+		  }`
+
+		_, err := UnmarshalFeatureCollection([]byte(rawJSON))
+		if _, ok := err.(*json.UnmarshalTypeError); !ok {
+			t.Fatalf("wrong error: %T: %v", err, err)
+		}
+	})
+
+	t.Run("features invalid", func(t *testing.T) {
+		rawJSON := `
+		  { "type": "FeatureCollection",
+		    "features": { "foo":"bar" }
+		  }`
+
+		_, err := UnmarshalFeatureCollection([]byte(rawJSON))
+		if _, ok := err.(*json.UnmarshalTypeError); !ok {
+			t.Fatalf("wrong error: %T: %v", err, err)
+		}
+	})
+}
+
 func TestFeatureCollectionMarshalJSON(t *testing.T) {
 	fc := NewFeatureCollection()
 	blob, err := fc.MarshalJSON()
