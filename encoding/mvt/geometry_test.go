@@ -7,6 +7,7 @@ import (
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
+	"github.com/paulmach/protoscan"
 )
 
 func TestGeometry_Point(t *testing.T) {
@@ -322,7 +323,8 @@ func compareGeometry(
 		t.Errorf("different encoding")
 	}
 
-	result, err := decodeGeometry(geomType, input)
+	d := &decoder{geom: sliceToIterator(input)}
+	result, err := d.Geometry(geomType)
 	if err != nil {
 		t.Fatalf("decode error: %v", err)
 	}
@@ -336,4 +338,32 @@ func compareGeometry(
 		t.Logf("%v", expected)
 		t.Errorf("geometry not equal")
 	}
+}
+
+func sliceToIterator(vals []uint32) *protoscan.Iterator {
+	feature := &vectortile.Tile_Feature{
+		Geometry: vals,
+	}
+
+	data, err := feature.Marshal()
+	if err != nil {
+		panic(err)
+	}
+
+	msg := protoscan.New(data)
+	for msg.Next() {
+		switch msg.FieldNumber() {
+		case 4:
+			iter, err := msg.Iterator(nil)
+			if err != nil {
+				panic(err)
+			}
+
+			return iter
+		default:
+			msg.Skip()
+		}
+	}
+
+	panic("unreachable")
 }
