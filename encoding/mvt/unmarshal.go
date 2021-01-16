@@ -55,13 +55,17 @@ func (d *decoder) Reset() {
 func unmarshalTile(data []byte) (Layers, error) {
 	d := &decoder{}
 
-	var layers Layers
-	msg := protoscan.New(data)
+	var (
+		layers Layers
+		m      *protoscan.Message
+		err    error
+	)
 
+	msg := protoscan.New(data)
 	for msg.Next() {
 		switch msg.FieldNumber() {
 		case 3:
-			m, err := msg.Message()
+			m, err = msg.Message(m)
 			if err != nil {
 				return nil, err
 			}
@@ -85,8 +89,9 @@ func unmarshalTile(data []byte) (Layers, error) {
 }
 
 func (d *decoder) Layer(msg *protoscan.Message) (*Layer, error) {
-	d.Reset()
+	var err error
 
+	d.Reset()
 	layer := &Layer{
 		Version: vectortile.Default_Tile_Layer_Version,
 		Extent:  vectortile.Default_Tile_Layer_Extent,
@@ -119,15 +124,9 @@ func (d *decoder) Layer(msg *protoscan.Message) (*Layer, error) {
 			}
 			d.keys = append(d.keys, s)
 		case 4: // values
-			data, err := msg.MessageData()
+			d.valMsg, err = msg.Message(d.valMsg)
 			if err != nil {
 				return nil, err
-			}
-
-			if d.valMsg == nil {
-				d.valMsg = protoscan.New(data)
-			} else {
-				d.valMsg.Reset(data)
 			}
 
 			v, err := decodeValueMsg(d.valMsg)
