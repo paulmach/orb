@@ -177,9 +177,13 @@ func TestUnmarshalFeature_missingGeometry(t *testing.T) {
 	t.Run("missing geometry", func(t *testing.T) {
 		rawJSON := `{ "type": "Feature" }`
 
-		_, err := UnmarshalFeature([]byte(rawJSON))
-		if err != ErrInvalidGeometry {
-			t.Fatalf("incorrect unmarshal error: %v", err)
+		f, err := UnmarshalFeature([]byte(rawJSON))
+		if err != nil {
+			t.Fatalf("should not error: %v", err)
+		}
+
+		if f == nil {
+			t.Fatalf("feature should not be nil")
 		}
 	})
 }
