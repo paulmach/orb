@@ -2,12 +2,12 @@ package mvt
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -167,7 +167,7 @@ func (kve *keyValueEncoder) Value(v interface{}) (uint32, error) {
 	if !reflect.TypeOf(v).Comparable() {
 		data, err := json.Marshal(v)
 		if err != nil {
-			return 0, errors.Errorf("uncomparable: %T", v)
+			return 0, fmt.Errorf("uncomparable: %T", v)
 		}
 
 		v = string(data)
@@ -234,7 +234,7 @@ func encodeValue(v interface{}) (*vectortile.Tile_Value, error) {
 	case bool:
 		tv.BoolValue = &t
 	default:
-		return nil, errors.Errorf("unable to encode value of type %T: %v", v, v)
+		return nil, fmt.Errorf("unable to encode value of type %T: %v", v, v)
 	}
 
 	return tv, nil

@@ -10,7 +10,6 @@ import (
 	"github.com/paulmach/orb/geojson"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/pkg/errors"
 )
 
 // MarshalGzipped will marshal the layers into Mapbox Vector Tile format
@@ -27,12 +26,12 @@ func MarshalGzipped(layers Layers) ([]byte, error) {
 
 	_, err = gzwriter.Write(data)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to write gz data")
+		return nil, err
 	}
 
 	err = gzwriter.Close()
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to close gzwriter")
+		return nil, err
 	}
 
 	return buf.Bytes(), nil
@@ -58,12 +57,12 @@ func Marshal(layers Layers) ([]byte, error) {
 		for i, f := range l.Features {
 			t, g, err := encodeGeometry(f.Geometry)
 			if err != nil {
-				return nil, errors.WithMessage(err, fmt.Sprintf("layer %s: feature %d: error encoding geometry", l.Name, i))
+				return nil, fmt.Errorf("layer %s: feature %d: error encoding geometry: %v", l.Name, i, err)
 			}
 
 			tags, err := encodeProperties(kve, f.Properties)
 			if err != nil {
-				return nil, errors.WithMessage(err, fmt.Sprintf("layer %s: feature %d: error encoding properties", l.Name, i))
+				return nil, fmt.Errorf("layer %s: feature %d: error encoding properties: %v", l.Name, i, err)
 			}
 
 			layer.Features = append(layer.Features, &vectortile.Tile_Feature{
@@ -89,7 +88,7 @@ func encodeProperties(kve *keyValueEncoder, properties geojson.Properties) ([]ui
 		ki := kve.Key(k)
 		vi, err := kve.Value(v)
 		if err != nil {
-			return nil, errors.WithMessage(err, fmt.Sprintf("property %s", k))
+			return nil, fmt.Errorf("property %s: %v", k, err)
 		}
 
 		tags = append(tags, ki, vi)

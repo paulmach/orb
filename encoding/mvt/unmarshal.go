@@ -3,13 +3,14 @@ package mvt
 import (
 	"bytes"
 	"compress/gzip"
+	"errors"
+	"fmt"
 	"io/ioutil"
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
 	"github.com/paulmach/orb/geojson"
 	"github.com/paulmach/protoscan"
-	"github.com/pkg/errors"
 )
 
 // UnmarshalGzipped takes gzipped Mapbox Vector Tile (MVT) data and unzips it
@@ -17,12 +18,12 @@ import (
 func UnmarshalGzipped(data []byte) (Layers, error) {
 	gzreader, err := gzip.NewReader(bytes.NewBuffer(data))
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to create gzreader")
+		return nil, fmt.Errorf("failed to create gzreader: %v", err)
 	}
 
 	decoded, err := ioutil.ReadAll(gzreader)
 	if err != nil {
-		return nil, errors.WithMessage(err, "failed to unzip")
+		return nil, fmt.Errorf("failed to unzip: %v", err)
 	}
 
 	return Unmarshal(decoded)
@@ -235,7 +236,7 @@ func (d *decoder) Geometry(geomType vectortile.Tile_GeomType) (orb.Geometry, err
 	gd := &geomDecoder{iter: d.geom, count: d.geom.Count(protoscan.WireTypeVarint)}
 
 	if gd.count < 2 {
-		return nil, errors.Errorf("geom is not long enough: %v", gd.count)
+		return nil, fmt.Errorf("geom is not long enough: %v", gd.count)
 	}
 
 	switch geomType {
@@ -247,7 +248,7 @@ func (d *decoder) Geometry(geomType vectortile.Tile_GeomType) (orb.Geometry, err
 		return gd.decodePolygon()
 	}
 
-	return nil, errors.Errorf("unknown geometry type: %v", geomType)
+	return nil, fmt.Errorf("unknown geometry type: %v", geomType)
 }
 
 // A geomDecoder holds state for geometry decoding.
@@ -392,7 +393,7 @@ func (gd *geomDecoder) cmdAndCount() (uint32, uint32, error) {
 
 	if cmd != closePath {
 		if v := gd.used + int(2*count); gd.count < v {
-			return 0, 0, errors.Errorf("data cut short: needed %d, have %d", v, gd.count)
+			return 0, 0, fmt.Errorf("data cut short: needed %d, have %d", v, gd.count)
 		}
 	}
 
