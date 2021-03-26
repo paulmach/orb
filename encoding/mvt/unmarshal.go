@@ -32,7 +32,12 @@ func UnmarshalGzipped(data []byte) (Layers, error) {
 // Unmarshal takes Mapbox Vector Tile (MVT) data and converts into a
 // set of layers, It does not project the coordinates.
 func Unmarshal(data []byte) (Layers, error) {
-	return unmarshalTile(data)
+	layers, err := unmarshalTile(data)
+	if err != nil && dataIsGZipped(data) {
+		return nil, errors.New("Failed to unmarshal the tile, data seems to be compressed in GZip format, try to use the UnmarshalGzipped method from this package")
+	}
+
+	return layers, err
 }
 
 // decoder is here to reuse objects to save allocations/memory.
@@ -449,4 +454,10 @@ func decodeValueMsg(msg *protoscan.Message) (interface{}, error) {
 	}
 
 	return nil, msg.Err()
+}
+
+// Check if data is GZipped by reading the "magic bytes"
+// Rarely this method can result in false positives
+func dataIsGZipped(data []byte) bool {
+	return (data[0] == 0x1F && data[1] == 0x8B)
 }
