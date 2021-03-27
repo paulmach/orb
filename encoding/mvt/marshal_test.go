@@ -157,6 +157,19 @@ func TestUnmarshal(t *testing.T) {
 	}
 }
 
+func TestUnmarshalGzippedTileWithRegularUnmarshalFunction(t *testing.T) {
+	t.Run("15-8956-12223", func(t *testing.T) {
+		tile := maptile.New(8956, 12223, 15)
+
+		_, err := Unmarshal(loadMVT(t, tile))
+
+		expectedError := "Failed to unmarshal the tile, data seems to be compressed in GZip format, try to use the UnmarshalGzipped method from this package"
+		if err.Error() != expectedError {
+			t.Fatal()
+		}
+	})
+}
+
 func tileEpsilon(tile maptile.Tile) (float64, float64) {
 	b := tile.Bound()
 	xEpsilon := (b.Max[0] - b.Min[0]) / 4096 * 2 // allowed error
