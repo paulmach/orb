@@ -13,6 +13,8 @@ import (
 	"github.com/paulmach/protoscan"
 )
 
+var ErrDataIsGZipped = errors.New("failed to unmarshal, data possibly gzipped")
+
 // UnmarshalGzipped takes gzipped Mapbox Vector Tile (MVT) data and unzips it
 // before decoding it into a set of layers, It does not project the coordinates.
 func UnmarshalGzipped(data []byte) (Layers, error) {
@@ -34,7 +36,7 @@ func UnmarshalGzipped(data []byte) (Layers, error) {
 func Unmarshal(data []byte) (Layers, error) {
 	layers, err := unmarshalTile(data)
 	if err != nil && dataIsGZipped(data) {
-		return nil, errors.New("Failed to unmarshal the tile, data seems to be compressed in GZip format, try to use the UnmarshalGzipped method from this package")
+		return nil, ErrDataIsGZipped
 	}
 
 	return layers, err

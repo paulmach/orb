@@ -163,8 +163,7 @@ func TestUnmarshalGzippedTileWithRegularUnmarshalFunction(t *testing.T) {
 
 		_, err := Unmarshal(loadMVT(t, tile))
 
-		expectedError := "Failed to unmarshal the tile, data seems to be compressed in GZip format, try to use the UnmarshalGzipped method from this package"
-		if err.Error() != expectedError {
+		if err != ErrDataIsGZipped {
 			t.Fatal()
 		}
 	})
