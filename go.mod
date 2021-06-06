@@ -1,8 +1,8 @@
 module github.com/paulmach/orb
 
-go 1.13
+go 1.15
 
 require (
-	github.com/gogo/protobuf v1.3.1
-	github.com/paulmach/protoscan v0.2.0
+	github.com/gogo/protobuf v1.3.2
+	github.com/paulmach/protoscan v0.2.1-0.20210522164731-4e53c6875432
 )
