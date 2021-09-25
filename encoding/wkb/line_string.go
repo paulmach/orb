@@ -1,6 +1,7 @@
 package wkb
 
 import (
+	"encoding/binary"
 	"errors"
 	"io"
 	"math"
@@ -8,7 +9,7 @@ import (
 	"github.com/paulmach/orb"
 )
 
-func unmarshalLineString(order byteOrder, data []byte) (orb.LineString, error) {
+func unmarshalLineString(order binary.ByteOrder, data []byte) (orb.LineString, error) {
 	ps, err := unmarshalPoints(order, data)
 	if err != nil {
 		return nil, err
@@ -17,7 +18,7 @@ func unmarshalLineString(order byteOrder, data []byte) (orb.LineString, error) {
 	return orb.LineString(ps), nil
 }
 
-func readLineString(r io.Reader, order byteOrder, buf []byte) (orb.LineString, error) {
+func readLineString(r io.Reader, order binary.ByteOrder, buf []byte) (orb.LineString, error) {
 	num, err := readUint32(r, order, buf[:4])
 	if err != nil {
 		return nil, err
@@ -62,11 +63,11 @@ func (e *Encoder) writeLineString(ls orb.LineString) error {
 	return nil
 }
 
-func unmarshalMultiLineString(order byteOrder, data []byte) (orb.MultiLineString, error) {
+func unmarshalMultiLineString(order binary.ByteOrder, data []byte) (orb.MultiLineString, error) {
 	if len(data) < 4 {
 		return nil, ErrNotWKB
 	}
-	num := unmarshalUint32(order, data)
+	num := order.Uint32(data)
 	data = data[4:]
 
 	alloc := num
@@ -89,7 +90,7 @@ func unmarshalMultiLineString(order byteOrder, data []byte) (orb.MultiLineString
 	return result, nil
 }
 
-func readMultiLineString(r io.Reader, order byteOrder, buf []byte) (orb.MultiLineString, error) {
+func readMultiLineString(r io.Reader, order binary.ByteOrder, buf []byte) (orb.MultiLineString, error) {
 	num, err := readUint32(r, order, buf[:4])
 	if err != nil {
 		return nil, err

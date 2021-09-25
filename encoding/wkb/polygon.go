@@ -1,6 +1,7 @@
 package wkb
 
 import (
+	"encoding/binary"
 	"errors"
 	"io"
 	"math"
@@ -8,11 +9,11 @@ import (
 	"github.com/paulmach/orb"
 )
 
-func unmarshalPolygon(order byteOrder, data []byte) (orb.Polygon, error) {
+func unmarshalPolygon(order binary.ByteOrder, data []byte) (orb.Polygon, error) {
 	if len(data) < 4 {
 		return nil, ErrNotWKB
 	}
-	num := unmarshalUint32(order, data)
+	num := order.Uint32(data)
 	data = data[4:]
 
 	alloc := num
@@ -35,7 +36,7 @@ func unmarshalPolygon(order byteOrder, data []byte) (orb.Polygon, error) {
 	return result, nil
 }
 
-func readPolygon(r io.Reader, order byteOrder, buf []byte) (orb.Polygon, error) {
+func readPolygon(r io.Reader, order binary.ByteOrder, buf []byte) (orb.Polygon, error) {
 	num, err := readUint32(r, order, buf[:4])
 	if err != nil {
 		return nil, err
@@ -85,11 +86,11 @@ func (e *Encoder) writePolygon(p orb.Polygon) error {
 	return nil
 }
 
-func unmarshalMultiPolygon(order byteOrder, data []byte) (orb.MultiPolygon, error) {
+func unmarshalMultiPolygon(order binary.ByteOrder, data []byte) (orb.MultiPolygon, error) {
 	if len(data) < 4 {
 		return nil, ErrNotWKB
 	}
-	num := unmarshalUint32(order, data)
+	num := order.Uint32(data)
 	data = data[4:]
 
 	alloc := num
@@ -117,7 +118,7 @@ func unmarshalMultiPolygon(order byteOrder, data []byte) (orb.MultiPolygon, erro
 	return result, nil
 }
 
-func readMultiPolygon(r io.Reader, order byteOrder, buf []byte) (orb.MultiPolygon, error) {
+func readMultiPolygon(r io.Reader, order binary.ByteOrder, buf []byte) (orb.MultiPolygon, error) {
 	num, err := readUint32(r, order, buf[:4])
 	if err != nil {
 		return nil, err

@@ -10,14 +10,6 @@ import (
 	"github.com/paulmach/orb"
 )
 
-// byteOrder represents little or big endian encoding.
-// We don't use binary.ByteOrder because that is an interface
-// that leaks to the heap all over the place.
-type byteOrder int
-
-const bigEndian byteOrder = 0
-const littleEndian byteOrder = 1
-
 const (
 	pointType              uint32 = 1
 	lineStringType         uint32 = 2
@@ -50,8 +42,8 @@ type Encoder struct {
 
 // MustMarshal will encode the geometry and panic on error.
 // Currently there is no reason to error during geometry marshalling.
-func MustMarshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) []byte {
-	d, err := Marshal(geom, byteOrder...)
+func MustMarshal(geom orb.Geometry, orders ...binary.ByteOrder) []byte {
+	d, err := Marshal(geom, orders...)
 	if err != nil {
 		panic(err)
 	}
@@ -60,12 +52,12 @@ func MustMarshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) []byte {
 }
 
 // Marshal encodes the geometry with the given byte order.
-func Marshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) ([]byte, error) {
+func Marshal(geom orb.Geometry, orders ...binary.ByteOrder) ([]byte, error) {
 	buf := bytes.NewBuffer(make([]byte, 0, geomLength(geom)))
 
 	e := NewEncoder(buf)
-	if len(byteOrder) > 0 {
-		e.SetByteOrder(byteOrder[0])
+	if len(orders) > 0 {
+		e.SetByteOrder(orders[0])
 	}
 
 	err := e.Encode(geom)
@@ -90,8 +82,8 @@ func NewEncoder(w io.Writer) *Encoder {
 
 // SetByteOrder will override the default byte order set when
 // the encoder was created.
-func (e *Encoder) SetByteOrder(bo binary.ByteOrder) {
-	e.order = bo
+func (e *Encoder) SetByteOrder(order binary.ByteOrder) {
+	e.order = order
 }
 
 // Encode will write the geometry encoded as WKB to the given writer.
@@ -245,45 +237,45 @@ func (d *Decoder) Decode() (orb.Geometry, error) {
 	return nil, ErrUnsupportedGeometry
 }
 
-func readByteOrderType(r io.Reader, buf []byte) (byteOrder, uint32, error) {
+func readByteOrderType(r io.Reader, buf []byte) (binary.ByteOrder, uint32, error) {
 	// the byte order is the first byte
 	if _, err := r.Read(buf[:1]); err != nil {
-		return 0, 0, err
+		return DefaultByteOrder, 0, err
 	}
 
-	var order byteOrder
+	var order binary.ByteOrder
 	if buf[0] == 0 {
-		order = bigEndian
+		order = binary.BigEndian
 	} else if buf[0] == 1 {
-		order = littleEndian
+		order = binary.LittleEndian
 	} else {
-		return 0, 0, ErrNotWKB
+		return DefaultByteOrder, 0, ErrNotWKB
 	}
 
 	// the type which is 4 bytes
 	typ, err := readUint32(r, order, buf[:4])
 	if err != nil {
-		return 0, 0, err
+		return DefaultByteOrder, 0, err
 	}
 
 	return order, typ, nil
 }
 
-func readUint32(r io.Reader, order byteOrder, buf []byte) (uint32, error) {
+func readUint32(r io.Reader, order binary.ByteOrder, buf []byte) (uint32, error) {
 	if _, err := io.ReadFull(r, buf); err != nil {
 		return 0, err
 	}
-	return unmarshalUint32(order, buf), nil
+	return order.Uint32(buf), nil
 }
 
-func unmarshalByteOrderType(buf []byte) (byteOrder, uint32, []byte, error) {
+func unmarshalByteOrderType(buf []byte) (binary.ByteOrder, uint32, []byte, error) {
 	order, typ, err := byteOrderType(buf)
 	if err == nil {
 		return order, typ, buf, nil
 	}
 
 	if len(buf) < 6 {
-		return 0, 0, nil, err
+		return DefaultByteOrder, 0, nil, err
 	}
 
 	// The prefix is incorrect, let's see if this is data in
@@ -291,36 +283,29 @@ func unmarshalByteOrderType(buf []byte) (byteOrder, uint32, []byte, error) {
 	buf = buf[4:]
 	order, typ, err = byteOrderType(buf)
 	if err != nil || typ > 7 {
-		return 0, 0, nil, ErrNotWKB
+		return DefaultByteOrder, 0, nil, ErrNotWKB
 	}
 
 	return order, typ, buf, nil
 }
 
-func byteOrderType(buf []byte) (byteOrder, uint32, error) {
+func byteOrderType(buf []byte) (binary.ByteOrder, uint32, error) {
 	if len(buf) < 6 {
-		return 0, 0, ErrNotWKB
+		return DefaultByteOrder, 0, ErrNotWKB
 	}
 
-	var order byteOrder
+	var order binary.ByteOrder
 	if buf[0] == 0 {
-		order = bigEndian
+		order = binary.BigEndian
 	} else if buf[0] == 1 {
-		order = littleEndian
+		order = binary.LittleEndian
 	} else {
-		return 0, 0, ErrNotWKB
+		return DefaultByteOrder, 0, ErrNotWKB
 	}
 
 	// the type which is 4 bytes
-	typ := unmarshalUint32(order, buf[1:])
+	typ := order.Uint32(buf[1:])
 	return order, typ, nil
-}
-
-func unmarshalUint32(order byteOrder, buf []byte) uint32 {
-	if order == littleEndian {
-		return binary.LittleEndian.Uint32(buf)
-	}
-	return binary.BigEndian.Uint32(buf)
 }
 
 // geomLength helps to do preallocation during a marshal.

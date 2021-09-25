@@ -9,11 +9,11 @@ import (
 	"github.com/paulmach/orb"
 )
 
-func unmarshalPoints(order byteOrder, data []byte) ([]orb.Point, error) {
+func unmarshalPoints(order binary.ByteOrder, data []byte) ([]orb.Point, error) {
 	if len(data) < 4 {
 		return nil, ErrNotWKB
 	}
-	num := unmarshalUint32(order, data)
+	num := order.Uint32(data)
 	data = data[4:]
 
 	if len(data) < int(num*16) {
@@ -27,52 +27,37 @@ func unmarshalPoints(order byteOrder, data []byte) ([]orb.Point, error) {
 	}
 	result := make([]orb.Point, 0, alloc)
 
-	if order == littleEndian {
-		for i := 0; i < int(num); i++ {
-			result = append(result, orb.Point{})
-			result[i][0] = math.Float64frombits(binary.LittleEndian.Uint64(data[16*i:]))
-			result[i][1] = math.Float64frombits(binary.LittleEndian.Uint64(data[16*i+8:]))
-		}
-	} else {
-		for i := 0; i < int(num); i++ {
-			result = append(result, orb.Point{})
-			result[i][0] = math.Float64frombits(binary.BigEndian.Uint64(data[16*i:]))
-			result[i][1] = math.Float64frombits(binary.BigEndian.Uint64(data[16*i+8:]))
-		}
+	for i := 0; i < int(num); i++ {
+		result = append(result, orb.Point{
+			math.Float64frombits(order.Uint64(data[16*i:])),
+			math.Float64frombits(order.Uint64(data[16*i+8:])),
+		})
 	}
 
 	return result, nil
 }
 
-func unmarshalPoint(order byteOrder, buf []byte) (orb.Point, error) {
+func unmarshalPoint(order binary.ByteOrder, buf []byte) (orb.Point, error) {
 	if len(buf) < 16 {
 		return orb.Point{}, ErrNotWKB
 	}
 
-	var p orb.Point
-	if order == littleEndian {
-		p[0] = math.Float64frombits(binary.LittleEndian.Uint64(buf))
-		p[1] = math.Float64frombits(binary.LittleEndian.Uint64(buf[8:]))
-	} else {
-		p[0] = math.Float64frombits(binary.BigEndian.Uint64(buf))
-		p[1] = math.Float64frombits(binary.BigEndian.Uint64(buf[8:]))
+	var p = orb.Point{
+		math.Float64frombits(order.Uint64(buf)),
+		math.Float64frombits(order.Uint64(buf[8:])),
 	}
 
 	return p, nil
 }
 
-func readPoint(r io.Reader, order byteOrder, buf []byte) (orb.Point, error) {
+func readPoint(r io.Reader, order binary.ByteOrder, buf []byte) (orb.Point, error) {
 	var p orb.Point
 
 	for i := 0; i < 2; i++ {
 		if _, err := io.ReadFull(r, buf); err != nil {
 			return orb.Point{}, err
 		}
-		if order == littleEndian {
-			p[i] = math.Float64frombits(binary.LittleEndian.Uint64(buf))
-		} else {
-			p[i] = math.Float64frombits(binary.BigEndian.Uint64(buf))
-		}
+		p[i] = math.Float64frombits(order.Uint64(buf))
 	}
 
 	return p, nil
@@ -91,11 +76,11 @@ func (e *Encoder) writePoint(p orb.Point) error {
 	return err
 }
 
-func unmarshalMultiPoint(order byteOrder, data []byte) (orb.MultiPoint, error) {
+func unmarshalMultiPoint(order binary.ByteOrder, data []byte) (orb.MultiPoint, error) {
 	if len(data) < 4 {
 		return nil, ErrNotWKB
 	}
-	num := unmarshalUint32(order, data)
+	num := order.Uint32(data)
 	data = data[4:]
 
 	alloc := num
@@ -118,7 +103,7 @@ func unmarshalMultiPoint(order byteOrder, data []byte) (orb.MultiPoint, error) {
 	return result, nil
 }
 
-func readMultiPoint(r io.Reader, order byteOrder, buf []byte) (orb.MultiPoint, error) {
+func readMultiPoint(r io.Reader, order binary.ByteOrder, buf []byte) (orb.MultiPoint, error) {
 	num, err := readUint32(r, order, buf[:4])
 	if err != nil {
 		return nil, err
