@@ -140,7 +140,7 @@ func TestQuadtreeMatching(t *testing.T) {
 			name:     "match none filter",
 			filter:   func(p orb.Pointer) bool { return false },
 			point:    orb.Point{0.1, 0.1},
-			expected: orb.Point{1, 1},
+			expected: orb.Point{},
 		},
 	}
 

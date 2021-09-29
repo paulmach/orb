@@ -181,6 +181,14 @@ func (q *Quadtree) Find(p orb.Point) orb.Pointer {
 	return q.Matching(p, nil)
 }
 
+type nilPointer struct{}
+
+var _ orb.Pointer = (*nilPointer)(nil)
+
+func (np nilPointer) Point() orb.Point {
+	return orb.Point{}
+}
+
 // Matching returns the closest Value/Pointer in the quadtree for which
 // the given filter function returns true. This function is thread safe.
 // Multiple goroutines can read from a pre-created tree.
@@ -204,6 +212,9 @@ func (q *Quadtree) Matching(p orb.Point, f FilterFunc) orb.Pointer {
 		q.bound.Min[1], q.bound.Max[1],
 	)
 
+	if v.closest == nil {
+		return nilPointer{}
+	}
 	return v.closest.Value
 }
 
