@@ -136,6 +136,12 @@ func TestQuadtreeMatching(t *testing.T) {
 			point:    orb.Point{0.1, 0.1},
 			expected: orb.Point{1, 1},
 		},
+		{
+			name:     "match none filter",
+			filter:   func(p orb.Pointer) bool { return false },
+			point:    orb.Point{0.1, 0.1},
+			expected: orb.Point{1, 1},
+		},
 	}
 
 	for _, tc := range cases {
