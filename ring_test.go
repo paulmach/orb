@@ -17,13 +17,28 @@ func TestRing_Closed(t *testing.T) {
 		},
 		{
 			name:   "not closed if last point does not match",
-			ring:   Ring{{0, 0}, {3, 0}, {3, 4}},
+			ring:   Ring{{0, 0}, {3, 0}, {3, 3}, {3, 4}},
 			closed: false,
 		},
 		{
-			name:   "length of ring doesn't matter",
+			name:   "empty ring",
+			ring:   Ring{},
+			closed: false,
+		},
+		{
+			name:   "one vertex ring",
+			ring:   Ring{{3, 0}},
+			closed: false,
+		},
+		{
+			name:   "two vertex ring",
 			ring:   Ring{{3, 0}, {3, 0}},
-			closed: true,
+			closed: false,
+		},
+		{
+			name:   "three vertex ring",
+			ring:   Ring{{3, 0}, {0, 0}, {3, 0}},
+			closed: false,
 		},
 	}
 
