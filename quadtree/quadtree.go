@@ -204,6 +204,9 @@ func (q *Quadtree) Matching(p orb.Point, f FilterFunc) orb.Pointer {
 		q.bound.Min[1], q.bound.Max[1],
 	)
 
+	if v.closest == nil {
+		return nil
+	}
 	return v.closest.Value
 }
 
