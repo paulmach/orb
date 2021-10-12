@@ -239,7 +239,7 @@ func (q *Quadtree) KNearestMatching(buf []orb.Pointer, p orb.Point, k int, f Fil
 	}
 
 	if len(maxDistance) > 0 {
-		v.maxDistSquared = math.Pow(maxDistance[0], 2)
+		v.maxDistSquared = maxDistance[0] * maxDistance[0]
 	}
 
 	newVisit(v).Visit(q.root,
@@ -251,14 +251,20 @@ func (q *Quadtree) KNearestMatching(buf []orb.Pointer, p orb.Point, k int, f Fil
 
 	//repack result
 	if cap(buf) < len(v.closest) {
-		buf = make([]orb.Pointer, 0, len(v.closest))
+		buf = make([]orb.Pointer, len(v.closest))
 	} else {
-		buf = buf[:0]
+		buf = buf[:len(v.closest)]
 	}
 
-	for _, element := range v.closest {
-		buf = append(buf, element.point)
+	for i := len(v.closest) - 1; i >= 0; i-- {
+		// Actually this is a hack. We know how heap works and obtain
+		// top element without function call
+		top := v.closest[0]
+		buf[i] = top.point
+
+		heap.Pop(&v.closest)
 	}
+
 	return buf
 }
 

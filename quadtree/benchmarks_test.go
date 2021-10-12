@@ -131,3 +131,20 @@ func BenchmarkRandomInBound1000Buf(b *testing.B) {
 		buf = qt.InBound(buf, p.Bound().Pad(0.1))
 	}
 }
+
+func BenchmarkRandomKNearest100(b *testing.B) {
+	r := rand.New(rand.NewSource(43))
+
+	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
+	for i := 0; i < 1000; i++ {
+		qt.Add(orb.Point{r.Float64(), r.Float64()})
+	}
+
+	buf := make([]orb.Pointer, 0, 100)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		qt.KNearest(buf[:0], orb.Point{r.Float64(), r.Float64()}, 100)
+	}
+}
