@@ -123,7 +123,7 @@ func TestQuadtreeMatching(t *testing.T) {
 		name     string
 		filter   FilterFunc
 		point    orb.Point
-		expected orb.Point
+		expected orb.Pointer
 	}{
 		{
 			name:     "no filtred",
@@ -140,14 +140,21 @@ func TestQuadtreeMatching(t *testing.T) {
 			name:     "match none filter",
 			filter:   func(p orb.Pointer) bool { return false },
 			point:    orb.Point{0.1, 0.1},
-			expected: orb.Point{},
+			expected: nil,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			v := qt.Matching(tc.point, tc.filter)
-			if !v.Point().Equal(tc.expected) {
+
+			// case 1: exact match, important for testing `nil`
+			if v == tc.expected {
+				return
+			}
+
+			// case 2: match on returned orb.Point value
+			if !v.Point().Equal(tc.expected.Point()) {
 				t.Errorf("incorrect point %v != %v", v, tc.expected)
 			}
 		})
