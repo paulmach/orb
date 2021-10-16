@@ -20,8 +20,8 @@ func newProjection(tile maptile.Tile, extent uint32) *projection {
 		n := uint32(bits.TrailingZeros32(extent))
 		z := uint32(tile.Z) + n
 
-		minx := float64(tile.X << n)
-		miny := float64(tile.Y << n)
+		minx := float64(uint64(tile.X) << n)
+		miny := float64(uint64(tile.Y) << n)
 		return &projection{
 			ToTile: func(p orb.Point) orb.Point {
 				x, y := mercator.ToPlanar(p[0], p[1], z)
