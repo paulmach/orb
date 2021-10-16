@@ -13,27 +13,46 @@ type heapItem struct {
 	distance float64
 }
 
-func (h *maxHeap) Push(item *heapItem) {
-	*h = append(*h, item)
+func (h *maxHeap) Push(point orb.Pointer, distance float64) {
+	// Common usage is Push followed by a Pop if we have > k points.
+	// We're reusing the k+1 heapItem object to reduce memory allocations.
+	// First we manaully lengthen the slice,
+	// then we see if the last item has been allocated already.
+
+	prevLen := len(*h)
+	*h = (*h)[:prevLen+1]
+	if (*h)[prevLen] == nil {
+		(*h)[prevLen] = &heapItem{point: point, distance: distance}
+	} else {
+		(*h)[prevLen].point = point
+		(*h)[prevLen].distance = distance
+	}
 
 	i := len(*h) - 1
 	for i > 0 {
 		up := ((i + 1) >> 1) - 1
 		parent := (*h)[up]
 
-		if item.distance < parent.distance {
+		if distance < parent.distance {
 			// parent is further so we're done fixing up the heap.
 			break
 		}
 
 		// swap nodes
-		(*h)[i] = parent
-		(*h)[up] = item
+		// (*h)[i] = parent
+		(*h)[i].point = parent.point
+		(*h)[i].distance = parent.distance
+
+		// (*h)[up] = item
+		(*h)[up].point = point
+		(*h)[up].distance = distance
 
 		i = up
 	}
 }
 
+// Pop returns the "greatest" item in the list.
+// The returned item should not be saved across push/pop operations.
 func (h *maxHeap) Pop() *heapItem {
 	removed := (*h)[0]
 	lastItem := (*h)[len(*h)-1]

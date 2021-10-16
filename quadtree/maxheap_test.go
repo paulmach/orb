@@ -11,7 +11,7 @@ func TestMaxHeap(t *testing.T) {
 	for i := 1; i < 100; i++ {
 		h := make(maxHeap, 0, i)
 		for j := 0; j < i; j++ {
-			h.Push(&heapItem{distance: r.Float64()})
+			h.Push(nil, r.Float64())
 		}
 
 		current := h.Pop().distance

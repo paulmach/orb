@@ -212,6 +212,7 @@ func (q *Quadtree) Matching(p orb.Point, f FilterFunc) orb.Pointer {
 // KNearest returns k closest Value/Pointer in the quadtree.
 // This function is thread safe. Multiple goroutines can read from a pre-created tree.
 // An optional buffer parameter is provided to allow for the reuse of result slice memory.
+// The points are returned in a sorted order, nearest first.
 // This function allows defining a maximum distance in order to reduce search iterations.
 func (q *Quadtree) KNearest(buf []orb.Pointer, p orb.Point, k int, maxDistance ...float64) []orb.Pointer {
 	return q.KNearestMatching(buf, p, k, nil, maxDistance...)
@@ -221,6 +222,7 @@ func (q *Quadtree) KNearest(buf []orb.Pointer, p orb.Point, k int, maxDistance .
 // the given filter function returns true. This function is thread safe.
 // Multiple goroutines can read from a pre-created tree. An optional buffer
 // parameter is provided to allow for the reuse of result slice memory.
+// The points are returned in a sorted order, nearest first.
 // This function allows defining a maximum distance in order to reduce search iterations.
 func (q *Quadtree) KNearestMatching(buf []orb.Pointer, p orb.Point, k int, f FilterFunc, maxDistance ...float64) []orb.Pointer {
 	if q.root == nil {
@@ -232,7 +234,7 @@ func (q *Quadtree) KNearestMatching(buf []orb.Pointer, p orb.Point, k int, f Fil
 		point:          p,
 		filter:         f,
 		k:              k,
-		maxHeap:        make(maxHeap, 0, k),
+		maxHeap:        make(maxHeap, 0, k+1),
 		closestBound:   &b,
 		maxDistSquared: math.MaxFloat64,
 	}
@@ -472,7 +474,7 @@ func (v *nearestVisitor) Visit(n *node) {
 
 	point := n.Value.Point()
 	if d := planar.DistanceSquared(point, v.point); d < v.maxDistSquared {
-		v.maxHeap.Push(&heapItem{point: n.Value, distance: d})
+		v.maxHeap.Push(n.Value, d)
 		if len(v.maxHeap) > v.k {
 
 			v.maxHeap.Pop()
