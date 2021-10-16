@@ -5,7 +5,6 @@
 package quadtree
 
 import (
-	"container/heap"
 	"errors"
 	"math"
 
@@ -233,7 +232,7 @@ func (q *Quadtree) KNearestMatching(buf []orb.Pointer, p orb.Point, k int, f Fil
 		point:          p,
 		filter:         f,
 		k:              k,
-		closest:        newPointsQueue(k),
+		maxHeap:        make(maxHeap, 0, k),
 		closestBound:   &b,
 		maxDistSquared: math.MaxFloat64,
 	}
@@ -250,19 +249,14 @@ func (q *Quadtree) KNearestMatching(buf []orb.Pointer, p orb.Point, k int, f Fil
 	)
 
 	//repack result
-	if cap(buf) < len(v.closest) {
-		buf = make([]orb.Pointer, len(v.closest))
+	if cap(buf) < len(v.maxHeap) {
+		buf = make([]orb.Pointer, len(v.maxHeap))
 	} else {
-		buf = buf[:len(v.closest)]
+		buf = buf[:len(v.maxHeap)]
 	}
 
-	for i := len(v.closest) - 1; i >= 0; i-- {
-		// Actually this is a hack. We know how heap works and obtain
-		// top element without function call
-		top := v.closest[0]
-		buf[i] = top.point
-
-		heap.Pop(&v.closest)
+	for i := len(v.maxHeap) - 1; i >= 0; i-- {
+		buf[i] = v.maxHeap.Pop().point
 	}
 
 	return buf
@@ -411,53 +405,53 @@ func (v *findVisitor) Visit(n *node) {
 	}
 }
 
-type pointsQueueItem struct {
-	point    orb.Pointer
-	distance float64 // distance to point and priority inside the queue
-	index    int     // point index in queue
-}
+// type pointsQueueItem struct {
+// 	point    orb.Pointer
+// 	distance float64 // distance to point and priority inside the queue
+// 	index    int     // point index in queue
+// }
 
-type pointsQueue []pointsQueueItem
+// type pointsQueue []pointsQueueItem
 
-func newPointsQueue(capacity int) pointsQueue {
-	// We make capacity+1 because we need additional place for the greatest element
-	return make([]pointsQueueItem, 0, capacity+1)
-}
+// func newPointsQueue(capacity int) pointsQueue {
+// 	// We make capacity+1 because we need additional place for the greatest element
+// 	return make([]pointsQueueItem, 0, capacity+1)
+// }
 
-func (pq pointsQueue) Len() int { return len(pq) }
+// func (pq pointsQueue) Len() int { return len(pq) }
 
-func (pq pointsQueue) Less(i, j int) bool {
-	// We want pop longest distances so Less was inverted
-	return pq[i].distance > pq[j].distance
-}
+// func (pq pointsQueue) Less(i, j int) bool {
+// 	// We want pop longest distances so Less was inverted
+// 	return pq[i].distance > pq[j].distance
+// }
 
-func (pq pointsQueue) Swap(i, j int) {
-	pq[i], pq[j] = pq[j], pq[i]
-	pq[i].index = i
-	pq[j].index = j
-}
+// func (pq pointsQueue) Swap(i, j int) {
+// 	pq[i], pq[j] = pq[j], pq[i]
+// 	pq[i].index = i
+// 	pq[j].index = j
+// }
 
-func (pq *pointsQueue) Push(x interface{}) {
-	n := len(*pq)
-	item := x.(pointsQueueItem)
-	item.index = n
-	*pq = append(*pq, item)
-}
+// func (pq *pointsQueue) Push(x interface{}) {
+// 	n := len(*pq)
+// 	item := x.(pointsQueueItem)
+// 	item.index = n
+// 	*pq = append(*pq, item)
+// }
 
-func (pq *pointsQueue) Pop() interface{} {
-	old := *pq
-	n := len(old)
-	item := old[n-1]
-	item.index = -1
-	*pq = old[0 : n-1]
-	return item
-}
+// func (pq *pointsQueue) Pop() interface{} {
+// 	old := *pq
+// 	n := len(old)
+// 	item := old[n-1]
+// 	item.index = -1
+// 	*pq = old[0 : n-1]
+// 	return item
+// }
 
 type nearestVisitor struct {
 	point          orb.Point
 	filter         FilterFunc
 	k              int
-	closest        pointsQueue
+	maxHeap        maxHeap
 	closestBound   *orb.Bound
 	maxDistSquared float64
 }
@@ -478,13 +472,14 @@ func (v *nearestVisitor) Visit(n *node) {
 
 	point := n.Value.Point()
 	if d := planar.DistanceSquared(point, v.point); d < v.maxDistSquared {
-		heap.Push(&v.closest, pointsQueueItem{point: n.Value, distance: d})
-		if v.closest.Len() > v.k {
-			heap.Pop(&v.closest)
+		v.maxHeap.Push(&heapItem{point: n.Value, distance: d})
+		if len(v.maxHeap) > v.k {
+
+			v.maxHeap.Pop()
 
 			// Actually this is a hack. We know how heap works and obtain
 			// top element without function call
-			top := v.closest[0]
+			top := v.maxHeap[0]
 
 			v.maxDistSquared = top.distance
 
