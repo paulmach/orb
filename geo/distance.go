@@ -69,3 +69,22 @@ func Midpoint(p, p2 orb.Point) orb.Point {
 
 	return r
 }
+
+// PointAtBearingAndDistance returns the point at the given bearing and distance in meters from the point
+func PointAtBearingAndDistance(p orb.Point, bearing, distance float64) orb.Point {
+	aLat := deg2rad(p[1])
+	aLon := deg2rad(p[0])
+
+	bearingRadians := deg2rad(bearing)
+
+	distanceRatio := distance / orb.EarthRadius
+	bLat := math.Asin(math.Sin(aLat)*math.Cos(distanceRatio) + math.Cos(aLat)*math.Sin(distanceRatio)*math.Cos(bearingRadians))
+	bLon := aLon + math.Atan2(math.Sin(bearingRadians)*math.Sin(distanceRatio)*math.Cos(aLat), math.Cos(distanceRatio)-math.Sin(aLat)*math.Sin(bLat))
+
+	r := orb.Point{
+		rad2deg(bLon),
+		rad2deg(bLat),
+	}
+
+	return r
+}

@@ -89,3 +89,28 @@ func TestMidpoint(t *testing.T) {
 		t.Errorf("expected %v, got %v", answer, m)
 	}
 }
+
+func TestPointAtBearingAndDistance(t *testing.T) {
+	answer := orb.Point{-0.841153, 52.68179432}
+	bearing := 127.373
+	distance := 85194.89
+	p := PointAtBearingAndDistance(orb.Point{-1.8444, 53.1506}, bearing, distance)
+
+	if d := DistanceHaversine(p, answer); d > 1 {
+		t.Errorf("expected %v, got %v (%vm away)", answer, p, d)
+	}
+}
+func TestMidpointAgainstPointAtBearingAndDistance(t *testing.T) {
+	a := orb.Point{-1.8444, 53.1506}
+	b := orb.Point{0.1406, 52.2047}
+	bearing := Bearing(a, b)
+	distance := DistanceHaversine(a, b)
+	acceptableTolerance := 1e-06 // unit is meters
+
+	p1 := PointAtBearingAndDistance(a, bearing, distance/2)
+	p2 := Midpoint(a, b)
+
+	if d := DistanceHaversine(p1, p2); d > acceptableTolerance {
+		t.Errorf("expected %v to be within %vm of %v", p1, acceptableTolerance, p2)
+	}
+}
