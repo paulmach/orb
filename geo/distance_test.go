@@ -91,13 +91,13 @@ func TestMidpoint(t *testing.T) {
 }
 
 func TestPointAtBearingAndDistance(t *testing.T) {
-	answer := orb.Point{-0.841153, 52.68179432}
+	expected := orb.Point{-0.841153, 52.68179432}
 	bearing := 127.373
 	distance := 85194.89
-	p := PointAtBearingAndDistance(orb.Point{-1.8444, 53.1506}, bearing, distance)
+	actual := PointAtBearingAndDistance(orb.Point{-1.8444, 53.1506}, bearing, distance)
 
-	if d := DistanceHaversine(p, answer); d > 1 {
-		t.Errorf("expected %v, got %v (%vm away)", answer, p, d)
+	if d := DistanceHaversine(actual, expected); d > 1 {
+		t.Errorf("expected %v, got %v (%vm away)", expected, actual, d)
 	}
 }
 func TestMidpointAgainstPointAtBearingAndDistance(t *testing.T) {
@@ -127,28 +127,36 @@ func TestPointAtDistanceAlongLineWithEmptyLineString(t *testing.T) {
 }
 
 func TestPointAtDistanceAlongLineWithSinglePoint(t *testing.T) {
-	expected := orb.Point{-1.8444, 53.1506}
+	expectedPoint := orb.Point{-1.8444, 53.1506}
 	line := orb.LineString{
-		expected,
+		expectedPoint,
 	}
-	actual := PointAtDistanceAlongLine(line, 90000)
+	actualPoint, actualBearing := PointAtDistanceAlongLine(line, 90000)
 
-	if actual != expected {
-		t.Errorf("expected %v but got %v", expected, actual)
+	if actualPoint != expectedPoint {
+		t.Errorf("expected %v but got %v", expectedPoint, actualPoint)
+	}
+	if actualBearing != 0.0 {
+		t.Errorf("expected %v but got %v", actualBearing, 0.0)
 	}
 }
 
 func TestPointAtDistanceAlongLineWithMinimalPoints(t *testing.T) {
 	expected := orb.Point{-0.841153, 52.68179432}
-	acceptableTolerance := 1.0 // unit is meters
+	acceptableDistanceTolerance := 1.0 // unit is meters
 	line := orb.LineString{
 		orb.Point{-1.8444, 53.1506},
 		orb.Point{0.1406, 52.2047},
 	}
-	actual := PointAtDistanceAlongLine(line, 85194.89)
+	acceptableBearingTolerance := 0.01 // unit is degrees
+	expectedBearing := Bearing(line[0], line[1])
+	actual, actualBearing := PointAtDistanceAlongLine(line, 85194.89)
 
-	if d := DistanceHaversine(expected, actual); d > acceptableTolerance {
-		t.Errorf("expected %v to be within %vm of %v (%vm away)", expected, acceptableTolerance, actual, d)
+	if d := DistanceHaversine(expected, actual); d > acceptableDistanceTolerance {
+		t.Errorf("expected %v to be within %vm of %v (%vm away)", actual, acceptableDistanceTolerance, expected, d)
+	}
+	if b := math.Abs(actualBearing - expectedBearing); b > acceptableBearingTolerance {
+		t.Errorf("expected bearing %v to be within %v degrees of %v", actualBearing, acceptableBearingTolerance, expectedBearing)
 	}
 }
 
@@ -160,10 +168,15 @@ func TestPointAtDistanceAlongLineWithMultiplePoints(t *testing.T) {
 		orb.Point{-0.8411, 52.6817},
 		orb.Point{0.1406, 52.2047},
 	}
-	actual := PointAtDistanceAlongLine(line, 90000)
+	acceptableBearingTolerance := 0.01 // unit is degrees
+	expectedBearing := Bearing(line[1], line[2])
+	actualPoint, actualBearing := PointAtDistanceAlongLine(line, 90000)
 
-	if d := DistanceHaversine(expected, actual); d > acceptableTolerance {
-		t.Errorf("expected %v to be within %vm of %v (%vm away)", expected, acceptableTolerance, actual, d)
+	if d := DistanceHaversine(expected, actualPoint); d > acceptableTolerance {
+		t.Errorf("expected %v to be within %vm of %v (%vm away)", expected, acceptableTolerance, actualPoint, d)
+	}
+	if b := math.Abs(actualBearing - expectedBearing); b > acceptableBearingTolerance {
+		t.Errorf("expected bearing %v to be within %v degrees of %v", actualBearing, acceptableBearingTolerance, expectedBearing)
 	}
 }
 
@@ -174,9 +187,14 @@ func TestPointAtDistanceAlongLinePastEndOfLine(t *testing.T) {
 		orb.Point{-0.8411, 52.6817},
 		expected,
 	}
-	actual := PointAtDistanceAlongLine(line, 200000)
+	acceptableBearingTolerance := 0.01 // unit is degrees
+	expectedBearing := Bearing(line[1], line[2])
+	actualPoint, actualBearing := PointAtDistanceAlongLine(line, 200000)
 
-	if actual != expected {
-		t.Errorf("expected %v but got %v", expected, actual)
+	if actualPoint != expected {
+		t.Errorf("expected %v but got %v", expected, actualPoint)
+	}
+	if b := math.Abs(actualBearing - expectedBearing); b > acceptableBearingTolerance {
+		t.Errorf("expected bearing %v to be within %v degrees of %v", actualBearing, acceptableBearingTolerance, expectedBearing)
 	}
 }

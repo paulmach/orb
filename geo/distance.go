@@ -89,28 +89,30 @@ func PointAtBearingAndDistance(p orb.Point, bearing, distance float64) orb.Point
 	return r
 }
 
-func PointAtDistanceAlongLine(ls orb.LineString, distance float64) orb.Point {
+func PointAtDistanceAlongLine(ls orb.LineString, distance float64) (orb.Point, float64) {
 	if len(ls) == 0 {
 		panic("empty LineString")
 	}
 
 	if distance < 0 || len(ls) == 1 {
-		return ls[0]
+		return ls[0], 0.0
 	}
 
 	travelled := 0.0
 	i := 1
+	var from, to orb.Point
 	for ; i < len(ls); i++ {
-		a := ls[i-1]
-		b := ls[i]
-		actualSegmentDistance := DistanceHaversine(a, b)
+		from = ls[i-1]
+		to = ls[i]
+		actualSegmentDistance := DistanceHaversine(from, to)
 		expectedSegmentDistance := distance - travelled
 		if expectedSegmentDistance < actualSegmentDistance {
-			bearing := Bearing(a, b)
-			return PointAtBearingAndDistance(a, bearing, expectedSegmentDistance)
+			bearing := Bearing(from, to)
+			return PointAtBearingAndDistance(from, bearing, expectedSegmentDistance), bearing
 		}
 		travelled += actualSegmentDistance
 	}
 
-	return ls[i-1]
+	bearing := Bearing(from, to)
+	return to, bearing
 }
