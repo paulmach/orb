@@ -114,3 +114,69 @@ func TestMidpointAgainstPointAtBearingAndDistance(t *testing.T) {
 		t.Errorf("expected %v to be within %vm of %v", p1, acceptableTolerance, p2)
 	}
 }
+
+func TestPointAtDistanceAlongLineWithEmptyLineString(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("PointAtDistanceAlongLine did not panic")
+		}
+	}()
+
+	line := orb.LineString{}
+	PointAtDistanceAlongLine(line, 90000)
+}
+
+func TestPointAtDistanceAlongLineWithSinglePoint(t *testing.T) {
+	expected := orb.Point{-1.8444, 53.1506}
+	line := orb.LineString{
+		expected,
+	}
+	actual := PointAtDistanceAlongLine(line, 90000)
+
+	if actual != expected {
+		t.Errorf("expected %v but got %v", expected, actual)
+	}
+}
+
+func TestPointAtDistanceAlongLineWithMinimalPoints(t *testing.T) {
+	expected := orb.Point{-0.841153, 52.68179432}
+	acceptableTolerance := 1.0 // unit is meters
+	line := orb.LineString{
+		orb.Point{-1.8444, 53.1506},
+		orb.Point{0.1406, 52.2047},
+	}
+	actual := PointAtDistanceAlongLine(line, 85194.89)
+
+	if d := DistanceHaversine(expected, actual); d > acceptableTolerance {
+		t.Errorf("expected %v to be within %vm of %v (%vm away)", expected, acceptableTolerance, actual, d)
+	}
+}
+
+func TestPointAtDistanceAlongLineWithMultiplePoints(t *testing.T) {
+	expected := orb.Point{-0.78526, 52.65506}
+	acceptableTolerance := 1.0 // unit is meters
+	line := orb.LineString{
+		orb.Point{-1.8444, 53.1506},
+		orb.Point{-0.8411, 52.6817},
+		orb.Point{0.1406, 52.2047},
+	}
+	actual := PointAtDistanceAlongLine(line, 90000)
+
+	if d := DistanceHaversine(expected, actual); d > acceptableTolerance {
+		t.Errorf("expected %v to be within %vm of %v (%vm away)", expected, acceptableTolerance, actual, d)
+	}
+}
+
+func TestPointAtDistanceAlongLinePastEndOfLine(t *testing.T) {
+	expected := orb.Point{0.1406, 52.2047}
+	line := orb.LineString{
+		orb.Point{-1.8444, 53.1506},
+		orb.Point{-0.8411, 52.6817},
+		expected,
+	}
+	actual := PointAtDistanceAlongLine(line, 200000)
+
+	if actual != expected {
+		t.Errorf("expected %v but got %v", expected, actual)
+	}
+}
