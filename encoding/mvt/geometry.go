@@ -164,7 +164,7 @@ func (kve *keyValueEncoder) Value(v interface{}) (uint32, error) {
 	// we also can't encode it into a vectortile.Tile_Value.
 	// So we encoded it as a json string, which is what other encoders
 	// also do.
-	if !reflect.TypeOf(v).Comparable() {
+	if v == nil || !reflect.TypeOf(v).Comparable() {
 		data, err := json.Marshal(v)
 		if err != nil {
 			return 0, fmt.Errorf("uncomparable: %T", v)
