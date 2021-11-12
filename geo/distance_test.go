@@ -91,27 +91,119 @@ func TestMidpoint(t *testing.T) {
 }
 
 func TestPointAtBearingAndDistance(t *testing.T) {
-	expected := orb.Point{-0.841153, 52.68179432}
-	bearing := 127.373
-	distance := 85194.89
-	actual := PointAtBearingAndDistance(orb.Point{-1.8444, 53.1506}, bearing, distance)
-
-	if d := DistanceHaversine(actual, expected); d > 1 {
-		t.Errorf("expected %v, got %v (%vm away)", expected, actual, d)
+	cases := []struct {
+		name     string
+		point    orb.Point
+		bearing  float64
+		distance float64
+		expected orb.Point
+	}{
+		{
+			name:     "simple",
+			point:    orb.Point{-1.8444, 53.1506},
+			bearing:  127.373,
+			distance: 85194.89,
+			expected: orb.Point{-0.841153, 52.68179432},
+		},
 	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := PointAtBearingAndDistance(tc.point, tc.bearing, tc.distance)
+
+			if d := DistanceHaversine(actual, tc.expected); d > 1 {
+				t.Errorf("expected %v, got %v (%vm away)", tc.expected, actual, d)
+			}
+		})
+	}
+
+	t.Run("midpoint", func(t *testing.T) {
+		a := orb.Point{-1.8444, 53.1506}
+		b := orb.Point{0.1406, 52.2047}
+		bearing := Bearing(a, b)
+		distance := DistanceHaversine(a, b)
+
+		p1 := PointAtBearingAndDistance(a, bearing, distance/2)
+		p2 := Midpoint(a, b)
+
+		if d := DistanceHaversine(p1, p2); d > epsilon {
+			t.Errorf("expected %v to be within %vm of %v", p1, epsilon, p2)
+		}
+	})
 }
-func TestMidpointAgainstPointAtBearingAndDistance(t *testing.T) {
-	a := orb.Point{-1.8444, 53.1506}
-	b := orb.Point{0.1406, 52.2047}
-	bearing := Bearing(a, b)
-	distance := DistanceHaversine(a, b)
-	acceptableTolerance := 1e-06 // unit is meters
 
-	p1 := PointAtBearingAndDistance(a, bearing, distance/2)
-	p2 := Midpoint(a, b)
+func TestPointAtDistanceAlongLineWithSinglePoint(t *testing.T) {
+	cases := []struct {
+		name            string
+		line            orb.LineString
+		distance        float64
+		expectedPoint   orb.Point
+		expectedBearing float64
+	}{
+		{
+			name: "with single point",
+			line: orb.LineString{
+				orb.Point{-1.8444, 53.1506},
+			},
+			distance:        9000,
+			expectedPoint:   orb.Point{-1.8444, 53.1506},
+			expectedBearing: 0,
+		},
+		{
+			name: "with minimal points",
+			line: orb.LineString{
+				orb.Point{-1.8444, 53.1506},
+				orb.Point{0.1406, 52.2047},
+			},
+			distance:      85194.89,
+			expectedPoint: orb.Point{-0.841153, 52.68179432},
+			expectedBearing: Bearing(
+				orb.Point{-1.8444, 53.1506},
+				orb.Point{0.1406, 52.2047},
+			),
+		},
+		{
+			name: "with single point",
+			line: orb.LineString{
+				orb.Point{-1.8444, 53.1506},
+				orb.Point{-0.8411, 52.6817},
+				orb.Point{0.1406, 52.2047},
+			},
+			distance:      90000,
+			expectedPoint: orb.Point{-0.78526, 52.65506},
+			expectedBearing: Bearing(
+				orb.Point{-0.8411, 52.6817},
+				orb.Point{0.1406, 52.2047},
+			),
+		},
+		{
+			name: "past end of line",
+			line: orb.LineString{
+				orb.Point{-1.8444, 53.1506},
+				orb.Point{-0.8411, 52.6817},
+				orb.Point{0.1406, 52.2047},
+			},
+			distance:      200000,
+			expectedPoint: orb.Point{0.1406, 52.2047},
+			expectedBearing: Bearing(
+				orb.Point{-0.8411, 52.6817},
+				orb.Point{0.1406, 52.2047},
+			),
+		},
+	}
 
-	if d := DistanceHaversine(p1, p2); d > acceptableTolerance {
-		t.Errorf("expected %v to be within %vm of %v", p1, acceptableTolerance, p2)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actualPoint, actualBearing := PointAtDistanceAlongLine(tc.line, tc.distance)
+
+			if d := DistanceHaversine(actualPoint, tc.expectedPoint); d > 1 {
+				t.Errorf("point %v != %v", actualPoint, tc.expectedPoint)
+			}
+
+			if d := math.Abs(actualBearing - tc.expectedBearing); d > 1 {
+				t.Errorf("bearing %v != %v", tc.expectedBearing, actualBearing)
+			}
+		})
 	}
 }
 
@@ -124,77 +216,4 @@ func TestPointAtDistanceAlongLineWithEmptyLineString(t *testing.T) {
 
 	line := orb.LineString{}
 	PointAtDistanceAlongLine(line, 90000)
-}
-
-func TestPointAtDistanceAlongLineWithSinglePoint(t *testing.T) {
-	expectedPoint := orb.Point{-1.8444, 53.1506}
-	line := orb.LineString{
-		expectedPoint,
-	}
-	actualPoint, actualBearing := PointAtDistanceAlongLine(line, 90000)
-
-	if actualPoint != expectedPoint {
-		t.Errorf("expected %v but got %v", expectedPoint, actualPoint)
-	}
-	if actualBearing != 0.0 {
-		t.Errorf("expected %v but got %v", actualBearing, 0.0)
-	}
-}
-
-func TestPointAtDistanceAlongLineWithMinimalPoints(t *testing.T) {
-	expected := orb.Point{-0.841153, 52.68179432}
-	acceptableDistanceTolerance := 1.0 // unit is meters
-	line := orb.LineString{
-		orb.Point{-1.8444, 53.1506},
-		orb.Point{0.1406, 52.2047},
-	}
-	acceptableBearingTolerance := 0.01 // unit is degrees
-	expectedBearing := Bearing(line[0], line[1])
-	actual, actualBearing := PointAtDistanceAlongLine(line, 85194.89)
-
-	if d := DistanceHaversine(expected, actual); d > acceptableDistanceTolerance {
-		t.Errorf("expected %v to be within %vm of %v (%vm away)", actual, acceptableDistanceTolerance, expected, d)
-	}
-	if b := math.Abs(actualBearing - expectedBearing); b > acceptableBearingTolerance {
-		t.Errorf("expected bearing %v to be within %v degrees of %v", actualBearing, acceptableBearingTolerance, expectedBearing)
-	}
-}
-
-func TestPointAtDistanceAlongLineWithMultiplePoints(t *testing.T) {
-	expected := orb.Point{-0.78526, 52.65506}
-	acceptableTolerance := 1.0 // unit is meters
-	line := orb.LineString{
-		orb.Point{-1.8444, 53.1506},
-		orb.Point{-0.8411, 52.6817},
-		orb.Point{0.1406, 52.2047},
-	}
-	acceptableBearingTolerance := 0.01 // unit is degrees
-	expectedBearing := Bearing(line[1], line[2])
-	actualPoint, actualBearing := PointAtDistanceAlongLine(line, 90000)
-
-	if d := DistanceHaversine(expected, actualPoint); d > acceptableTolerance {
-		t.Errorf("expected %v to be within %vm of %v (%vm away)", expected, acceptableTolerance, actualPoint, d)
-	}
-	if b := math.Abs(actualBearing - expectedBearing); b > acceptableBearingTolerance {
-		t.Errorf("expected bearing %v to be within %v degrees of %v", actualBearing, acceptableBearingTolerance, expectedBearing)
-	}
-}
-
-func TestPointAtDistanceAlongLinePastEndOfLine(t *testing.T) {
-	expected := orb.Point{0.1406, 52.2047}
-	line := orb.LineString{
-		orb.Point{-1.8444, 53.1506},
-		orb.Point{-0.8411, 52.6817},
-		expected,
-	}
-	acceptableBearingTolerance := 0.01 // unit is degrees
-	expectedBearing := Bearing(line[1], line[2])
-	actualPoint, actualBearing := PointAtDistanceAlongLine(line, 200000)
-
-	if actualPoint != expected {
-		t.Errorf("expected %v but got %v", expected, actualPoint)
-	}
-	if b := math.Abs(actualBearing - expectedBearing); b > acceptableBearingTolerance {
-		t.Errorf("expected bearing %v to be within %v degrees of %v", actualBearing, acceptableBearingTolerance, expectedBearing)
-	}
 }

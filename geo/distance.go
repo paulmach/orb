@@ -79,14 +79,13 @@ func PointAtBearingAndDistance(p orb.Point, bearing, distance float64) orb.Point
 
 	distanceRatio := distance / orb.EarthRadius
 	bLat := math.Asin(math.Sin(aLat)*math.Cos(distanceRatio) + math.Cos(aLat)*math.Sin(distanceRatio)*math.Cos(bearingRadians))
-	bLon := aLon + math.Atan2(math.Sin(bearingRadians)*math.Sin(distanceRatio)*math.Cos(aLat), math.Cos(distanceRatio)-math.Sin(aLat)*math.Sin(bLat))
+	bLon := aLon +
+		math.Atan2(
+			math.Sin(bearingRadians)*math.Sin(distanceRatio)*math.Cos(aLat),
+			math.Cos(distanceRatio)-math.Sin(aLat)*math.Sin(bLat),
+		)
 
-	r := orb.Point{
-		rad2deg(bLon),
-		rad2deg(bLat),
-	}
-
-	return r
+	return orb.Point{rad2deg(bLon), rad2deg(bLat)}
 }
 
 func PointAtDistanceAlongLine(ls orb.LineString, distance float64) (orb.Point, float64) {
@@ -98,14 +97,17 @@ func PointAtDistanceAlongLine(ls orb.LineString, distance float64) (orb.Point, f
 		return ls[0], 0.0
 	}
 
-	travelled := 0.0
-	i := 1
-	var from, to orb.Point
-	for ; i < len(ls); i++ {
-		from = ls[i-1]
-		to = ls[i]
+	var (
+		travelled = 0.0
+		from, to  orb.Point
+	)
+
+	for i := 1; i < len(ls); i++ {
+		from, to = ls[i-1], ls[i]
+
 		actualSegmentDistance := DistanceHaversine(from, to)
 		expectedSegmentDistance := distance - travelled
+
 		if expectedSegmentDistance < actualSegmentDistance {
 			bearing := Bearing(from, to)
 			return PointAtBearingAndDistance(from, bearing, expectedSegmentDistance), bearing
@@ -113,6 +115,5 @@ func PointAtDistanceAlongLine(ls orb.LineString, distance float64) (orb.Point, f
 		travelled += actualSegmentDistance
 	}
 
-	bearing := Bearing(from, to)
-	return to, bearing
+	return to, Bearing(from, to)
 }
