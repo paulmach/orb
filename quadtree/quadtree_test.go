@@ -123,7 +123,7 @@ func TestQuadtreeMatching(t *testing.T) {
 		name     string
 		filter   FilterFunc
 		point    orb.Point
-		expected orb.Point
+		expected orb.Pointer
 	}{
 		{
 			name:     "no filtred",
@@ -136,12 +136,25 @@ func TestQuadtreeMatching(t *testing.T) {
 			point:    orb.Point{0.1, 0.1},
 			expected: orb.Point{1, 1},
 		},
+		{
+			name:     "match none filter",
+			filter:   func(p orb.Pointer) bool { return false },
+			point:    orb.Point{0.1, 0.1},
+			expected: nil,
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			v := qt.Matching(tc.point, tc.filter)
-			if !v.Point().Equal(tc.expected) {
+
+			// case 1: exact match, important for testing `nil`
+			if v == tc.expected {
+				return
+			}
+
+			// case 2: match on returned orb.Point value
+			if !v.Point().Equal(tc.expected.Point()) {
 				t.Errorf("incorrect point %v != %v", v, tc.expected)
 			}
 		})
@@ -220,6 +233,25 @@ func TestQuadtreeKNearest(t *testing.T) {
 				t.Errorf("incorrect results")
 			}
 		})
+	}
+}
+
+func TestQuadtreeKNearest_sorted(t *testing.T) {
+	q := New(orb.Bound{Max: orb.Point{5, 5}})
+	q.Add(orb.Point{0, 0})
+	q.Add(orb.Point{1, 1})
+	q.Add(orb.Point{2, 2})
+	q.Add(orb.Point{3, 3})
+	q.Add(orb.Point{4, 4})
+	q.Add(orb.Point{5, 5})
+
+	nearest := q.KNearest(nil, orb.Point{2.25, 2.25}, 5)
+
+	expected := []orb.Point{{2, 2}, {3, 3}, {1, 1}, {4, 4}, {0, 0}}
+	for i, p := range expected {
+		if n := nearest[i].Point(); !n.Equal(p) {
+			t.Errorf("incorrect point %d: %v", i, n)
+		}
 	}
 }
 

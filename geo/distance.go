@@ -69,3 +69,51 @@ func Midpoint(p, p2 orb.Point) orb.Point {
 
 	return r
 }
+
+// PointAtBearingAndDistance returns the point at the given bearing and distance in meters from the point
+func PointAtBearingAndDistance(p orb.Point, bearing, distance float64) orb.Point {
+	aLat := deg2rad(p[1])
+	aLon := deg2rad(p[0])
+
+	bearingRadians := deg2rad(bearing)
+
+	distanceRatio := distance / orb.EarthRadius
+	bLat := math.Asin(math.Sin(aLat)*math.Cos(distanceRatio) + math.Cos(aLat)*math.Sin(distanceRatio)*math.Cos(bearingRadians))
+	bLon := aLon +
+		math.Atan2(
+			math.Sin(bearingRadians)*math.Sin(distanceRatio)*math.Cos(aLat),
+			math.Cos(distanceRatio)-math.Sin(aLat)*math.Sin(bLat),
+		)
+
+	return orb.Point{rad2deg(bLon), rad2deg(bLat)}
+}
+
+func PointAtDistanceAlongLine(ls orb.LineString, distance float64) (orb.Point, float64) {
+	if len(ls) == 0 {
+		panic("empty LineString")
+	}
+
+	if distance < 0 || len(ls) == 1 {
+		return ls[0], 0.0
+	}
+
+	var (
+		travelled = 0.0
+		from, to  orb.Point
+	)
+
+	for i := 1; i < len(ls); i++ {
+		from, to = ls[i-1], ls[i]
+
+		actualSegmentDistance := DistanceHaversine(from, to)
+		expectedSegmentDistance := distance - travelled
+
+		if expectedSegmentDistance < actualSegmentDistance {
+			bearing := Bearing(from, to)
+			return PointAtBearingAndDistance(from, bearing, expectedSegmentDistance), bearing
+		}
+		travelled += actualSegmentDistance
+	}
+
+	return to, Bearing(from, to)
+}

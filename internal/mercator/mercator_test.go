@@ -26,10 +26,18 @@ func TestScalarMercator(t *testing.T) {
 		t.Errorf("Scalar Mercator, projection incorrect, got %v %v", x, y)
 	}
 
-	// default level
+	// testing level > 32 to verify correct type conversion
 	for _, city := range Cities {
-		x, y := ToPlanar(city[1], city[0], 31)
-		lng, lat = ToGeo(x, y, 31)
+		x, y := ToPlanar(city[1], city[0], 35)
+		lng, lat = ToGeo(x, y, 35)
+
+		if math.IsNaN(lng) {
+			t.Error("Scalar Mercator, lng is NaN")
+		}
+
+		if math.IsNaN(lat) {
+			t.Error("Scalar Mercator, lat is NaN")
+		}
 
 		if math.Abs(lat-city[0]) > Epsilon {
 			t.Errorf("Scalar Mercator, latitude miss match: %f != %f", lat, city[0])
@@ -41,11 +49,11 @@ func TestScalarMercator(t *testing.T) {
 	}
 
 	// test polar regions
-	if _, y := ToPlanar(0, 89.9, 31); y != (1<<31)-1 {
+	if _, y := ToPlanar(0, 89.9, 32); y != (1<<32)-1 {
 		t.Errorf("Scalar Mercator, top of the world error, got %v", y)
 	}
 
-	if _, y := ToPlanar(0, -89.9, 31); y != 0 {
+	if _, y := ToPlanar(0, -89.9, 32); y != 0 {
 		t.Errorf("Scalar Mercator, bottom of the world error, got %v", y)
 	}
 }
