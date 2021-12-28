@@ -6,11 +6,6 @@ import (
 	"github.com/paulmach/orb"
 )
 
-const (
-	// EarthRadius is the Earth's radius in kilometers
-	EarthRadius = 6371
-)
-
 // Distance returns the distance between two points in 2d euclidean geometry.
 func Distance(p1, p2 orb.Point) float64 {
 	d0 := (p1[0] - p2[0])
