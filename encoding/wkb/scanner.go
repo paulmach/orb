@@ -229,6 +229,18 @@ func scanPoint(data []byte) (orb.Point, error) {
 		return orb.Point{}, err
 	}
 
+	// Checking for MySQL's SRID+WKB format where the SRID is 0.
+	// Common SRIDs would be handled in the unmarshalByteOrderType above.
+	if len(data) == 25 &&
+		data[0] == 0 && data[1] == 0 && data[2] == 0 && data[3] == 0 {
+
+		data = data[4:]
+		order, typ, data, err = unmarshalByteOrderType(data)
+		if err != nil {
+			return orb.Point{}, err
+		}
+	}
+
 	switch typ {
 	case pointType:
 		return unmarshalPoint(order, data[5:])

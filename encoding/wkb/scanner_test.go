@@ -100,6 +100,11 @@ func TestScanPoint(t *testing.T) {
 			expected: testPoint,
 		},
 		{
+			name:     "point with 0 SRID",
+			data:     append([]byte{0, 0, 0, 0}, testPointData...),
+			expected: testPoint,
+		},
+		{
 			name:     "single multi-point",
 			data:     testMultiPointSingleData,
 			expected: testMultiPointSingle[0],
