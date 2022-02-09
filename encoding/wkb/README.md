@@ -43,7 +43,19 @@ case orb.LineString:
 }
 ```
 
-Scanning directly from MySQL columns is supported. By default MySQL returns geometry
-data as WKB but prefixed with a 4 byte SRID. To support this, if the data is not
-valid WKB, the code will strip the first 4 bytes, the SRID, and try again.
-This works for most use cases.
+## MySQL or MariaDB
+
+By default MySQL returns geometry data as WKB but prefixed with a 4 byte SRID.
+This is supported using the `MySQLScanner` and `MySQLValue`. For example:
+
+```go
+db.Exec("INSERT INTO geotest(id, geom) VALUES (?, ?)", 1, wkb.MySQLValue(orb.Point{1, 1}))
+```
+
+Reading of MySQL point data is supported using the regular scanner but other types may have issues.
+For best results use `MySQLScanner` to handle the 4 byte SRID prefix.
+
+```go
+var p orb.Point
+rows, err := db.QueryRow("SELECT geom FROM geotest").Scan(wkb.MySQLScanner(p))
+```
