@@ -2,6 +2,7 @@ package wkb
 
 import (
 	"bytes"
+	"database/sql/driver"
 	"reflect"
 	"testing"
 
@@ -1027,6 +1028,57 @@ func TestValue_nil(t *testing.T) {
 
 			if val != nil {
 				t.Errorf("should be nil value: %[1]T, %[1]v", val)
+			}
+		})
+	}
+}
+
+func TestMySQLValue(t *testing.T) {
+	cases := []struct {
+		name   string
+		geom   orb.Geometry
+		srid   int
+		result []byte
+	}{
+		{
+			name:   "no srid",
+			geom:   orb.Point{1, 1},
+			srid:   -1,
+			result: []byte{0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63},
+		},
+		{
+			name:   "zero srid",
+			geom:   orb.Point{1, 1},
+			srid:   0,
+			result: []byte{0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63},
+		},
+		{
+			name:   "zero 4326",
+			geom:   orb.Point{1, 1},
+			srid:   4326,
+			result: []byte{230, 16, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var val driver.Value
+			var err error
+
+			if tc.srid >= 0 {
+				val, err = MySQLValue(tc.geom, tc.srid).Value()
+			} else {
+				val, err = MySQLValue(tc.geom).Value()
+			}
+
+			if err != nil {
+				t.Errorf("value error: %v", err)
+			}
+
+			if !reflect.DeepEqual(val.([]byte), tc.result) {
+				t.Logf("%v", val.([]byte))
+				t.Logf("%v", tc.result)
+				t.Errorf("incorrect data")
 			}
 		})
 	}

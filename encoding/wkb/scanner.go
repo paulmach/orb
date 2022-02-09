@@ -384,7 +384,6 @@ type value struct {
 // into the database query.
 func Value(g orb.Geometry) driver.Valuer {
 	return value{v: g}
-
 }
 
 func (v value) Value() (driver.Value, error) {
@@ -393,4 +392,39 @@ func (v value) Value() (driver.Value, error) {
 		return nil, err
 	}
 	return val, err
+}
+
+type mysqlValue struct {
+	v    orb.Geometry
+	srid uint32
+}
+
+// MySQLValue should be used for a value to be inserted into a mysql/mariadb database.
+// It will prefix the geometry with 4 bytes representing the SRID. Zero if not provided.
+func MySQLValue(g orb.Geometry, srid ...int) driver.Valuer {
+	v := mysqlValue{v: g}
+	if len(srid) != 0 {
+		v.srid = uint32(srid[0])
+	}
+
+	return v
+}
+
+func (v mysqlValue) Value() (driver.Value, error) {
+	data := make([]byte, 4, geomLength(v.v)+4)
+	DefaultByteOrder.PutUint32(data, v.srid)
+
+	buf := bytes.NewBuffer(data)
+
+	e := NewEncoder(buf)
+	err := e.Encode(v.v)
+	if err != nil {
+		return nil, err
+	}
+
+	if buf.Len() == 0 {
+		return nil, nil
+	}
+
+	return buf.Bytes(), nil
 }
