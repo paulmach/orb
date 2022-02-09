@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"database/sql/driver"
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -80,6 +81,44 @@ type GeometryScanner struct {
 // This works for most use cases.
 func Scanner(g interface{}) *GeometryScanner {
 	return &GeometryScanner{g: g}
+}
+
+// MySQLGeometryScanner should be used when scanning from a mysql/mariadb database.
+// It will take the first 4 bytes and little endian decode them into the SRID.
+type MySQLGeometryScanner struct {
+	GeometryScanner
+	SRID int
+}
+
+// MySQLScanner will handle the unique format of a mysql/mariadb geometry data.
+// The wkb data is prefixed with a 4 byte SRID.
+func MySQLScanner(g interface{}) *MySQLGeometryScanner {
+	return &MySQLGeometryScanner{GeometryScanner: GeometryScanner{g: g}}
+}
+
+// Scan will scan the input []byte data into a geometry.
+// Since it's a MySQL Scanner it will read the first 4 bytes as the SRID
+// before decoding the rest of the data as wkb.
+func (s *MySQLGeometryScanner) Scan(d interface{}) error {
+	if d == nil {
+		return nil
+	}
+
+	data, ok := d.([]byte)
+	if !ok {
+		return ErrUnsupportedDataType
+	}
+
+	if data == nil {
+		return nil
+	}
+
+	if len(data) < 4 {
+		return ErrNotWKB
+	}
+
+	s.SRID = int(binary.LittleEndian.Uint32(data))
+	return s.GeometryScanner.Scan(data[4:])
 }
 
 // Scan will scan the input []byte data into a geometry.

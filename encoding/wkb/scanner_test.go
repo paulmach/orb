@@ -1033,6 +1033,48 @@ func TestValue_nil(t *testing.T) {
 	}
 }
 
+func TestMySQLScanner(t *testing.T) {
+	cases := []struct {
+		name   string
+		data   []byte
+		result orb.Geometry
+		srid   int
+	}{
+		{
+			name:   "zero srid",
+			data:   []byte{0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63},
+			result: orb.Point{1, 1},
+			srid:   0,
+		},
+		{
+			name:   "zero 4326",
+			data:   []byte{230, 16, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63},
+			result: orb.Point{1, 1},
+			srid:   4326,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := MySQLScanner(nil)
+			err := s.Scan(tc.data)
+			if err != nil {
+				t.Errorf("scan error: %v", err)
+			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
+
+			if !reflect.DeepEqual(s.Geometry, tc.result) {
+				t.Logf("%v", s.Geometry)
+				t.Logf("%v", tc.result)
+				t.Errorf("incorrect geometry")
+			}
+		})
+	}
+}
+
 func TestMySQLValue(t *testing.T) {
 	cases := []struct {
 		name   string
