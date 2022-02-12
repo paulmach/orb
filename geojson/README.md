@@ -1,5 +1,4 @@
-orb/geojson [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/geojson?status.svg)](https://godoc.org/github.com/paulmach/orb/geojson)
-===========
+# orb/geojson [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/geojson?status.svg)](https://godoc.org/github.com/paulmach/orb/geojson)
 
 This package **encodes and decodes** [GeoJSON](http://geojson.org/) into Go structs
 using the geometries in the [orb](https://github.com/paulmach/orb) package.
@@ -9,7 +8,7 @@ The package also provides helper functions such as `UnmarshalFeatureCollection` 
 
 ## Examples
 
-#### Unmarshalling  (JSON -> Go)
+#### Unmarshalling (JSON -> Go)
 
 ```go
 rawJSON := []byte(`
@@ -76,7 +75,9 @@ language such as Go. Included is a `Properties` type with some helper methods th
 force convert a property. An optional default, will be used if the property is missing or the wrong
 type.
 
-	f.Properties.MustBool(key string, def ...bool) bool
-	f.Properties.MustFloat64(key string, def ...float64) float64
-	f.Properties.MustInt(key string, def ...int) int
-	f.Properties.MustString(key string, def ...string) string
+```go
+f.Properties.MustBool(key string, def ...bool) bool
+f.Properties.MustFloat64(key string, def ...float64) float64
+f.Properties.MustInt(key string, def ...int) int
+f.Properties.MustString(key string, def ...string) string
+```

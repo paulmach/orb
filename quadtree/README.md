@@ -1,5 +1,4 @@
-orb/quadtree [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/quadtree?status.svg)](https://godoc.org/github.com/paulmach/orb/quadtree)
-============
+# orb/quadtree [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/quadtree?status.svg)](https://godoc.org/github.com/paulmach/orb/quadtree)
 
 Package quadtree implements a quadtree using rectangular partitions.
 Each point exists in a unique node. This implementation is based off of the
@@ -28,19 +27,19 @@ func (q *Quadtree) InBoundMatching(buf []orb.Pointer, b orb.Bound, f FilterFunc)
 
 ```go
 func ExampleQuadtree_Find() {
-	r := rand.New(rand.NewSource(42)) // to make things reproducible
+    r := rand.New(rand.NewSource(42)) // to make things reproducible
 
-	qt := quadtree.New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
+    qt := quadtree.New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
 
-	// add 1000 random points
-	for i := 0; i < 1000; i++ {
-		qt.Add(orb.Point{r.Float64(), r.Float64()})
-	}
+    // add 1000 random points
+    for i := 0; i < 1000; i++ {
+        qt.Add(orb.Point{r.Float64(), r.Float64()})
+    }
 
-	nearest := qt.Find(orb.Point{0.5, 0.5})
+    nearest := qt.Find(orb.Point{0.5, 0.5})
 
-	fmt.Printf("nearest: %+v\n", nearest)
-	// Output:
-	// nearest: [0.4930591659434973 0.5196585530161364]
+    fmt.Printf("nearest: %+v\n", nearest)
+    // Output:
+    // nearest: [0.4930591659434973 0.5196585530161364]
 }
 ```
