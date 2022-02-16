@@ -1,4 +1,4 @@
-# encoding/wkb [![Godoc Reference](https://godoc.org/github.com/paulmach/orb?status.svg)](https://godoc.org/github.com/paulmach/orb/encoding/wkb)
+# encoding/wkb [![Godoc Reference](https://pkg.go.dev/badge/github.com/paulmach/orb)](https://pkg.go.dev/github.com/paulmach/orb/encoding/wkb)
 
 This package provides encoding and decoding of [WKB](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary)
 data. The interface is defined as:
@@ -17,7 +17,7 @@ func NewDecoder(r io.Reader) *Decoder
 func (d *Decoder) Decode() (orb.Geometry, error)
 ```
 
-### Reading and Writing to a SQL database
+## Reading and Writing to a SQL database
 
 This package provides wrappers for `orb.Geometry` types that implement
 `sql.Scanner` and `driver.Value`. For example:

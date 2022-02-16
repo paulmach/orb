@@ -1,11 +1,11 @@
-# orb/geo [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/geo?status.svg)](https://godoc.org/github.com/paulmach/orb/geo)
+# orb/geo [![Godoc Reference](https://pkg.go.dev/badge/github.com/paulmach/orb)](https://pkg.go.dev/github.com/paulmach/orb/geo)
 
 The geometries defined in the `orb` package are generic 2d geometries.
 Depending on what projection they're in, e.g. lon/lat or flat on the plane,
 area and distance calculations are different. This package implements methods
 that assume the lon/lat or WGS84 projection.
 
-### Examples
+## Examples
 
 Area of the [San Francisco Main Library](https://www.openstreetmap.org/way/24446086):
 

@@ -1,4 +1,4 @@
-# orb/clip [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/clip?status.svg)](https://godoc.org/github.com/paulmach/orb/clip)
+# orb/clip [![Godoc Reference](https://pkg.go.dev/badge/github.com/paulmach/orb)](https://pkg.go.dev/github.com/paulmach/orb/clip)
 
 Package orb/clip provides functions for clipping lines and polygons to a bounding box.
 
@@ -23,6 +23,6 @@ clipped = clip.Geometry(bound, ls)
 clipped = clip.LineString(bound, ls)
 ```
 
-### Acknowledgements
+## Acknowledgements
 
 This library is based on [mapbox/lineclip](https://github.com/mapbox/lineclip).

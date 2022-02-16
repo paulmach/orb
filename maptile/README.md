@@ -1,6 +1,6 @@
-# orb/tile [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/maptile?status.svg)](https://godoc.org/github.com/paulmach/orb/maptile)
+# orb/maptile [![Godoc Reference](https://pkg.go.dev/badge/github.com/paulmach/orb)](https://pkg.go.dev/github.com/paulmach/orb/maptile)
 
-Package orb/maptile provides types and methods for working with
+Package `maptile` provides types and methods for working with
 [web mercator map tiles](https://www.google.com/search?q=web+mercator+map+tiles).
 It defines a tile as:
 
@@ -17,11 +17,11 @@ Functions are provided to create tiles from lon/lat points as well as
 [quadkeys](https://msdn.microsoft.com/en-us/library/bb259689.aspx).
 The tile defines helper methods such as `Parent()`, `Children()`, `Siblings()`, etc.
 
-### tilecover sub-package
+## List of sub-package utilities
 
-Still a work in progress but the goal is to provide geo.Geometry -> covering tiles.
+-   [`tilecover`](tilecover) - computes the covering set of tiles for an `orb.Geometry`.
 
-#### Similar libraries in other languages:
+## Similar libraries in other languages:
 
 -   [mercantile](https://github.com/mapbox/mercantile) - Python
 -   [sphericalmercator](https://github.com/mapbox/sphericalmercator) - Node

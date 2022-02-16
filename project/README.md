@@ -1,6 +1,6 @@
-# orb/project [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/project?status.svg)](https://godoc.org/github.com/paulmach/orb/project)
+# orb/project [![Godoc Reference](https://pkg.go.dev/badge/github.com/paulmach/orb)](https://pkg.go.dev/github.com/paulmach/orb/project)
 
-Package orb/project has helper function for projection geometries.
+Package `project` has helper function for projecting geometries.
 
 ### Examples
 

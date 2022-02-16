@@ -1,6 +1,6 @@
-# orb/quadtree [![Godoc Reference](https://godoc.org/github.com/paulmach/orb/quadtree?status.svg)](https://godoc.org/github.com/paulmach/orb/quadtree)
+# orb/quadtree [![Godoc Reference](https://pkg.go.dev/badge/github.com/paulmach/orb)](https://pkg.go.dev/github.com/paulmach/orb/quadtree)
 
-Package quadtree implements a quadtree using rectangular partitions.
+Package `quadtree` implements a quadtree using rectangular partitions.
 Each point exists in a unique node. This implementation is based off of the
 [d3 implementation](https://github.com/mbostock/d3/wiki/Quadtree-Geom).
 

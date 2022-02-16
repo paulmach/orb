@@ -1,4 +1,4 @@
-# encoding/mvt [![Godoc Reference](https://godoc.org/github.com/paulmach/orb?status.svg)](https://godoc.org/github.com/paulmach/orb/encoding/mvt)
+# encoding/mvt [![Godoc Reference](https://pkg.go.dev/badge/github.com/paulmach/orb)](https://pkg.go.dev/github.com/paulmach/orb/encoding/mvt)
 
 Package mvt provides functions for encoding and decoding
 [Mapbox Vector Tiles](https://www.mapbox.com/vector-tiles/specification/).
@@ -27,7 +27,17 @@ func (l Layer) ProjectToTile(tile maptile.Tile)
 func (l Layer) ProjectToWGS84(tile maptile.Tile)
 ```
 
-### Encoding example
+## Version 1 vs. Version 2
+
+There is no data format difference between v1 and v2. The difference is v2 requires geometries
+be simple/clean. e.g. lines that are not self intersecting and polygons that are encoded in the correct winding order.
+
+This library does not do anything to validate the geometry, it just encodes what you give it, so it defaults to v1.
+I've seen comments from Mapbox about this and they only want you to claim your library is a v2 encoder if it does cleanup/validation.
+
+However, if you know your geometry is simple/clean you can change the [layer version](https://pkg.go.dev/github.com/paulmach/orb/encoding/mvt#Layer) manually.
+
+## Encoding example
 
 ```go
 // Start with a set of feature collections defining each layer in lon/lat (WGS84).
@@ -56,7 +66,7 @@ data, err := layers.Marshal() // this data is NOT gzipped.
 data, err := layers.MarshalGzipped()
 ```
 
-### Feature IDs
+## Feature IDs
 
 Since GeoJSON ids can be any number or string they won't necessarily map to vector tile uint64 ids.
 This is a common incompatibility between the two types.
