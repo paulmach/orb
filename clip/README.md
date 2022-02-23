@@ -23,6 +23,10 @@ clipped = clip.Geometry(bound, ls)
 clipped = clip.LineString(bound, ls)
 ```
 
+## List of sub-package utilities
+
+-   [`smartclip`](smartclip) - handles partial 2d geometries
+
 ## Acknowledgements
 
 This library is based on [mapbox/lineclip](https://github.com/mapbox/lineclip).
