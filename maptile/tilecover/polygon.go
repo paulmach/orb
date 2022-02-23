@@ -1,40 +1,52 @@
 package tilecover
 
 import (
+	"errors"
 	"sort"
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/maptile"
 )
 
+// ErrUnevenIntersections can be returned when clipping polygons
+// and there are issues with the geometries, like the rings are not closed.
+var ErrUnevenIntersections = errors.New("tilecover: uneven intersections, ring not closed?")
+
 // Ring creates a tile cover for the ring.
-func Ring(r orb.Ring, z maptile.Zoom) maptile.Set {
+func Ring(r orb.Ring, z maptile.Zoom) (maptile.Set, error) {
 	if len(r) == 0 {
-		return make(maptile.Set)
+		return make(maptile.Set), nil
 	}
 
 	return Polygon(orb.Polygon{r}, z)
 }
 
 // Polygon creates a tile cover for the polygon.
-func Polygon(p orb.Polygon, z maptile.Zoom) maptile.Set {
+func Polygon(p orb.Polygon, z maptile.Zoom) (maptile.Set, error) {
 	set := make(maptile.Set)
-	polygon(set, p, z)
 
-	return set
+	err := polygon(set, p, z)
+	if err != nil {
+		return nil, err
+	}
+
+	return set, nil
 }
 
 // MultiPolygon creates a tile cover for the multi-polygon.
-func MultiPolygon(mp orb.MultiPolygon, z maptile.Zoom) maptile.Set {
+func MultiPolygon(mp orb.MultiPolygon, z maptile.Zoom) (maptile.Set, error) {
 	set := make(maptile.Set)
 	for _, p := range mp {
-		polygon(set, p, z)
+		err := polygon(set, p, z)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return set
+	return set, nil
 }
 
-func polygon(set maptile.Set, p orb.Polygon, zoom maptile.Zoom) {
+func polygon(set maptile.Set, p orb.Polygon, zoom maptile.Zoom) error {
 	intersections := make([][2]uint32, 0)
 
 	for _, r := range p {
@@ -47,7 +59,7 @@ func polygon(set maptile.Set, p orb.Polygon, zoom maptile.Zoom) {
 			y := ring[i][1]
 
 			// add interesction if it's not local extremum or duplicate
-			if (y > ring[pi][1] || y > ring[ni][1]) && // not local minimum
+			if (ring[pi][1] < y || ring[ni][1] < y) && // not local minimum
 				(y < ring[pi][1] || y < ring[ni][1]) && // not local maximum
 				y != ring[ni][1] {
 
@@ -57,7 +69,7 @@ func polygon(set maptile.Set, p orb.Polygon, zoom maptile.Zoom) {
 	}
 
 	if len(intersections)%2 != 0 {
-		panic("tilecover: uneven intersections, ring not closed?")
+		return ErrUnevenIntersections
 	}
 
 	// sort by y, then x
@@ -79,4 +91,6 @@ func polygon(set maptile.Set, p orb.Polygon, zoom maptile.Zoom) {
 			set[maptile.New(x, y, zoom)] = true
 		}
 	}
+
+	return nil
 }

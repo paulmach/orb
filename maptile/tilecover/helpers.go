@@ -9,20 +9,20 @@ import (
 )
 
 // Geometry returns the covering set of tiles for the given geometry.
-func Geometry(g orb.Geometry, z maptile.Zoom) maptile.Set {
+func Geometry(g orb.Geometry, z maptile.Zoom) (maptile.Set, error) {
 	if g == nil {
-		return nil
+		return nil, nil
 	}
 
 	switch g := g.(type) {
 	case orb.Point:
-		return Point(g, z)
+		return Point(g, z), nil
 	case orb.MultiPoint:
-		return MultiPoint(g, z)
+		return MultiPoint(g, z), nil
 	case orb.LineString:
-		return LineString(g, z)
+		return LineString(g, z), nil
 	case orb.MultiLineString:
-		return MultiLineString(g, z)
+		return MultiLineString(g, z), nil
 	case orb.Ring:
 		return Ring(g, z)
 	case orb.Polygon:
@@ -32,7 +32,7 @@ func Geometry(g orb.Geometry, z maptile.Zoom) maptile.Set {
 	case orb.Collection:
 		return Collection(g, z)
 	case orb.Bound:
-		return Bound(g, z)
+		return Bound(g, z), nil
 	}
 
 	panic(fmt.Sprintf("geometry type not supported: %T", g))
@@ -75,11 +75,15 @@ func Bound(b orb.Bound, z maptile.Zoom) maptile.Set {
 
 // Collection returns the covering set of tiles for the
 // geoemtry collection.
-func Collection(c orb.Collection, z maptile.Zoom) maptile.Set {
+func Collection(c orb.Collection, z maptile.Zoom) (maptile.Set, error) {
 	set := make(maptile.Set)
 	for _, g := range c {
-		set.Merge(Geometry(g, z))
+		s, err := Geometry(g, z)
+		if err != nil {
+			return nil, err
+		}
+		set.Merge(s)
 	}
 
-	return set
+	return set, nil
 }

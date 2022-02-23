@@ -9,19 +9,19 @@ import (
 func TestMergeUp(t *testing.T) {
 	f := loadFeature(t, "./testdata/line.geojson")
 
-	tiles := Geometry(f.Geometry, 15)
+	tiles, _ := Geometry(f.Geometry, 15)
 	c1 := len(MergeUpPartial(tiles, 1, 1))
 
-	tiles = Geometry(f.Geometry, 15)
+	tiles, _ = Geometry(f.Geometry, 15)
 	c2 := len(MergeUpPartial(tiles, 1, 2))
 
-	tiles = Geometry(f.Geometry, 15)
+	tiles, _ = Geometry(f.Geometry, 15)
 	c3 := len(MergeUpPartial(tiles, 1, 3))
 
-	tiles = Geometry(f.Geometry, 15)
+	tiles, _ = Geometry(f.Geometry, 15)
 	c4 := len(MergeUpPartial(tiles, 1, 4))
 
-	tiles = Geometry(f.Geometry, 15)
+	tiles, _ = Geometry(f.Geometry, 15)
 	c := len(MergeUp(tiles, 1))
 
 	if c1 > c2 {
@@ -43,7 +43,7 @@ func TestMergeUp(t *testing.T) {
 
 func BenchmarkMergeUp_z0z10(b *testing.B) {
 	g := loadFeature(b, "./testdata/russia.geojson").Geometry
-	tiles := Geometry(g, 10)
+	tiles, _ := Geometry(g, 10)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -54,7 +54,7 @@ func BenchmarkMergeUp_z0z10(b *testing.B) {
 
 func BenchmarkMergeUp_z8z9(b *testing.B) {
 	g := loadFeature(b, "./testdata/russia.geojson").Geometry
-	tiles := Geometry(g, 9)
+	tiles, _ := Geometry(g, 9)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -65,7 +65,7 @@ func BenchmarkMergeUp_z8z9(b *testing.B) {
 
 func BenchmarkMergeUpPartial4_z0z10(b *testing.B) {
 	g := loadFeature(b, "./testdata/russia.geojson").Geometry
-	tiles := Geometry(g, 10)
+	tiles, _ := Geometry(g, 10)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -76,7 +76,7 @@ func BenchmarkMergeUpPartial4_z0z10(b *testing.B) {
 
 func BenchmarkMergeUpPartial4_z8z9(b *testing.B) {
 	g := loadFeature(b, "./testdata/russia.geojson").Geometry
-	tiles := Geometry(g, 9)
+	tiles, _ := Geometry(g, 9)
 
 	b.ReportAllocs()
 	b.ResetTimer()
