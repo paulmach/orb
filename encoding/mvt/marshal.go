@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"github.com/paulmach/orb"
 	"strconv"
 
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
@@ -46,6 +47,8 @@ func Marshal(layers Layers) ([]byte, error) {
 	for _, l := range layers {
 		v := l.Version
 		e := l.Extent
+
+		kve := newKeyValueEncoder()
 		layer := &vectortile.Tile_Layer{
 			Name:     &l.Name,
 			Version:  &v,
@@ -53,24 +56,10 @@ func Marshal(layers Layers) ([]byte, error) {
 			Features: make([]*vectortile.Tile_Feature, 0, len(l.Features)),
 		}
 
-		kve := newKeyValueEncoder()
-		for i, f := range l.Features {
-			t, g, err := encodeGeometry(f.Geometry)
-			if err != nil {
-				return nil, fmt.Errorf("layer %s: feature %d: error encoding geometry: %v", l.Name, i, err)
+		for _, f := range l.Features {
+			if err := addFeature(layer, kve, f); err != nil {
+				return nil, err
 			}
-
-			tags, err := encodeProperties(kve, f.Properties)
-			if err != nil {
-				return nil, fmt.Errorf("layer %s: feature %d: error encoding properties: %v", l.Name, i, err)
-			}
-
-			layer.Features = append(layer.Features, &vectortile.Tile_Feature{
-				Id:       convertID(f.ID),
-				Tags:     tags,
-				Type:     &t,
-				Geometry: g,
-			})
 		}
 
 		layer.Keys = kve.Keys
@@ -80,6 +69,38 @@ func Marshal(layers Layers) ([]byte, error) {
 	}
 
 	return proto.Marshal(vt)
+}
+
+func addFeature(layer *vectortile.Tile_Layer, kve *keyValueEncoder, f *geojson.Feature) error {
+	if f.Geometry.GeoJSONType() == "GeometryCollection" {
+		for _, g := range f.Geometry.(orb.Collection) {
+			return addSingleGeometryFeature(layer, kve, g, f.Properties, f.ID)
+		}
+	}
+	return addSingleGeometryFeature(layer, kve, f.Geometry, f.Properties, f.ID)
+}
+
+func addSingleGeometryFeature(layer *vectortile.Tile_Layer, kve *keyValueEncoder, g orb.Geometry, p geojson.Properties, id interface{}) error {
+	geomType, encodedGeometry, err := encodeGeometry(g)
+	if err != nil {
+		return err
+	}
+	if err != nil {
+		return fmt.Errorf("error encoding geometry: %v", g)
+	}
+
+	tags, err := encodeProperties(kve, p)
+	if err != nil {
+		return fmt.Errorf("error encoding geometry: %v", g)
+	}
+
+	layer.Features = append(layer.Features, &vectortile.Tile_Feature{
+		Id:       convertID(id),
+		Tags:     tags,
+		Type:     &geomType,
+		Geometry: encodedGeometry,
+	})
+	return nil
 }
 
 func encodeProperties(kve *keyValueEncoder, properties geojson.Properties) ([]uint32, error) {
