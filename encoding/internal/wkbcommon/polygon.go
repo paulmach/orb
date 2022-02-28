@@ -1,4 +1,4 @@
-package wkb
+package wkbcommon
 
 import (
 	"errors"
@@ -100,7 +100,7 @@ func unmarshalMultiPolygon(order byteOrder, data []byte) (orb.MultiPolygon, erro
 	result := make(orb.MultiPolygon, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		p, err := scanPolygon(data)
+		p, err := ScanPolygon(data)
 		if err != nil {
 			return nil, err
 		}

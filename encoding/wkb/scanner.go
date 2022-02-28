@@ -1,15 +1,14 @@
 package wkb
 
 import (
-	"bytes"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 
 	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/encoding/internal/wkbcommon"
 )
 
 var (
@@ -33,6 +32,22 @@ var (
 	// ErrUnsupportedGeometry is returned when geometry type is not supported by this lib.
 	ErrUnsupportedGeometry = errors.New("wkb: unsupported geometry")
 )
+
+var commonErrorMap = map[error]error{
+	wkbcommon.ErrUnsupportedDataType: ErrUnsupportedDataType,
+	wkbcommon.ErrNotWKB:              ErrNotWKB,
+	wkbcommon.ErrIncorrectGeometry:   ErrIncorrectGeometry,
+	wkbcommon.ErrUnsupportedGeometry: ErrUnsupportedGeometry,
+}
+
+func mapCommonError(err error) error {
+	e, ok := commonErrorMap[err]
+	if ok {
+		return e
+	}
+
+	return err
+}
 
 // GeometryScanner is a thing that can scan in sql query results.
 // It can be used as a scan destination:
@@ -124,9 +139,9 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		s.Valid = true
 		return nil
 	case *orb.Point:
-		p, err := scanPoint(data)
+		p, err := wkbcommon.ScanPoint(data)
 		if err != nil {
-			return err
+			return mapCommonError(err)
 		}
 
 		*g = p
@@ -134,9 +149,9 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		s.Valid = true
 		return nil
 	case *orb.MultiPoint:
-		p, err := scanMultiPoint(data)
+		p, err := wkbcommon.ScanMultiPoint(data)
 		if err != nil {
-			return err
+			return mapCommonError(err)
 		}
 
 		*g = p
@@ -144,9 +159,9 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		s.Valid = true
 		return nil
 	case *orb.LineString:
-		p, err := scanLineString(data)
+		p, err := wkbcommon.ScanLineString(data)
 		if err != nil {
-			return err
+			return mapCommonError(err)
 		}
 
 		*g = p
@@ -154,9 +169,9 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		s.Valid = true
 		return nil
 	case *orb.MultiLineString:
-		p, err := scanMultiLineString(data)
+		p, err := wkbcommon.ScanMultiLineString(data)
 		if err != nil {
-			return err
+			return mapCommonError(err)
 		}
 
 		*g = p
@@ -178,9 +193,9 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 
 		return ErrIncorrectGeometry
 	case *orb.Polygon:
-		m, err := scanPolygon(data)
+		m, err := wkbcommon.ScanPolygon(data)
 		if err != nil {
-			return err
+			return mapCommonError(err)
 		}
 
 		*g = m
@@ -188,9 +203,9 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		s.Valid = true
 		return nil
 	case *orb.MultiPolygon:
-		m, err := scanMultiPolygon(data)
+		m, err := wkbcommon.ScanMultiPolygon(data)
 		if err != nil {
-			return err
+			return mapCommonError(err)
 		}
 
 		*g = m
@@ -198,9 +213,9 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		s.Valid = true
 		return nil
 	case *orb.Collection:
-		m, err := scanCollection(data)
+		m, err := wkbcommon.ScanCollection(data)
 		if err != nil {
-			return err
+			return mapCommonError(err)
 		}
 
 		*g = m
@@ -221,159 +236,6 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 	}
 
 	return ErrIncorrectGeometry
-}
-
-func scanPoint(data []byte) (orb.Point, error) {
-	order, typ, data, err := unmarshalByteOrderType(data)
-	if err != nil {
-		return orb.Point{}, err
-	}
-
-	// Checking for MySQL's SRID+WKB format where the SRID is 0.
-	// Common SRIDs would be handled in the unmarshalByteOrderType above.
-	if len(data) == 25 &&
-		data[0] == 0 && data[1] == 0 && data[2] == 0 && data[3] == 0 {
-
-		data = data[4:]
-		order, typ, data, err = unmarshalByteOrderType(data)
-		if err != nil {
-			return orb.Point{}, err
-		}
-	}
-
-	switch typ {
-	case pointType:
-		return unmarshalPoint(order, data[5:])
-	case multiPointType:
-		mp, err := unmarshalMultiPoint(order, data[5:])
-		if err != nil {
-			return orb.Point{}, err
-		}
-		if len(mp) == 1 {
-			return mp[0], nil
-		}
-	}
-
-	return orb.Point{}, ErrIncorrectGeometry
-}
-
-func scanMultiPoint(data []byte) (orb.MultiPoint, error) {
-	m, err := Unmarshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	switch p := m.(type) {
-	case orb.Point:
-		return orb.MultiPoint{p}, nil
-	case orb.MultiPoint:
-		return p, nil
-	}
-
-	return nil, ErrIncorrectGeometry
-}
-
-func scanLineString(data []byte) (orb.LineString, error) {
-	order, typ, data, err := unmarshalByteOrderType(data)
-	if err != nil {
-		return nil, err
-	}
-
-	switch typ {
-	case lineStringType:
-		return unmarshalLineString(order, data[5:])
-	case multiLineStringType:
-		mls, err := unmarshalMultiLineString(order, data[5:])
-		if err != nil {
-			return nil, err
-		}
-		if len(mls) == 1 {
-			return mls[0], nil
-		}
-	}
-
-	return nil, ErrIncorrectGeometry
-}
-
-func scanMultiLineString(data []byte) (orb.MultiLineString, error) {
-	order, typ, data, err := unmarshalByteOrderType(data)
-	if err != nil {
-		return nil, err
-	}
-
-	switch typ {
-	case lineStringType:
-		ls, err := unmarshalLineString(order, data[5:])
-		if err != nil {
-			return nil, err
-		}
-
-		return orb.MultiLineString{ls}, nil
-	case multiLineStringType:
-		return unmarshalMultiLineString(order, data[5:])
-	}
-
-	return nil, ErrIncorrectGeometry
-}
-
-func scanPolygon(data []byte) (orb.Polygon, error) {
-	order, typ, data, err := unmarshalByteOrderType(data)
-	if err != nil {
-		return nil, err
-	}
-
-	switch typ {
-	case polygonType:
-		return unmarshalPolygon(order, data[5:])
-	case multiPolygonType:
-		mp, err := unmarshalMultiPolygon(order, data[5:])
-		if err != nil {
-			return nil, err
-		}
-		if len(mp) == 1 {
-			return mp[0], nil
-		}
-	}
-
-	return nil, ErrIncorrectGeometry
-}
-
-func scanMultiPolygon(data []byte) (orb.MultiPolygon, error) {
-	order, typ, data, err := unmarshalByteOrderType(data)
-	if err != nil {
-		return nil, err
-	}
-
-	switch typ {
-	case polygonType:
-		p, err := unmarshalPolygon(order, data[5:])
-		if err != nil {
-			return nil, err
-		}
-		return orb.MultiPolygon{p}, nil
-	case multiPolygonType:
-		return unmarshalMultiPolygon(order, data[5:])
-	}
-
-	return nil, ErrIncorrectGeometry
-}
-
-func scanCollection(data []byte) (orb.Collection, error) {
-	m, err := NewDecoder(bytes.NewReader(data)).Decode()
-	if err == io.EOF || err == io.ErrUnexpectedEOF {
-		return nil, ErrNotWKB
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	switch p := m.(type) {
-	case orb.Collection:
-		return p, nil
-	}
-
-	return nil, ErrIncorrectGeometry
 }
 
 type value struct {

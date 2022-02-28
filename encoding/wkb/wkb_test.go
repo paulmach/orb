@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/encoding/internal/wkbcommon"
 )
 
 func TestMarshal(t *testing.T) {
@@ -86,8 +87,8 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 	}
 
 	// preallocation
-	if len(data) != geomLength(e) {
-		t.Errorf("prealloc length: %v != %v", len(data), geomLength(e))
+	if len(data) != wkbcommon.GeomLength(e) {
+		t.Errorf("prealloc length: %v != %v", len(data), wkbcommon.GeomLength(e))
 	}
 
 	// Scanner

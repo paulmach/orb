@@ -1,4 +1,4 @@
-package wkb
+package wkbcommon
 
 import (
 	"io"
