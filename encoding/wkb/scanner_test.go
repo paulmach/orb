@@ -49,6 +49,25 @@ func TestScanNil(t *testing.T) {
 			t.Errorf("valid should be false for nil values")
 		}
 	})
+
+	t.Run("unknown geometry type", func(t *testing.T) {
+		s := Scanner(nil)
+
+		b := []byte{
+			//01    02    03    04    05    06    07    08
+			0x01, 0x08, 0x00, 0x00, 0x00, // CircularString type
+			0x46, 0x81, 0xF6, 0x23, 0x2E, 0x4A, 0x5D, 0xC0,
+			0x03, 0x46, 0x1B, 0x3C, 0xAF, 0x5B, 0x40, 0x40,
+		}
+		err := s.Scan(b)
+		if err != ErrUnsupportedGeometry {
+			t.Errorf("incorrect error: %v != %v", err, ErrUnsupportedGeometry)
+		}
+
+		if s.Valid {
+			t.Errorf("valid should be false errors")
+		}
+	})
 }
 
 func TestScanHexData(t *testing.T) {
@@ -58,7 +77,12 @@ func TestScanHexData(t *testing.T) {
 		expected orb.Point
 	}{
 		{
-			name:     "point",
+			name:     "point lower case",
+			data:     []byte(`\x0101000000e0d57267266e4840b22ac24d46b50240`),
+			expected: orb.Point{48.860547, 2.338513},
+		},
+		{
+			name:     "point upper case",
 			data:     []byte(`\x0101000000e0d57267266e4840b22ac24d46b50240`),
 			expected: orb.Point{48.860547, 2.338513},
 		},
@@ -78,6 +102,32 @@ func TestScanHexData(t *testing.T) {
 				t.Errorf("unequal data")
 				t.Log(p)
 				t.Log(tc.expected)
+			}
+		})
+	}
+}
+
+func TestScanHexData_errors(t *testing.T) {
+	cases := []struct {
+		name     string
+		data     []byte
+		expected orb.Point
+	}{
+		{
+			name:     "not hex data",
+			data:     []byte(`\xZZ0101000000e0d57267266e4840b22ac24d46b50240`),
+			expected: orb.Point{48.860547, 2.338513},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var p orb.Point
+			s := Scanner(&p)
+
+			err := s.Scan(tc.data)
+			if err == nil {
+				t.Fatalf("should have error, but no error")
 			}
 		})
 	}
@@ -142,7 +192,7 @@ func TestScanPoint(t *testing.T) {
 	}
 }
 
-func TestScanPoint_Errors(t *testing.T) {
+func TestScanPoint_errors(t *testing.T) {
 	// error conditions
 	cases := []struct {
 		name string
@@ -245,7 +295,7 @@ func TestScanMultiPoint(t *testing.T) {
 	}
 }
 
-func TestScanMultiPoint_Errors(t *testing.T) {
+func TestScanMultiPoint_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data interface{}
@@ -337,7 +387,7 @@ func TestScanLineString(t *testing.T) {
 	}
 }
 
-func TestScanLineString_Errors(t *testing.T) {
+func TestScanLineString_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data interface{}
@@ -434,7 +484,7 @@ func TestScanMultiLineString(t *testing.T) {
 	}
 }
 
-func TestScanMultiLineString_Errors(t *testing.T) {
+func TestScanMultiLineString_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data interface{}
@@ -516,7 +566,7 @@ func TestScanRing(t *testing.T) {
 	}
 }
 
-func TestScanRing_Errors(t *testing.T) {
+func TestScanRing_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data interface{}
@@ -608,7 +658,7 @@ func TestScanPolygon(t *testing.T) {
 	}
 }
 
-func TestScanPolygon_Errors(t *testing.T) {
+func TestScanPolygon_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data interface{}
@@ -705,7 +755,7 @@ func TestScanMultiPolygon(t *testing.T) {
 	}
 }
 
-func TestScanMultiPolygon_Errors(t *testing.T) {
+func TestScanMultiPolygon_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data interface{}
@@ -787,7 +837,7 @@ func TestScanCollection(t *testing.T) {
 	}
 }
 
-func TestScanCollection_Errors(t *testing.T) {
+func TestScanCollection_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data interface{}
@@ -909,7 +959,7 @@ func TestScanBound(t *testing.T) {
 	}
 }
 
-func TestScanBound_Errors(t *testing.T) {
+func TestScanBound_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data interface{}

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/encoding/internal/wkbcommon"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 
 func TestLineString(t *testing.T) {
 	large := orb.LineString{}
-	for i := 0; i < maxPointsAlloc+100; i++ {
+	for i := 0; i < wkbcommon.MaxPointsAlloc+100; i++ {
 		large = append(large, orb.Point{float64(i), float64(-i)})
 	}
 
@@ -95,7 +96,7 @@ var (
 
 func TestMultiLineString(t *testing.T) {
 	large := orb.MultiLineString{}
-	for i := 0; i < maxMultiAlloc+100; i++ {
+	for i := 0; i < wkbcommon.MaxMultiAlloc+100; i++ {
 		large = append(large, orb.LineString{})
 	}
 

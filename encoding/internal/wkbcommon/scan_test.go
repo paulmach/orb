@@ -11,6 +11,7 @@ var SRID = []byte{215, 15, 0, 0}
 func TestScanPoint(t *testing.T) {
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.Point
 	}{
@@ -39,13 +40,23 @@ func TestScanPoint(t *testing.T) {
 			data:     append(SRID, testMultiPointSingleData...),
 			expected: testMultiPointSingle[0],
 		},
+		{
+			name:     "ewkb",
+			srid:     4326,
+			data:     MustMarshal(testMultiPointSingle[0], 4326),
+			expected: testMultiPointSingle[0],
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p, err := ScanPoint(tc.data)
+			p, srid, err := ScanPoint(tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if tc.srid != 0 && tc.srid != srid {
+				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
 			if !p.Equal(tc.expected) {
@@ -57,7 +68,7 @@ func TestScanPoint(t *testing.T) {
 	}
 }
 
-func TestScanPoint_Errors(t *testing.T) {
+func TestScanPoint_errors(t *testing.T) {
 	// error conditions
 	cases := []struct {
 		name string
@@ -88,7 +99,7 @@ func TestScanPoint_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanPoint(tc.data)
+			_, _, err := ScanPoint(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -99,6 +110,7 @@ func TestScanPoint_Errors(t *testing.T) {
 func TestScanMultiPoint(t *testing.T) {
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.MultiPoint
 	}{
@@ -113,6 +125,12 @@ func TestScanMultiPoint(t *testing.T) {
 			expected: testMultiPoint,
 		},
 		{
+			name:     "multi point as ewkb",
+			srid:     4326,
+			data:     MustMarshal(testMultiPoint, 4326),
+			expected: testMultiPoint,
+		},
+		{
 			name:     "point should covert to multi point",
 			data:     testPointData,
 			expected: orb.MultiPoint{testPoint},
@@ -121,9 +139,13 @@ func TestScanMultiPoint(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mp, err := ScanMultiPoint(tc.data)
+			mp, srid, err := ScanMultiPoint(tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if tc.srid != 0 && tc.srid != srid {
+				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
 			if !mp.Equal(tc.expected) {
@@ -135,7 +157,7 @@ func TestScanMultiPoint(t *testing.T) {
 	}
 }
 
-func TestScanMultiPoint_Errors(t *testing.T) {
+func TestScanMultiPoint_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -155,7 +177,7 @@ func TestScanMultiPoint_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanMultiPoint(tc.data)
+			_, _, err := ScanMultiPoint(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -166,6 +188,7 @@ func TestScanMultiPoint_Errors(t *testing.T) {
 func TestScanLineString(t *testing.T) {
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.LineString
 	}{
@@ -180,6 +203,12 @@ func TestScanLineString(t *testing.T) {
 			expected: testLineString,
 		},
 		{
+			name:     "line string as ewkb",
+			srid:     4326,
+			data:     MustMarshal(testLineString, 4326),
+			expected: testLineString,
+		},
+		{
 			name:     "single multi line string",
 			data:     testMultiLineStringSingleData,
 			expected: testMultiLineStringSingle[0],
@@ -188,9 +217,13 @@ func TestScanLineString(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			ls, err := ScanLineString(tc.data)
+			ls, srid, err := ScanLineString(tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if tc.srid != 0 && tc.srid != srid {
+				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
 			if !ls.Equal(tc.expected) {
@@ -202,7 +235,7 @@ func TestScanLineString(t *testing.T) {
 	}
 }
 
-func TestScanLineString_Errors(t *testing.T) {
+func TestScanLineString_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -222,7 +255,7 @@ func TestScanLineString_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanLineString(tc.data)
+			_, _, err := ScanLineString(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -233,6 +266,7 @@ func TestScanLineString_Errors(t *testing.T) {
 func TestScanMultiLineString(t *testing.T) {
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.MultiLineString
 	}{
@@ -252,6 +286,12 @@ func TestScanMultiLineString(t *testing.T) {
 			expected: testMultiLineString,
 		},
 		{
+			name:     "multi line string as ewkb",
+			srid:     4326,
+			data:     MustMarshal(testMultiLineString, 4326),
+			expected: testMultiLineString,
+		},
+		{
 			name:     "single multi line string",
 			data:     testMultiLineStringSingleData,
 			expected: testMultiLineStringSingle,
@@ -260,9 +300,13 @@ func TestScanMultiLineString(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mls, err := ScanMultiLineString(tc.data)
+			mls, srid, err := ScanMultiLineString(tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if tc.srid != 0 && tc.srid != srid {
+				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
 			if !mls.Equal(tc.expected) {
@@ -274,7 +318,7 @@ func TestScanMultiLineString(t *testing.T) {
 	}
 }
 
-func TestScanMultiLineString_Errors(t *testing.T) {
+func TestScanMultiLineString_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -294,7 +338,7 @@ func TestScanMultiLineString_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanMultiLineString(tc.data)
+			_, _, err := ScanMultiLineString(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -305,6 +349,7 @@ func TestScanMultiLineString_Errors(t *testing.T) {
 func TestScanPolygon(t *testing.T) {
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.Polygon
 	}{
@@ -319,6 +364,11 @@ func TestScanPolygon(t *testing.T) {
 			expected: testPolygon,
 		},
 		{
+			name:     "polygon as ewkb",
+			data:     MustMarshal(testPolygon, 4326),
+			expected: testPolygon,
+		},
+		{
 			name:     "single multi polygon",
 			data:     testMultiPolygonSingleData,
 			expected: testMultiPolygonSingle[0],
@@ -327,9 +377,13 @@ func TestScanPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p, err := ScanPolygon(tc.data)
+			p, srid, err := ScanPolygon(tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if tc.srid != 0 && tc.srid != srid {
+				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
 			if !p.Equal(tc.expected) {
@@ -341,7 +395,7 @@ func TestScanPolygon(t *testing.T) {
 	}
 }
 
-func TestScanPolygon_Errors(t *testing.T) {
+func TestScanPolygon_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -361,7 +415,7 @@ func TestScanPolygon_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanPolygon(tc.data)
+			_, _, err := ScanPolygon(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -372,6 +426,7 @@ func TestScanPolygon_Errors(t *testing.T) {
 func TestScanMultiPolygon(t *testing.T) {
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.MultiPolygon
 	}{
@@ -383,6 +438,12 @@ func TestScanMultiPolygon(t *testing.T) {
 		{
 			name:     "multi polygon with MySQL SRID",
 			data:     append(SRID, testMultiPolygonData...),
+			expected: testMultiPolygon,
+		},
+		{
+			name:     "multi polygon as ewkb",
+			srid:     4326,
+			data:     MustMarshal(testMultiPolygon, 4326),
 			expected: testMultiPolygon,
 		},
 		{
@@ -399,9 +460,13 @@ func TestScanMultiPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mp, err := ScanMultiPolygon(tc.data)
+			mp, srid, err := ScanMultiPolygon(tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if tc.srid != 0 && tc.srid != srid {
+				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
 			if !mp.Equal(tc.expected) {
@@ -413,7 +478,7 @@ func TestScanMultiPolygon(t *testing.T) {
 	}
 }
 
-func TestScanMultiPolygon_Errors(t *testing.T) {
+func TestScanMultiPolygon_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -433,7 +498,7 @@ func TestScanMultiPolygon_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanMultiPolygon(tc.data)
+			_, _, err := ScanMultiPolygon(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -444,6 +509,7 @@ func TestScanMultiPolygon_Errors(t *testing.T) {
 func TestScanCollection(t *testing.T) {
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.Collection
 	}{
@@ -452,13 +518,23 @@ func TestScanCollection(t *testing.T) {
 			data:     testCollectionData,
 			expected: testCollection,
 		},
+		{
+			name:     "collection as ewkb",
+			srid:     4326,
+			data:     MustMarshal(testCollection, 4326),
+			expected: testCollection,
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c, err := ScanCollection(tc.data)
+			c, srid, err := ScanCollection(tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if tc.srid != 0 && tc.srid != srid {
+				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
 			if !c.Equal(tc.expected) {
@@ -470,7 +546,7 @@ func TestScanCollection(t *testing.T) {
 	}
 }
 
-func TestScanCollection_Errors(t *testing.T) {
+func TestScanCollection_errors(t *testing.T) {
 	cases := []struct {
 		name string
 		data []byte
@@ -490,7 +566,7 @@ func TestScanCollection_Errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := ScanCollection(tc.data)
+			_, _, err := ScanCollection(tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}

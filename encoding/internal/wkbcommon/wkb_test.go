@@ -10,21 +10,21 @@ import (
 
 func TestMarshal(t *testing.T) {
 	for _, g := range orb.AllGeometries {
-		Marshal(g, binary.BigEndian)
+		Marshal(g, 0, binary.BigEndian)
 	}
 }
 
 func TestMustMarshal(t *testing.T) {
 	for _, g := range orb.AllGeometries {
-		MustMarshal(g, binary.BigEndian)
+		MustMarshal(g, 0, binary.BigEndian)
 	}
 }
 
-func compare(t testing.TB, e orb.Geometry, b []byte) {
+func compare(t testing.TB, e orb.Geometry, s int, b []byte) {
 	t.Helper()
 
 	// Decoder
-	g, err := NewDecoder(bytes.NewReader(b)).Decode()
+	g, srid, err := NewDecoder(bytes.NewReader(b)).Decode()
 	if err != nil {
 		t.Fatalf("decoder: read error: %v", err)
 	}
@@ -33,8 +33,12 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 		t.Errorf("decoder: incorrect geometry: %v != %v", g, e)
 	}
 
+	if srid != s {
+		t.Errorf("decoder: incorrect srid: %v != %v", srid, s)
+	}
+
 	// Umarshal
-	g, err = Unmarshal(b)
+	g, srid, err = Unmarshal(b)
 	if err != nil {
 		t.Fatalf("unmarshal: read error: %v", err)
 	}
@@ -43,11 +47,15 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 		t.Errorf("unmarshal: incorrect geometry: %v != %v", g, e)
 	}
 
+	if srid != s {
+		t.Errorf("decoder: incorrect srid: %v != %v", srid, s)
+	}
+
 	var data []byte
 	if b[0] == 0 {
-		data, err = Marshal(g, binary.BigEndian)
+		data, err = Marshal(g, s, binary.BigEndian)
 	} else {
-		data, err = Marshal(g, binary.LittleEndian)
+		data, err = Marshal(g, s, binary.LittleEndian)
 	}
 	if err != nil {
 		t.Fatalf("marshal error: %v", err)
@@ -60,7 +68,7 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 	}
 
 	// preallocation
-	if len(data) != GeomLength(e) {
-		t.Errorf("prealloc length: %v != %v", len(data), GeomLength(e))
+	if l := GeomLength(e, srid != 0); len(data) != l {
+		t.Errorf("prealloc length: %v != %v", len(data), l)
 	}
 }

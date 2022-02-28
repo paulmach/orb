@@ -31,6 +31,8 @@ err := row.Scan(wkb.Scanner(&p))
 db.Exec("INSERT INTO table (point_column) VALUES (?)", wkb.Value(p))
 ```
 
+The column can also be wrapped in `ST_AsEWKB`. The SRID will be ignored.
+
 If you don't know the type of the geometry try something like
 
 ```go

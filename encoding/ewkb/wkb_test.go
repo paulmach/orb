@@ -1,8 +1,9 @@
-package wkb
+package ewkb
 
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"io/ioutil"
 	"testing"
 
@@ -12,14 +13,23 @@ import (
 
 func TestMarshal(t *testing.T) {
 	for _, g := range orb.AllGeometries {
-		Marshal(g, binary.BigEndian)
+		Marshal(g, 0, binary.BigEndian)
 	}
 }
 
 func TestMustMarshal(t *testing.T) {
 	for _, g := range orb.AllGeometries {
-		MustMarshal(g, binary.BigEndian)
+		MustMarshal(g, 0, binary.BigEndian)
 	}
+}
+
+func MustDecodeHex(s string) []byte {
+	b, err := hex.DecodeString(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return b
 }
 
 func BenchmarkEncode_Point(b *testing.B) {
@@ -47,11 +57,11 @@ func BenchmarkEncode_LineString(b *testing.B) {
 	}
 }
 
-func compare(t testing.TB, e orb.Geometry, b []byte) {
+func compare(t testing.TB, e orb.Geometry, s int, b []byte) {
 	t.Helper()
 
 	// Decoder
-	g, err := NewDecoder(bytes.NewReader(b)).Decode()
+	g, srid, err := NewDecoder(bytes.NewReader(b)).Decode()
 	if err != nil {
 		t.Fatalf("decoder: read error: %v", err)
 	}
@@ -60,8 +70,12 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 		t.Errorf("decoder: incorrect geometry: %v != %v", g, e)
 	}
 
+	if srid != s {
+		t.Errorf("decoder: incorrect srid: %v != %v", srid, s)
+	}
+
 	// Umarshal
-	g, err = Unmarshal(b)
+	g, srid, err = Unmarshal(b)
 	if err != nil {
 		t.Fatalf("unmarshal: read error: %v", err)
 	}
@@ -70,11 +84,15 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 		t.Errorf("unmarshal: incorrect geometry: %v != %v", g, e)
 	}
 
+	if srid != s {
+		t.Errorf("decoder: incorrect srid: %v != %v", srid, s)
+	}
+
 	var data []byte
 	if b[0] == 0 {
-		data, err = Marshal(g, binary.BigEndian)
+		data, err = Marshal(g, srid, binary.BigEndian)
 	} else {
-		data, err = Marshal(g, binary.LittleEndian)
+		data, err = Marshal(g, srid, binary.LittleEndian)
 	}
 	if err != nil {
 		t.Fatalf("marshal error: %v", err)
@@ -87,55 +105,7 @@ func compare(t testing.TB, e orb.Geometry, b []byte) {
 	}
 
 	// preallocation
-	if l := wkbcommon.GeomLength(e, false); len(data) != l {
+	if l := wkbcommon.GeomLength(e, s != 0); len(data) != l {
 		t.Errorf("prealloc length: %v != %v", len(data), l)
-	}
-
-	// Scanner
-	var sg orb.Geometry
-
-	switch e.(type) {
-	case orb.Point:
-		var p orb.Point
-		err = Scanner(&p).Scan(b)
-		sg = p
-	case orb.MultiPoint:
-		var mp orb.MultiPoint
-		err = Scanner(&mp).Scan(b)
-		sg = mp
-	case orb.LineString:
-		var ls orb.LineString
-		err = Scanner(&ls).Scan(b)
-		sg = ls
-	case orb.MultiLineString:
-		var mls orb.MultiLineString
-		err = Scanner(&mls).Scan(b)
-		sg = mls
-	case orb.Polygon:
-		var p orb.Polygon
-		err = Scanner(&p).Scan(b)
-		sg = p
-	case orb.MultiPolygon:
-		var mp orb.MultiPolygon
-		err = Scanner(&mp).Scan(b)
-		sg = mp
-	case orb.Collection:
-		var c orb.Collection
-		err = Scanner(&c).Scan(b)
-		sg = c
-	default:
-		t.Fatalf("unknown type: %T", e)
-	}
-
-	if err != nil {
-		t.Errorf("scan error: %v", err)
-	}
-
-	if sg.GeoJSONType() != e.GeoJSONType() {
-		t.Errorf("scanning to wrong type: %v != %v", sg.GeoJSONType(), e.GeoJSONType())
-	}
-
-	if !orb.Equal(sg, e) {
-		t.Errorf("scan: incorrect geometry: %v != %v", sg, e)
 	}
 }

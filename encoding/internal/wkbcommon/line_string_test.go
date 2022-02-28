@@ -17,12 +17,13 @@ var (
 
 func TestLineString(t *testing.T) {
 	large := orb.LineString{}
-	for i := 0; i < maxPointsAlloc+100; i++ {
+	for i := 0; i < MaxPointsAlloc+100; i++ {
 		large = append(large, orb.Point{float64(i), float64(-i)})
 	}
 
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.LineString
 	}{
@@ -33,14 +34,20 @@ func TestLineString(t *testing.T) {
 		},
 		{
 			name:     "large line string",
-			data:     MustMarshal(large),
+			data:     MustMarshal(large, 0),
+			expected: large,
+		},
+		{
+			name:     "large line string with srid",
+			srid:     4326,
+			data:     MustMarshal(large, 4326),
 			expected: large,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }
@@ -95,12 +102,13 @@ var (
 
 func TestMultiLineString(t *testing.T) {
 	large := orb.MultiLineString{}
-	for i := 0; i < maxMultiAlloc+100; i++ {
+	for i := 0; i < MaxMultiAlloc+100; i++ {
 		large = append(large, orb.LineString{})
 	}
 
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.MultiLineString
 	}{
@@ -116,14 +124,20 @@ func TestMultiLineString(t *testing.T) {
 		},
 		{
 			name:     "large",
-			data:     MustMarshal(large),
+			data:     MustMarshal(large, 0),
+			expected: large,
+		},
+		{
+			name:     "large with srid",
+			srid:     4326,
+			data:     MustMarshal(large, 4326),
 			expected: large,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }
