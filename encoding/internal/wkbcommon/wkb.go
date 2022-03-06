@@ -318,27 +318,6 @@ func readUint32(r io.Reader, order byteOrder, buf []byte) (uint32, error) {
 }
 
 func unmarshalByteOrderType(buf []byte) (byteOrder, uint32, int, []byte, error) {
-	order, typ, srid, data, err := unmarshalByteOrderTypeDirect(buf)
-	if err == nil {
-		// regular (e)wkb
-		return order, typ & 0x0FF, srid, data, nil
-	}
-
-	if len(buf) < 10 {
-		return 0, 0, 0, nil, ErrNotWKB
-	}
-
-	// The prefix is incorrect, let's see if this is data in
-	// MySQL's SRID+WKB format. So truncate the SRID prefix.
-	order, typ, srid, data, err = unmarshalByteOrderTypeDirect(buf[4:])
-	if err != nil || typ&0x00FFFFFF > 7 {
-		return 0, 0, 0, nil, ErrNotWKB
-	}
-
-	return order, typ & 0x0FF, srid, data, nil
-}
-
-func unmarshalByteOrderTypeDirect(buf []byte) (byteOrder, uint32, int, []byte, error) {
 	order, typ, err := byteOrderType(buf)
 	if err != nil {
 		return 0, 0, 0, nil, err
@@ -346,7 +325,7 @@ func unmarshalByteOrderTypeDirect(buf []byte) (byteOrder, uint32, int, []byte, e
 
 	if typ&ewkbType == 0 {
 		// regular wkb, no srid
-		return order, typ, 0, buf[5:], nil
+		return order, typ & 0x0F, 0, buf[5:], nil
 	}
 
 	if len(buf) < 10 {
@@ -354,7 +333,7 @@ func unmarshalByteOrderTypeDirect(buf []byte) (byteOrder, uint32, int, []byte, e
 	}
 
 	srid := unmarshalUint32(order, buf[5:])
-	return order, typ, int(srid), buf[9:], nil
+	return order, typ & 0x0F, int(srid), buf[9:], nil
 }
 
 func byteOrderType(buf []byte) (byteOrder, uint32, error) {
@@ -363,12 +342,13 @@ func byteOrderType(buf []byte) (byteOrder, uint32, error) {
 	}
 
 	var order byteOrder
-	if buf[0] == 0 {
+	switch buf[0] {
+	case 0:
 		order = bigEndian
-	} else if buf[0] == 1 {
+	case 1:
 		order = littleEndian
-	} else {
-		return 0, 0, ErrNotWKB
+	default:
+		return 0, 0, ErrNotWKBHeader
 	}
 
 	// the type which is 4 bytes

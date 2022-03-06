@@ -150,11 +150,6 @@ func TestScanPoint(t *testing.T) {
 			expected: testPoint,
 		},
 		{
-			name:     "point with 0 SRID",
-			data:     append([]byte{0, 0, 0, 0}, testPointData...),
-			expected: testPoint,
-		},
-		{
 			name:     "single multi-point",
 			data:     testMultiPointSingleData,
 			expected: testMultiPointSingle[0],
@@ -205,14 +200,14 @@ func TestScanPoint_errors(t *testing.T) {
 			err:  ErrUnsupportedDataType,
 		},
 		{
-			name: "not wkb",
+			name: "not wkb, too short",
 			data: []byte{0, 0, 0, 0, 1, 192, 94, 157, 24, 227, 60, 152, 15, 64, 66, 222, 128, 39},
 			err:  ErrNotWKB,
 		},
 		{
 			name: "invalid first byte",
 			data: []byte{3, 1, 0, 0, 0, 15, 152, 60, 227, 24, 157, 94, 192, 205, 11, 17, 39, 128, 222, 66, 64},
-			err:  ErrNotWKB,
+			err:  ErrIncorrectGeometry,
 		},
 		{
 			name: "incorrect geometry",

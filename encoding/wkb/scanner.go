@@ -36,6 +36,7 @@ var (
 var commonErrorMap = map[error]error{
 	wkbcommon.ErrUnsupportedDataType: ErrUnsupportedDataType,
 	wkbcommon.ErrNotWKB:              ErrNotWKB,
+	wkbcommon.ErrNotWKBHeader:        ErrNotWKB,
 	wkbcommon.ErrIncorrectGeometry:   ErrIncorrectGeometry,
 	wkbcommon.ErrUnsupportedGeometry: ErrUnsupportedGeometry,
 }
@@ -128,6 +129,8 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		data = data[:n]
 	}
 
+	var e error
+
 	switch g := s.g.(type) {
 	case nil:
 		m, err := Unmarshal(data)
@@ -140,6 +143,13 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		return nil
 	case *orb.Point:
 		p, _, err := wkbcommon.ScanPoint(data)
+		if err == wkbcommon.ErrNotWKBHeader {
+			p, _, e = wkbcommon.ScanPoint(data[4:])
+			if e != wkbcommon.ErrNotWKBHeader {
+				err = e // nil or incorrect type, e.g. decoding line string
+			}
+		}
+
 		if err != nil {
 			return mapCommonError(err)
 		}
@@ -149,33 +159,54 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		s.Valid = true
 		return nil
 	case *orb.MultiPoint:
-		p, _, err := wkbcommon.ScanMultiPoint(data)
+		m, _, err := wkbcommon.ScanMultiPoint(data)
+		if err == wkbcommon.ErrNotWKBHeader {
+			m, _, e = wkbcommon.ScanMultiPoint(data[4:])
+			if e != wkbcommon.ErrNotWKBHeader {
+				err = e
+			}
+		}
+
 		if err != nil {
 			return mapCommonError(err)
 		}
 
-		*g = p
-		s.Geometry = p
+		*g = m
+		s.Geometry = m
 		s.Valid = true
 		return nil
 	case *orb.LineString:
-		p, _, err := wkbcommon.ScanLineString(data)
+		l, _, err := wkbcommon.ScanLineString(data)
+		if err == wkbcommon.ErrNotWKBHeader {
+			l, _, e = wkbcommon.ScanLineString(data[4:])
+			if e != wkbcommon.ErrNotWKBHeader {
+				err = e
+			}
+		}
+
 		if err != nil {
 			return mapCommonError(err)
 		}
 
-		*g = p
-		s.Geometry = p
+		*g = l
+		s.Geometry = l
 		s.Valid = true
 		return nil
 	case *orb.MultiLineString:
-		p, _, err := wkbcommon.ScanMultiLineString(data)
+		m, _, err := wkbcommon.ScanMultiLineString(data)
+		if err == wkbcommon.ErrNotWKBHeader {
+			m, _, e = wkbcommon.ScanMultiLineString(data[4:])
+			if e != wkbcommon.ErrNotWKBHeader {
+				err = e
+			}
+		}
+
 		if err != nil {
 			return mapCommonError(err)
 		}
 
-		*g = p
-		s.Geometry = p
+		*g = m
+		s.Geometry = m
 		s.Valid = true
 		return nil
 	case *orb.Ring:
@@ -193,17 +224,31 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 
 		return ErrIncorrectGeometry
 	case *orb.Polygon:
-		m, _, err := wkbcommon.ScanPolygon(data)
+		p, _, err := wkbcommon.ScanPolygon(data)
+		if err == wkbcommon.ErrNotWKBHeader {
+			p, _, e = wkbcommon.ScanPolygon(data[4:])
+			if e != wkbcommon.ErrNotWKBHeader {
+				err = e
+			}
+		}
+
 		if err != nil {
 			return mapCommonError(err)
 		}
 
-		*g = m
-		s.Geometry = m
+		*g = p
+		s.Geometry = p
 		s.Valid = true
 		return nil
 	case *orb.MultiPolygon:
 		m, _, err := wkbcommon.ScanMultiPolygon(data)
+		if err == wkbcommon.ErrNotWKBHeader {
+			m, _, e = wkbcommon.ScanMultiPolygon(data[4:])
+			if e != wkbcommon.ErrNotWKBHeader {
+				err = e
+			}
+		}
+
 		if err != nil {
 			return mapCommonError(err)
 		}
@@ -213,13 +258,20 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 		s.Valid = true
 		return nil
 	case *orb.Collection:
-		m, _, err := wkbcommon.ScanCollection(data)
+		c, _, err := wkbcommon.ScanCollection(data)
+		if err == wkbcommon.ErrNotWKBHeader {
+			c, _, e = wkbcommon.ScanCollection(data[4:])
+			if e != wkbcommon.ErrNotWKBHeader {
+				err = e
+			}
+		}
+
 		if err != nil {
 			return mapCommonError(err)
 		}
 
-		*g = m
-		s.Geometry = m
+		*g = c
+		s.Geometry = c
 		s.Valid = true
 		return nil
 	case *orb.Bound:

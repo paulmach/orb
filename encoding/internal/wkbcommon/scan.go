@@ -17,6 +17,10 @@ var (
 	// ErrNotWKB is returned when unmarshalling WKB and the data is not valid.
 	ErrNotWKB = errors.New("wkbcommon: invalid data")
 
+	// ErrNotWKBHeader is returned when unmarshalling first few bytes and there
+	// is an issue.
+	ErrNotWKBHeader = errors.New("wkbcommon: invalid header data")
+
 	// ErrIncorrectGeometry is returned when unmarshalling WKB data into the wrong type.
 	// For example, unmarshaling linestring data into a point.
 	ErrIncorrectGeometry = errors.New("wkbcommon: incorrect geometry")
@@ -30,18 +34,6 @@ func ScanPoint(data []byte) (orb.Point, int, error) {
 	order, typ, srid, geomData, err := unmarshalByteOrderType(data)
 	if err != nil {
 		return orb.Point{}, 0, err
-	}
-
-	// Checking for MySQL's SRID+WKB format where the SRID is 0.
-	// Common SRIDs would be handled in the unmarshalByteOrderType above.
-	if len(data) == 25 &&
-		data[0] == 0 && data[1] == 0 && data[2] == 0 && data[3] == 0 {
-
-		data = data[4:]
-		order, typ, srid, geomData, err = unmarshalByteOrderType(data)
-		if err != nil {
-			return orb.Point{}, 0, err
-		}
 	}
 
 	switch typ {

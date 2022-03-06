@@ -30,6 +30,7 @@ var (
 var commonErrorMap = map[error]error{
 	wkbcommon.ErrUnsupportedDataType: ErrUnsupportedDataType,
 	wkbcommon.ErrNotWKB:              ErrNotEWKB,
+	wkbcommon.ErrNotWKBHeader:        ErrNotEWKB,
 	wkbcommon.ErrIncorrectGeometry:   ErrIncorrectGeometry,
 	wkbcommon.ErrUnsupportedGeometry: ErrUnsupportedGeometry,
 }
