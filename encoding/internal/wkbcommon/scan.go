@@ -2,7 +2,9 @@ package wkbcommon
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/paulmach/orb"
@@ -29,6 +31,137 @@ var (
 	ErrUnsupportedGeometry = errors.New("wkbcommon: unsupported geometry")
 )
 
+// Scan will scan the input []byte data into a geometry.
+// This could be into the orb geometry type pointer or, if nil,
+// the scanner.Geometry attribute.
+func Scan(g, d interface{}) (orb.Geometry, int, bool, error) {
+	if d == nil {
+		return nil, 0, false, nil
+	}
+
+	data, ok := d.([]byte)
+	if !ok {
+		return nil, 0, false, ErrUnsupportedDataType
+	}
+
+	if data == nil {
+		return nil, 0, false, nil
+	}
+
+	if len(data) < 5 {
+		return nil, 0, false, ErrNotWKB
+	}
+
+	// go-pg will return ST_AsBinary(*) data as `\xhexencoded` which
+	// needs to be converted to true binary for further decoding.
+	// Code detects the \x prefix and then converts the rest from Hex to binary.
+	if data[0] == byte('\\') && data[1] == byte('x') {
+		n, err := hex.Decode(data, data[2:])
+		if err != nil {
+			return nil, 0, false, fmt.Errorf("thought the data was hex with prefix, but it is not: %v", err)
+		}
+		data = data[:n]
+	}
+
+	// also possible is just straight hex encoded.
+	// In this case the bo bit can be '0x00' or '0x01'
+	if data[0] == '0' && (data[1] == '0' || data[1] == '1') {
+		n, err := hex.Decode(data, data)
+		if err != nil {
+			return nil, 0, false, fmt.Errorf("thought the data was hex, but it is not: %v", err)
+		}
+		data = data[:n]
+	}
+
+	switch g := g.(type) {
+	case nil:
+		m, srid, err := Unmarshal(data)
+		if err != nil {
+			return nil, 0, false, err
+		}
+
+		return m, srid, true, nil
+	case *orb.Point:
+		p, srid, err := ScanPoint(data)
+		if err != nil {
+			return nil, 0, false, err
+		}
+
+		*g = p
+		return p, srid, true, nil
+	case *orb.MultiPoint:
+		m, srid, err := ScanMultiPoint(data)
+		if err != nil {
+			return nil, 0, false, err
+		}
+
+		*g = m
+		return m, srid, true, nil
+	case *orb.LineString:
+		l, srid, err := ScanLineString(data)
+		if err != nil {
+			return nil, 0, false, err
+		}
+
+		*g = l
+		return l, srid, true, nil
+	case *orb.MultiLineString:
+		m, srid, err := ScanMultiLineString(data)
+		if err != nil {
+			return nil, 0, false, err
+		}
+
+		*g = m
+		return m, srid, true, nil
+	case *orb.Ring:
+		m, srid, err := Unmarshal(data)
+		if err != nil {
+			return nil, 0, false, err
+		}
+
+		if p, ok := m.(orb.Polygon); ok && len(p) == 1 {
+			*g = p[0]
+			return p[0], srid, true, nil
+		}
+
+		return nil, 0, false, ErrIncorrectGeometry
+	case *orb.Polygon:
+		p, srid, err := ScanPolygon(data)
+		if err != nil {
+			return nil, 0, false, err
+		}
+
+		*g = p
+		return p, srid, true, nil
+	case *orb.MultiPolygon:
+		m, srid, err := ScanMultiPolygon(data)
+		if err != nil {
+			return nil, 0, false, err
+		}
+
+		*g = m
+		return m, srid, true, nil
+	case *orb.Collection:
+		c, srid, err := ScanCollection(data)
+		if err != nil {
+			return nil, 0, false, err
+		}
+
+		*g = c
+		return c, srid, true, nil
+	case *orb.Bound:
+		m, srid, err := Unmarshal(data)
+		if err != nil {
+			return nil, 0, false, err
+		}
+
+		*g = m.Bound()
+		return *g, srid, true, nil
+	}
+
+	return nil, 0, false, ErrIncorrectGeometry
+}
+
 // ScanPoint takes binary wkb and decodes it into a point.
 func ScanPoint(data []byte) (orb.Point, int, error) {
 	order, typ, srid, geomData, err := unmarshalByteOrderType(data)
@@ -50,7 +183,7 @@ func ScanPoint(data []byte) (orb.Point, int, error) {
 			return orb.Point{}, 0, err
 		}
 		if len(mp) == 1 {
-			return mp[0], 0, nil
+			return mp[0], srid, nil
 		}
 	}
 

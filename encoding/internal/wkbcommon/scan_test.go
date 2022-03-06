@@ -35,15 +35,20 @@ func TestScanPoint(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p, srid, err := ScanPoint(tc.data)
+			g, srid, valid, err := Scan(&orb.Point{}, tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if !valid {
+				t.Errorf("valid should be true")
 			}
 
 			if tc.srid != 0 && tc.srid != srid {
 				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
+			p := g.(orb.Point)
 			if !p.Equal(tc.expected) {
 				t.Errorf("unequal data")
 				t.Log(p)
@@ -79,7 +84,7 @@ func TestScanPoint_errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := ScanPoint(tc.data)
+			_, _, _, err := Scan(&orb.Point{}, tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -114,15 +119,20 @@ func TestScanMultiPoint(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mp, srid, err := ScanMultiPoint(tc.data)
+			g, srid, valid, err := Scan(&orb.MultiPoint{}, tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if !valid {
+				t.Errorf("valid should be true")
 			}
 
 			if tc.srid != 0 && tc.srid != srid {
 				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
+			mp := g.(orb.MultiPoint)
 			if !mp.Equal(tc.expected) {
 				t.Errorf("unequal data")
 				t.Log(mp)
@@ -152,7 +162,7 @@ func TestScanMultiPoint_errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := ScanMultiPoint(tc.data)
+			_, _, _, err := Scan(&orb.MultiPoint{}, tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -187,15 +197,20 @@ func TestScanLineString(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			ls, srid, err := ScanLineString(tc.data)
+			g, srid, valid, err := Scan(&orb.LineString{}, tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if !valid {
+				t.Errorf("valid should be true")
 			}
 
 			if tc.srid != 0 && tc.srid != srid {
 				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
+			ls := g.(orb.LineString)
 			if !ls.Equal(tc.expected) {
 				t.Errorf("unequal data")
 				t.Log(ls)
@@ -225,7 +240,7 @@ func TestScanLineString_errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := ScanLineString(tc.data)
+			_, _, _, err := Scan(&orb.LineString{}, tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -265,15 +280,20 @@ func TestScanMultiLineString(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mls, srid, err := ScanMultiLineString(tc.data)
+			g, srid, valid, err := Scan(&orb.MultiLineString{}, tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if !valid {
+				t.Errorf("valid should be true")
 			}
 
 			if tc.srid != 0 && tc.srid != srid {
 				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
+			mls := g.(orb.MultiLineString)
 			if !mls.Equal(tc.expected) {
 				t.Errorf("unequal data")
 				t.Log(mls)
@@ -303,7 +323,7 @@ func TestScanMultiLineString_errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := ScanMultiLineString(tc.data)
+			_, _, _, err := Scan(&orb.MultiLineString{}, tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -337,15 +357,20 @@ func TestScanPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p, srid, err := ScanPolygon(tc.data)
+			g, srid, valid, err := Scan(&orb.Polygon{}, tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if !valid {
+				t.Errorf("valid should be true")
 			}
 
 			if tc.srid != 0 && tc.srid != srid {
 				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
+			p := g.(orb.Polygon)
 			if !p.Equal(tc.expected) {
 				t.Errorf("unequal data")
 				t.Log(p)
@@ -375,7 +400,7 @@ func TestScanPolygon_errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := ScanPolygon(tc.data)
+			_, _, _, err := Scan(&orb.Polygon{}, tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -415,15 +440,20 @@ func TestScanMultiPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mp, srid, err := ScanMultiPolygon(tc.data)
+			g, srid, valid, err := Scan(&orb.MultiPolygon{}, tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if !valid {
+				t.Errorf("valid should be true")
 			}
 
 			if tc.srid != 0 && tc.srid != srid {
 				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
+			mp := g.(orb.MultiPolygon)
 			if !mp.Equal(tc.expected) {
 				t.Errorf("unequal data")
 				t.Log(mp)
@@ -453,7 +483,7 @@ func TestScanMultiPolygon_errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := ScanMultiPolygon(tc.data)
+			_, _, _, err := Scan(&orb.MultiPolygon{}, tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}
@@ -483,15 +513,20 @@ func TestScanCollection(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c, srid, err := ScanCollection(tc.data)
+			g, srid, valid, err := Scan(&orb.Collection{}, tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
+			}
+
+			if !valid {
+				t.Errorf("valid should be true")
 			}
 
 			if tc.srid != 0 && tc.srid != srid {
 				t.Errorf("incorrect SRID: %v != %v", srid, tc.srid)
 			}
 
+			c := g.(orb.Collection)
 			if !c.Equal(tc.expected) {
 				t.Errorf("unequal data")
 				t.Log(c)
@@ -521,7 +556,7 @@ func TestScanCollection_errors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, err := ScanCollection(tc.data)
+			_, _, _, err := Scan(&orb.Collection{}, tc.data)
 			if err != tc.err {
 				t.Errorf("incorrect error: %v != %v", err, tc.err)
 			}

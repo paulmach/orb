@@ -88,6 +88,7 @@ func compare(t testing.TB, e orb.Geometry, s int, b []byte) {
 		t.Errorf("decoder: incorrect srid: %v != %v", srid, s)
 	}
 
+	// Marshal
 	var data []byte
 	if b[0] == 0 {
 		data, err = Marshal(g, srid, binary.BigEndian)
@@ -102,6 +103,41 @@ func compare(t testing.TB, e orb.Geometry, s int, b []byte) {
 		t.Logf("%v", data)
 		t.Logf("%v", b)
 		t.Errorf("marshal: incorrent encoding")
+	}
+
+	// Encode
+	buf := bytes.NewBuffer(nil)
+	en := NewEncoder(buf)
+	if b[0] == 0 {
+		en.SetByteOrder(binary.BigEndian)
+	} else {
+		en.SetByteOrder(binary.LittleEndian)
+	}
+
+	en.SetSRID(s)
+	err = en.Encode(e)
+	if err != nil {
+		t.Errorf("encode error: %v", err)
+	}
+
+	if !bytes.Equal(data, buf.Bytes()) {
+		t.Logf("%v", data)
+		t.Logf("%v", b)
+		t.Errorf("encode: incorrent encoding")
+	}
+
+	// pass in srid
+	buf.Reset()
+	en.SetSRID(10101)
+	en.Encode(e, s)
+	if err != nil {
+		t.Errorf("encode with srid error: %v", err)
+	}
+
+	if !bytes.Equal(data, buf.Bytes()) {
+		t.Logf("%v", data)
+		t.Logf("%v", b)
+		t.Errorf("encode with srid: incorrent encoding")
 	}
 
 	// preallocation

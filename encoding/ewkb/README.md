@@ -1,6 +1,6 @@
 # encoding/ewkb [![Godoc Reference](https://pkg.go.dev/badge/github.com/paulmach/orb)](https://pkg.go.dev/github.com/paulmach/orb/encoding/ewkb)
 
-This package provides encoding and decoding of extended [WKB](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Format_variations)
+This package provides encoding and decoding of [extended WKB](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Format_variations)
 data. This format includes the SRID in the data. If you don't need the SRID you can use the
 [wkb](../wkb) package for a simpler interface.
 

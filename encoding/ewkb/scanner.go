@@ -1,4 +1,4 @@
-package wkb
+package ewkb
 
 import (
 	"database/sql"
@@ -16,16 +16,18 @@ var (
 // GeometryScanner is a thing that can scan in sql query results.
 // It can be used as a scan destination:
 //
-//	s := &wkb.GeometryScanner{}
-//	err := db.QueryRow("SELECT latlon FROM foo WHERE id=?", id).Scan(s)
+//	var s wkb.GeometryScanner
+//	err := db.QueryRow("SELECT latlon FROM foo WHERE id=?", id).Scan(&s)
 //	...
 //	if s.Valid {
 //	  // use s.Geometry
+//	  // use s.SRID
 //	} else {
 //	  // NULL value
 //	}
 type GeometryScanner struct {
 	g        interface{}
+	SRID     int
 	Geometry orb.Geometry
 	Valid    bool // Valid is true if the geometry is not NULL
 }
@@ -45,18 +47,13 @@ type GeometryScanner struct {
 //
 //	var point orb.Point
 //	s := wkb.Scanner(&point)
-//	err := db.QueryRow("SELECT latlon FROM foo WHERE id=?", id).Scan(&s)
+//	err := db.QueryRow("SELECT latlon FROM foo WHERE id=?", id).Scan(s)
 //	...
 //	if s.Valid {
 //	  // use p
 //	} else {
 //	  // NULL value
 //	}
-//
-// DEPRECATED behavior: Scanning directly from MySQL columns is supported.
-// By default MySQL returns geometry data as WKB but prefixed with a 4 byte SRID.
-// To support this, if the data is not valid WKB, the code will strip the
-// first 4 bytes and try again. This works for most use cases.
 func Scanner(g interface{}) *GeometryScanner {
 	return &GeometryScanner{g: g}
 }
@@ -65,50 +62,36 @@ func Scanner(g interface{}) *GeometryScanner {
 // This could be into the orb geometry type pointer or, if nil,
 // the scanner.Geometry attribute.
 func (s *GeometryScanner) Scan(d interface{}) error {
-	if d == nil {
-		return nil
-	}
-
-	data, ok := d.([]byte)
-	if !ok {
-		return ErrUnsupportedDataType
-	}
-
 	s.Geometry = nil
 	s.Valid = false
 
-	g, _, valid, err := wkbcommon.Scan(s.g, d)
-	if err == wkbcommon.ErrNotWKBHeader {
-		var e error
-		g, _, valid, e = wkbcommon.Scan(s.g, data[4:])
-		if e != wkbcommon.ErrNotWKBHeader {
-			err = e // nil or incorrect type, e.g. decoding line string
-		}
-	}
-
+	g, srid, valid, err := wkbcommon.Scan(s.g, d)
 	if err != nil {
 		return mapCommonError(err)
 	}
 
 	s.Geometry = g
+	s.SRID = srid
 	s.Valid = valid
 
 	return nil
 }
 
 type value struct {
-	v orb.Geometry
+	srid int
+	v    orb.Geometry
 }
 
-// Value will create a driver.Valuer that will WKB the geometry
-// into the database query.
-func Value(g orb.Geometry) driver.Valuer {
-	return value{v: g}
+// Value will create a driver.Valuer that will EWKB the geometry into the database query.
+//
+//	db.Exec("INSERT INTO table (point_column) VALUES (?)", ewkb.Value(p, 4326))
+func Value(g orb.Geometry, srid int) driver.Valuer {
+	return value{srid: srid, v: g}
 
 }
 
 func (v value) Value() (driver.Value, error) {
-	val, err := Marshal(v.v)
+	val, err := Marshal(v.v, v.srid)
 	if val == nil {
 		return nil, err
 	}

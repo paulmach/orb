@@ -5,11 +5,46 @@ package wkb
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"io"
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/internal/wkbcommon"
 )
+
+var (
+	// ErrUnsupportedDataType is returned by Scan methods when asked to scan
+	// non []byte data from the database. This should never happen
+	// if the driver is acting appropriately.
+	ErrUnsupportedDataType = errors.New("wkb: scan value must be []byte")
+
+	// ErrNotWKB is returned when unmarshalling WKB and the data is not valid.
+	ErrNotWKB = errors.New("wkb: invalid data")
+
+	// ErrIncorrectGeometry is returned when unmarshalling WKB data into the wrong type.
+	// For example, unmarshaling linestring data into a point.
+	ErrIncorrectGeometry = errors.New("wkb: incorrect geometry")
+
+	// ErrUnsupportedGeometry is returned when geometry type is not supported by this lib.
+	ErrUnsupportedGeometry = errors.New("wkb: unsupported geometry")
+)
+
+var commonErrorMap = map[error]error{
+	wkbcommon.ErrUnsupportedDataType: ErrUnsupportedDataType,
+	wkbcommon.ErrNotWKB:              ErrNotWKB,
+	wkbcommon.ErrNotWKBHeader:        ErrNotWKB,
+	wkbcommon.ErrIncorrectGeometry:   ErrIncorrectGeometry,
+	wkbcommon.ErrUnsupportedGeometry: ErrUnsupportedGeometry,
+}
+
+func mapCommonError(err error) error {
+	e, ok := commonErrorMap[err]
+	if ok {
+		return e
+	}
+
+	return err
+}
 
 // DefaultByteOrder is the order used for marshalling or encoding
 // is none is specified.
@@ -62,8 +97,9 @@ func NewEncoder(w io.Writer) *Encoder {
 
 // SetByteOrder will override the default byte order set when
 // the encoder was created.
-func (e *Encoder) SetByteOrder(bo binary.ByteOrder) {
+func (e *Encoder) SetByteOrder(bo binary.ByteOrder) *Encoder {
 	e.e.SetByteOrder(bo)
+	return e
 }
 
 // Encode will write the geometry encoded as WKB to the given writer.

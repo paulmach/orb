@@ -44,18 +44,16 @@ func mapCommonError(err error) error {
 	return err
 }
 
-// DefaultByteOrder is the order used for marshalling or encoding
-// is none is specified.
+// DefaultByteOrder is the order used for marshalling or encoding is none is specified.
 var DefaultByteOrder binary.ByteOrder = binary.LittleEndian
 
-// DefaultSRID is set to 4326, a common SRID,which represents spatial data using
+// DefaultSRID is set to 4326, a common SRID, which represents spatial data using
 // longitude and latitude coordinates on the Earth's surface as defined in the WGS84 standard,
 // which is also used for the Global Positioning System (GPS).
 // This will be used by the encoder if non is specified.
 var DefaultSRID int = 4326
 
-// An Encoder will encode a geometry as EWKB to the writer given at
-// creation time.
+// An Encoder will encode a geometry as EWKB to the writer given at creation time.
 type Encoder struct {
 	srid int
 	e    *wkbcommon.Encoder
@@ -116,8 +114,13 @@ func (e *Encoder) SetSRID(srid int) *Encoder {
 }
 
 // Encode will write the geometry encoded as EWKB to the given writer.
-func (e *Encoder) Encode(geom orb.Geometry) error {
-	return e.e.Encode(geom, e.srid)
+func (e *Encoder) Encode(geom orb.Geometry, srid ...int) error {
+	s := e.srid
+	if len(srid) > 0 {
+		s = srid[0]
+	}
+
+	return e.e.Encode(geom, s)
 }
 
 // Decoder can decoder WKB geometry off of the stream.
