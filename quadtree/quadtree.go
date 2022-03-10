@@ -171,6 +171,9 @@ func removeNode(n *node) {
 
 	n.Value = n.Children[i].Value
 	removeNode(n.Children[i])
+	if n.Children[i].Value == nil {
+		n.Children[i] = nil
+	}
 }
 
 // Find returns the closest Value/Pointer in the quadtree.
