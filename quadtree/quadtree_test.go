@@ -56,6 +56,55 @@ func TestQuadtreeRemove(t *testing.T) {
 	}
 }
 
+type PExtra struct {
+	p  orb.Point
+	id string
+}
+
+func (p *PExtra) Point() orb.Point {
+	return p.p
+}
+
+func TestQuadtreeRemoveAndAdd(t *testing.T) {
+	r := rand.New(rand.NewSource(42))
+
+	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
+	p0 := &PExtra{p: orb.Point{r.Float64(), r.Float64()}, id: "0"}
+	p1 := &PExtra{p: orb.Point{p0.p[0], p0.p[1]}, id: "1"}
+	p2 := &PExtra{p: orb.Point{p0.p[0], p0.p[1]}, id: "2"}
+	p3 := &PExtra{p: orb.Point{p0.p[0], p0.p[1]}, id: "3"}
+
+	qt.Add(p0)
+	qt.Add(p1)
+	qt.Add(p2)
+	found := qt.Remove(p1, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p1.id
+	})
+	if !found {
+		t.Error("didn't find point")
+	}
+	found = qt.Remove(p0, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p0.id
+	})
+	if !found {
+		t.Error("didn't find point")
+	}
+	qt.Add(p3)
+	found = qt.Remove(p2, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p2.id
+	})
+	if !found {
+		t.Error("didn't find point")
+	}
+	found = qt.Remove(p3, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p3.id
+	})
+	if !found {
+		t.Error("didn't find point")
+	}
+
+}
+
 func TestQuadtreeFind(t *testing.T) {
 	points := orb.MultiPoint{}
 	dim := 17
