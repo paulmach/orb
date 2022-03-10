@@ -1,10 +1,12 @@
 package quadtree
 
 import (
+	"fmt"
 	"math/rand"
 	"reflect"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/planar"
@@ -103,6 +105,42 @@ func TestQuadtreeRemoveAndAdd(t *testing.T) {
 		t.Error("didn't find point")
 	}
 
+}
+
+func TestQuadtreeRemoveAndAddRandom(t *testing.T) {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	bounds := orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{3000, 3000}}
+	qt := New(bounds)
+	points := make([]*PExtra, 0, 3000)
+	const perRun = 300
+	const runs = 10
+	id := 0
+	for i := 0; i < runs; i++ {
+
+		for i := 0; i < perRun; i++ {
+			x := r.Int63n(30)
+			y := r.Int63n(30)
+			id++
+			p := &PExtra{p: orb.Point{float64(x), float64(y)}, id: fmt.Sprintf("%d", id)}
+			qt.Add(p)
+			points = append(points, p)
+		}
+		for i := 0; i < perRun/2; i++ {
+			k := r.Int() % len(points)
+			remP := points[k]
+			points = append(points[:k], points[k+1:]...)
+			qt.Remove(remP, func(p orb.Pointer) bool {
+				return p.(*PExtra).id == remP.id
+			})
+		}
+	}
+
+	left := len(qt.InBound(nil, bounds))
+	expected := runs * perRun / 2
+	if left != expected {
+		t.Error("WRONG: ", left, expected)
+	}
 }
 
 func TestQuadtreeFind(t *testing.T) {
