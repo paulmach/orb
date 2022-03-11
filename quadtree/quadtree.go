@@ -168,6 +168,8 @@ func (q *Quadtree) removeNode(n *node) {
 					break
 				}
 			}
+		} else {
+			q.root = nil
 		}
 		return
 	}
