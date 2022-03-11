@@ -33,6 +33,7 @@ type FilterFunc func(p orb.Pointer) bool
 type node struct {
 	Value    orb.Pointer
 	Children [4]*node
+	Parent   *node
 }
 
 // New creates a new quadtree for the given bound. Added points
@@ -61,7 +62,8 @@ func (q *Quadtree) Add(p orb.Pointer) error {
 
 	if q.root == nil {
 		q.root = &node{
-			Value: p,
+			Value:  p,
+			Parent: nil,
 		}
 		return nil
 	}
@@ -77,7 +79,7 @@ func (q *Quadtree) Add(p orb.Pointer) error {
 }
 
 // add is the recursive search to find a place to add the point
-func (q *Quadtree) add(n *node, p orb.Pointer, point orb.Point, left, right, bottom, top float64) {
+func (q *Quadtree) add(n *node, p orb.Pointer, point orb.Point, left, right, bottom, top float64) *node {
 	i := 0
 
 	// figure which child of this internal node the point is in.
@@ -96,12 +98,16 @@ func (q *Quadtree) add(n *node, p orb.Pointer, point orb.Point, left, right, bot
 	}
 
 	if n.Children[i] == nil {
-		n.Children[i] = &node{Value: p}
-		return
+		newNode := &node{
+			Value:  p,
+			Parent: n,
+		}
+		n.Children[i] = newNode
+		return newNode
 	}
 
 	// proceed down to the child to see if it's a leaf yet and we can add the pointer there.
-	q.add(n.Children[i], p, point, left, right, bottom, top)
+	return q.add(n.Children[i], p, point, left, right, bottom, top)
 }
 
 // Remove will remove the pointer from the quadtree. By default it'll match
@@ -137,42 +143,62 @@ func (q *Quadtree) Remove(p orb.Pointer, eq FilterFunc) bool {
 		return false
 	}
 
-	removeNode(v.closest)
+	q.removeNode(v.closest)
 	return true
 }
 
 // removeNode is the recursive fixing up of the tree when we remove a node.
-func removeNode(n *node) {
-	var i int
-	for {
-		i = -1
-		if n.Children[0] != nil {
-			i = 0
-		} else if n.Children[1] != nil {
-			i = 1
-		} else if n.Children[2] != nil {
-			i = 2
-		} else if n.Children[3] != nil {
-			i = 3
+func (q *Quadtree) removeNode(n *node) {
+	nonEmptyChildIdx := -1
+	for i := 0; i < 4; i++ {
+		if n.Children[i] != nil {
+			nonEmptyChildIdx = i
+			break
 		}
-
-		if i == -1 {
-			n.Value = nil
-			return
-		}
-
-		if n.Children[i].Value == nil {
-			n.Children[i] = nil
-			continue
-		}
-
-		break
 	}
 
-	n.Value = n.Children[i].Value
-	removeNode(n.Children[i])
-	if n.Children[i].Value == nil {
-		n.Children[i] = nil
+	// no children
+	if nonEmptyChildIdx == -1 {
+		n.Value = nil
+		// node is completely empty. Cleanup references to it
+		if n.Parent != nil {
+			for i := 0; i < 4; i++ {
+				if n.Parent.Children[i] == n {
+					n.Parent.Children[i] = nil
+					break
+				}
+			}
+		}
+		return
+	}
+
+	replacingChild := n.Children[nonEmptyChildIdx]
+	n.Value = replacingChild.Value
+	if replacingChild.Children[nonEmptyChildIdx] != nil {
+		n.Children[nonEmptyChildIdx] = replacingChild.Children[nonEmptyChildIdx]
+		n.Children[nonEmptyChildIdx].Parent = n
+	} else {
+		n.Children[nonEmptyChildIdx] = nil
+	}
+	for i := 0; i < 4; i++ {
+		if i == nonEmptyChildIdx {
+			continue
+		}
+		orphan := replacingChild.Children[i]
+		if orphan != nil {
+			// insert the child's value as a fresh node
+			newNode := q.add(q.root, orphan.Value, orphan.Value.Point(),
+				q.bound.Min[0], q.bound.Max[0],
+				q.bound.Min[1], q.bound.Max[1],
+			)
+			// move the child's children to that new node
+			for i := 0; i < 4; i++ {
+				if orphan.Children[i] != nil {
+					newNode.Children[i] = orphan.Children[i]
+					newNode.Children[i].Parent = newNode
+				}
+			}
+		}
 	}
 }
 
