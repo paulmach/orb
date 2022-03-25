@@ -1,6 +1,8 @@
 package mvt
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -467,6 +469,22 @@ func TestMarshal_ID(t *testing.T) {
 			t.Errorf("should unmarshal id to float64: %T", id)
 		}
 	})
+}
+
+func TestStableMarshalling(t *testing.T) {
+	layers := NewLayers(loadGeoJSON(t, maptile.New(17896, 24449, 16)))
+	values := make(map[string]bool)
+
+	for i := 0; i < 100; i++ {
+		marshal, _ := Marshal(layers)
+		checksum := md5.Sum(marshal)
+		sum := hex.EncodeToString(checksum[:])
+		values[sum] = true
+	}
+
+	if len(values) != 1 {
+		t.Errorf("multiple values (%d) for marshalled bytes", len(values))
+	}
 }
 
 func BenchmarkMarshal(b *testing.B) {
