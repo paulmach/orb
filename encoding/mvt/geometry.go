@@ -138,6 +138,8 @@ type keyValueEncoder struct {
 
 	Values   []*vectortile.Tile_Value
 	valueMap map[interface{}]uint32
+
+	keySortBuffer []string
 }
 
 func newKeyValueEncoder() *keyValueEncoder {

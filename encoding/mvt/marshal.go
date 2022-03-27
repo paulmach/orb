@@ -86,13 +86,13 @@ func Marshal(layers Layers) ([]byte, error) {
 func encodeProperties(kve *keyValueEncoder, properties geojson.Properties) ([]uint32, error) {
 	tags := make([]uint32, 0, 2*len(properties))
 
-	keys := make([]string, 0, len(properties))
+	kve.keySortBuffer = kve.keySortBuffer[:0]
 	for k := range properties {
-		keys = append(keys, k)
+		kve.keySortBuffer = append(kve.keySortBuffer, k)
 	}
-	sort.Strings(keys)
+	sort.Strings(kve.keySortBuffer)
 
-	for _, k := range keys {
+	for _, k := range kve.keySortBuffer {
 		ki := kve.Key(k)
 		vi, err := kve.Value(properties[k])
 		if err != nil {
