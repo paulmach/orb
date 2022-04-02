@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"sort"
 	"strconv"
 
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
@@ -84,9 +85,16 @@ func Marshal(layers Layers) ([]byte, error) {
 
 func encodeProperties(kve *keyValueEncoder, properties geojson.Properties) ([]uint32, error) {
 	tags := make([]uint32, 0, 2*len(properties))
-	for k, v := range properties {
+
+	kve.keySortBuffer = kve.keySortBuffer[:0]
+	for k := range properties {
+		kve.keySortBuffer = append(kve.keySortBuffer, k)
+	}
+	sort.Strings(kve.keySortBuffer)
+
+	for _, k := range kve.keySortBuffer {
 		ki := kve.Key(k)
-		vi, err := kve.Value(v)
+		vi, err := kve.Value(properties[k])
 		if err != nil {
 			return nil, fmt.Errorf("property %s: %v", k, err)
 		}
