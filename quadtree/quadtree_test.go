@@ -67,66 +67,207 @@ func (p *PExtra) Point() orb.Point {
 	return p.p
 }
 
-func TestQuadtreeRemoveAndAdd(t *testing.T) {
-	r := rand.New(rand.NewSource(42))
+func (p *PExtra) String() string {
+	return fmt.Sprintf("%v: %v", p.id, p.p)
+}
+
+func TestQuadtreeRemoveAndAdd_inOrder(t *testing.T) {
+	seed := time.Now().UnixNano()
+	t.Logf("seed: %v", seed)
+	r := rand.New(rand.NewSource(seed))
 
 	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
-	p0 := &PExtra{p: orb.Point{r.Float64(), r.Float64()}, id: "0"}
-	p1 := &PExtra{p: orb.Point{p0.p[0], p0.p[1]}, id: "1"}
-	p2 := &PExtra{p: orb.Point{p0.p[0], p0.p[1]}, id: "2"}
-	p3 := &PExtra{p: orb.Point{p0.p[0], p0.p[1]}, id: "3"}
+	p1 := &PExtra{p: orb.Point{r.Float64(), r.Float64()}, id: "1"}
+	p2 := &PExtra{p: orb.Point{p1.p[0], p1.p[1]}, id: "2"}
+	p3 := &PExtra{p: orb.Point{p1.p[0], p1.p[1]}, id: "3"}
 
-	qt.Add(p0)
 	qt.Add(p1)
 	qt.Add(p2)
-	found := qt.Remove(p1, func(p orb.Pointer) bool {
-		return p.(*PExtra).id == p1.id
-	})
-	if !found {
-		t.Error("didn't find point")
-	}
-	found = qt.Remove(p0, func(p orb.Pointer) bool {
-		return p.(*PExtra).id == p0.id
-	})
-	if !found {
-		t.Error("didn't find point")
-	}
 	qt.Add(p3)
+
+	// rm 3
+	found := qt.Remove(p3, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p3.id
+	})
+	if !found {
+		t.Error("didn't find/remove point")
+	}
+
+	// leaf node doesn't actually get removed
+	if c := countNodes(qt.root); c != 3 {
+		t.Errorf("incorrect number of nodes: %v != 3", c)
+	}
+
+	// 3 again
+	found = qt.Remove(p3, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p3.id
+	})
+	if found {
+		t.Errorf("should not find already removed node")
+	}
+
+	// rm 2
 	found = qt.Remove(p2, func(p orb.Pointer) bool {
 		return p.(*PExtra).id == p2.id
 	})
 	if !found {
-		t.Error("didn't find point")
+		t.Error("didn't find/remove point")
 	}
+
+	if c := countNodes(qt.root); c != 2 {
+		t.Errorf("incorrect number of nodes: %v != 2", c)
+	}
+
+	// rm 1
+	found = qt.Remove(p1, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p1.id
+	})
+	if !found {
+		t.Error("didn't find/remove point")
+	}
+
+	if c := countNodes(qt.root); c != 1 {
+		t.Errorf("incorrect number of nodes: %v != 1", c)
+	}
+}
+
+func TestQuadtreeRemoveAndAdd_sameLoc(t *testing.T) {
+	seed := time.Now().UnixNano()
+	t.Logf("seed: %v", seed)
+	r := rand.New(rand.NewSource(seed))
+
+	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
+	p1 := &PExtra{p: orb.Point{r.Float64(), r.Float64()}, id: "1"}
+	p2 := &PExtra{p: orb.Point{p1.p[0], p1.p[1]}, id: "2"}
+	p3 := &PExtra{p: orb.Point{p1.p[0], p1.p[1]}, id: "3"}
+	p4 := &PExtra{p: orb.Point{p1.p[0], p1.p[1]}, id: "4"}
+	p5 := &PExtra{p: orb.Point{p1.p[0], p1.p[1]}, id: "5"}
+
+	qt.Add(p1)
+	qt.Add(p2)
+	qt.Add(p3)
+
+	// remove middle point
+	found := qt.Remove(p2, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p2.id
+	})
+	if !found {
+		t.Error("didn't find/remove point")
+	}
+
+	if c := countNodes(qt.root); c != 2 {
+		t.Errorf("incorrect number of nodes: %v != 2", c)
+	}
+
+	// remove first point
+	found = qt.Remove(p1, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p1.id
+	})
+	if !found {
+		t.Error("didn't find/remove point")
+	}
+
+	if c := countNodes(qt.root); c != 1 {
+		t.Errorf("incorrect number of nodes: %v != 1", c)
+	}
+
+	// add a 4th point
+	qt.Add(p4)
+
+	// remove third point
 	found = qt.Remove(p3, func(p orb.Pointer) bool {
 		return p.(*PExtra).id == p3.id
 	})
 	if !found {
-		t.Error("didn't find point")
+		t.Error("didn't find/remove point")
 	}
 
+	if c := countNodes(qt.root); c != 1 {
+		t.Errorf("incorrect number of nodes: %v != 1", c)
+	}
+
+	// add a 5th point
+	qt.Add(p5)
+
+	// remove the 5th point
+	found = qt.Remove(p5, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p5.id
+	})
+	if !found {
+		t.Error("didn't find/remove point")
+	}
+
+	// 5 is a tail point, so its not does not actually get removed
+	if c := countNodes(qt.root); c != 2 {
+		t.Errorf("incorrect number of nodes: %v != 2", c)
+	}
+
+	// add a 3th point again
+	qt.Add(p3)
+
+	// should reuse the tail point left by p5
+	if c := countNodes(qt.root); c != 2 {
+		t.Errorf("incorrect number of nodes: %v != 2", c)
+	}
+
+	// remove p4/root
+	found = qt.Remove(p4, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p4.id
+	})
+	if !found {
+		t.Error("didn't find/remove point")
+	}
+
+	if c := countNodes(qt.root); c != 1 {
+		t.Errorf("incorrect number of nodes: %v != 1", c)
+	}
+
+	// remove p3/root
+	found = qt.Remove(p3, func(p orb.Pointer) bool {
+		return p.(*PExtra).id == p3.id
+	})
+	if !found {
+		t.Error("didn't find/remove point")
+	}
+
+	// just the root, can't remove it
+	if c := countNodes(qt.root); c != 1 {
+		t.Errorf("incorrect number of nodes: %v != 1", c)
+	}
+
+	// add back a point to be put in the root
+	qt.Add(p3)
+
+	if c := countNodes(qt.root); c != 1 {
+		t.Errorf("incorrect number of nodes: %v != 1", c)
+	}
 }
 
-func TestQuadtreeRemoveAndAddRandom(t *testing.T) {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+func TestQuadtreeRemoveAndAdd_random(t *testing.T) {
+	seed := time.Now().UnixNano()
+	t.Logf("seed: %v", seed)
+	r := rand.New(rand.NewSource(seed))
+
+	const runs = 10
+	const perRun = 300 // add 300, remove 300/2
 
 	bounds := orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{3000, 3000}}
 	qt := New(bounds)
 	points := make([]*PExtra, 0, 3000)
-	const perRun = 300
-	const runs = 10
 	id := 0
-	for i := 0; i < runs; i++ {
 
-		for i := 0; i < perRun; i++ {
+	for i := 0; i < runs; i++ {
+		for j := 0; j < perRun; j++ {
 			x := r.Int63n(30)
 			y := r.Int63n(30)
 			id++
 			p := &PExtra{p: orb.Point{float64(x), float64(y)}, id: fmt.Sprintf("%d", id)}
 			qt.Add(p)
 			points = append(points, p)
+
 		}
-		for i := 0; i < perRun/2; i++ {
+
+		for j := 0; j < perRun/2; j++ {
 			k := r.Int() % len(points)
 			remP := points[k]
 			points = append(points[:k], points[k+1:]...)
@@ -139,7 +280,7 @@ func TestQuadtreeRemoveAndAddRandom(t *testing.T) {
 	left := len(qt.InBound(nil, bounds))
 	expected := runs * perRun / 2
 	if left != expected {
-		t.Error("WRONG: ", left, expected)
+		t.Errorf("incorrect number of points in tree: %d != %d", left, expected)
 	}
 }
 
@@ -512,4 +653,18 @@ func TestQuadtreeInBound_Random(t *testing.T) {
 			t.Errorf("index: %d, lengths not equal %v != %v", i, len(list), len(ps))
 		}
 	}
+}
+
+func countNodes(n *node) int {
+	if n == nil {
+		return 0
+	}
+
+	c := 1
+	c += countNodes(n.Children[0])
+	c += countNodes(n.Children[1])
+	c += countNodes(n.Children[2])
+	c += countNodes(n.Children[3])
+
+	return c
 }

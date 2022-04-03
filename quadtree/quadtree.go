@@ -64,6 +64,9 @@ func (q *Quadtree) Add(p orb.Pointer) error {
 			Value: p,
 		}
 		return nil
+	} else if q.root.Value == nil {
+		q.root.Value = p
+		return nil
 	}
 
 	q.add(q.root, p, p.Point(),
@@ -97,6 +100,9 @@ func (q *Quadtree) add(n *node, p orb.Pointer, point orb.Point, left, right, bot
 
 	if n.Children[i] == nil {
 		n.Children[i] = &node{Value: p}
+		return
+	} else if n.Children[i].Value == nil {
+		n.Children[i].Value = p
 		return
 	}
 
@@ -137,43 +143,49 @@ func (q *Quadtree) Remove(p orb.Pointer, eq FilterFunc) bool {
 		return false
 	}
 
+	v.closest.Value = nil
+
+	// if v.closest is NOT a leaf node, values will be shuffled up into this node.
+	// if v.closest IS a leaf node, the call is a no-op but we can't delete
+	// the now empty node because we don't know the parent here.
+	//
+	// Future adds will reuse this node if applicable.
+	// Removing v.closest parent will cause this node to be removed,
+	// but the parent will be a leaf with a nil value.
 	removeNode(v.closest)
 	return true
 }
 
 // removeNode is the recursive fixing up of the tree when we remove a node.
-func removeNode(n *node) {
-	var i int
-	for {
-		i = -1
-		if n.Children[0] != nil {
-			i = 0
-		} else if n.Children[1] != nil {
-			i = 1
-		} else if n.Children[2] != nil {
-			i = 2
-		} else if n.Children[3] != nil {
-			i = 3
-		}
+// It will pull up a child value into it's place. It will try to remove leaf nodes
+// that are now empty, since their values got pulled up.
+func removeNode(n *node) bool {
+	i := -1
+	if n.Children[0] != nil {
+		i = 0
+	} else if n.Children[1] != nil {
+		i = 1
+	} else if n.Children[2] != nil {
+		i = 2
+	} else if n.Children[3] != nil {
+		i = 3
+	}
 
-		if i == -1 {
-			n.Value = nil
-			return
-		}
-
-		if n.Children[i].Value == nil {
-			n.Children[i] = nil
-			continue
-		}
-
-		break
+	if i == -1 {
+		// all children are nil, can remove.
+		// n.value ==  nil because it "pulled up" (or removed) by the caller.
+		return true
 	}
 
 	n.Value = n.Children[i].Value
-	removeNode(n.Children[i])
-	if n.Children[i].Value == nil {
+	n.Children[i].Value = nil
+
+	removeThisChild := removeNode(n.Children[i])
+	if removeThisChild {
 		n.Children[i] = nil
 	}
+
+	return false
 }
 
 // Find returns the closest Value/Pointer in the quadtree.
