@@ -15,7 +15,7 @@ import (
 	"github.com/paulmach/orb/maptile"
 )
 
-func TestMarshalMarshalGzipped_Full(t *testing.T) {
+func TestMarshalUnmarshalGzipped_Full(t *testing.T) {
 	tile := maptile.New(8956, 12223, 15)
 	ls := orb.LineString{
 		{-81.60346275, 41.50998572},
@@ -68,6 +68,75 @@ func TestMarshalMarshalGzipped_Full(t *testing.T) {
 	// compare geometry
 	xe, ye := tileEpsilon(tile)
 	compareOrbGeometry(t, result.Geometry, expected, xe, ye)
+}
+
+func TestMarshalUnmarshalForGeometryCollection(t *testing.T) {
+	tile := maptile.New(8956, 12223, 15)
+	outerRing := orb.Ring{
+		{-81.6033000, 41.5099000},
+		{-81.6033000, 41.5094000},
+		{-81.6039000, 41.5094000},
+		{-81.6039000, 41.5099000},
+		{-81.6033000, 41.5099000},
+	}
+	hole := orb.Ring{
+		{-81.60389989614487, 41.50941085679876},
+		{-81.60329908132553, 41.50941085679876},
+		{-81.60329908132553, 41.50990496161759},
+		{-81.60389989614487, 41.50990496161759},
+		{-81.60389989614487, 41.50941085679876},
+	}
+	outerPolygon := orb.Polygon{outerRing, hole}
+	polygonInHole := orb.Polygon{orb.Ring{
+		{-81.60375505685806, 41.5095494475553},
+		{-81.6034385561943, 41.5095494475553},
+		{-81.6034385561943, 41.50978043149024},
+		{-81.60375505685806, 41.50978043149024},
+		{-81.60375505685806, 41.5095494475553},
+	}}
+	geometryCollection := orb.Collection{outerPolygon, polygonInHole}
+	expected := []orb.Geometry{outerPolygon.Clone(), outerPolygon.Clone()}
+
+	f := geojson.NewFeature(geometryCollection)
+	f.Properties = geojson.Properties{
+		"id": float64(246698394),
+	}
+
+	fc := geojson.NewFeatureCollection()
+	fc.Append(f)
+
+	layers := Layers{NewLayer("roads", fc)}
+
+	// project to the tile coords
+	layers.ProjectToTile(tile)
+
+	// marshal
+	encoded, err := MarshalGzipped(layers)
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+
+	// unmarshal
+	decoded, err := UnmarshalGzipped(encoded)
+	if err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+
+	// project back
+	decoded.ProjectToWGS84(tile)
+
+	// compare the results
+	results := decoded[0].Features
+	compareProperties(t, results[0].Properties, f.Properties)
+
+	// compare geometry
+	xe, ye := tileEpsilon(tile)
+	if len(results) == len(expected) {
+		t.Errorf("result geometry count must be splited polygon: %v (but result is %v)", len(results), len(expected))
+	}
+	for i, result := range results {
+		compareOrbGeometry(t, result.Geometry, expected[i], xe, ye)
+	}
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
