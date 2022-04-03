@@ -76,3 +76,9 @@ If the number is negative, the id is omitted. If the number is a positive decima
 
 For unmarshaling the id will be converted into a float64 to be consistent with how
 the encoding/json package decodes numbers.
+
+## Geometry Collections
+
+GeoJSON geometry collections are flattened and their features are encoded individually.
+As a result the "collection" information is lost when encoding and there could be more
+features in the output (mvt) vs. in the input (GeoJSON)
