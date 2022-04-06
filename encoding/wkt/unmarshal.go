@@ -176,7 +176,7 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 	s = strings.ToUpper(strings.Trim(s, " "))
 	switch {
 	case strings.Contains(s, "GEOMETRYCOLLECTION"):
-		if s == "GEOMETRYCOLLECTION " {
+		if s == "GEOMETRYCOLLECTION EMPTY" {
 			return orb.Collection{}, nil
 		}
 		s = strings.Replace(s, "GEOMETRYCOLLECTION", "", -1)
