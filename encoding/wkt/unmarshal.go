@@ -20,7 +20,8 @@ var (
 	ErrUnsupportedGeometry = errors.New("wkt: unsupported geometry")
 )
 
-// UnmarshalPoint return point by parse wkt point string
+// UnmarshalPoint returns the point represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a point.
 func UnmarshalPoint(s string) (p orb.Point, err error) {
 	geom, err := Unmarshal(s)
 	if err != nil {
@@ -33,7 +34,8 @@ func UnmarshalPoint(s string) (p orb.Point, err error) {
 	return g, nil
 }
 
-// UnmarshalMultiPoint return multipoint by parse wkt multipoint string
+// UnmarshalMultiPoint returns the multi-point represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a multi-point.
 func UnmarshalMultiPoint(s string) (p orb.MultiPoint, err error) {
 	geom, err := Unmarshal(s)
 	if err != nil {
@@ -47,7 +49,8 @@ func UnmarshalMultiPoint(s string) (p orb.MultiPoint, err error) {
 	return g, nil
 }
 
-// UnmarshalLineString return linestring by parse wkt linestring string
+// UnmarshalLineString returns the linestring represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a linestring.
 func UnmarshalLineString(s string) (p orb.LineString, err error) {
 	geom, err := Unmarshal(s)
 	if err != nil {
@@ -60,7 +63,8 @@ func UnmarshalLineString(s string) (p orb.LineString, err error) {
 	return g, nil
 }
 
-// UnmarshalMultiLineString return linestring by parse wkt multilinestring string
+// UnmarshalMultiLineString returns the multi-linestring represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a multi-linestring.
 func UnmarshalMultiLineString(s string) (p orb.MultiLineString, err error) {
 	geom, err := Unmarshal(s)
 	if err != nil {
@@ -73,7 +77,8 @@ func UnmarshalMultiLineString(s string) (p orb.MultiLineString, err error) {
 	return g, nil
 }
 
-// UnmarshalPolygon return linestring by parse wkt polygon string
+// UnmarshalPolygon returns the polygon represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a polygon.
 func UnmarshalPolygon(s string) (p orb.Polygon, err error) {
 	geom, err := Unmarshal(s)
 	if err != nil {
@@ -86,7 +91,8 @@ func UnmarshalPolygon(s string) (p orb.Polygon, err error) {
 	return g, nil
 }
 
-// UnmarshalMultiPolygon return linestring by parse wkt multipolygon string
+// UnmarshalMultiPolygon returns the multi-polygon represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a multi-polygon.
 func UnmarshalMultiPolygon(s string) (p orb.MultiPolygon, err error) {
 	geom, err := Unmarshal(s)
 	if err != nil {
@@ -99,7 +105,8 @@ func UnmarshalMultiPolygon(s string) (p orb.MultiPolygon, err error) {
 	return g, nil
 }
 
-// UnmarshalCollection return linestring by parse wkt collection string
+// UnmarshalCollection returns the geometry collection represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a geometry collection.
 func UnmarshalCollection(s string) (p orb.Collection, err error) {
 	geom, err := Unmarshal(s)
 	if err != nil {
@@ -287,10 +294,11 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 		}
 		s = strings.Replace(s, "POLYGON", "", -1)
 		s = trimSpaceBrackets(s)
+
 		rs := strings.Split(s, "),(")
-		if len(rs) == 1 {
-			// ring
-			ps := strings.Split(trimSpaceBrackets(s), ",")
+		pol := make(orb.Polygon, 0, len(rs))
+		for _, r := range rs {
+			ps := strings.Split(trimSpaceBrackets(r), ",")
 			ring := orb.Ring{}
 			for _, p := range ps {
 				tp, err := parsePoint(trimSpaceBrackets(p))
@@ -299,24 +307,9 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 				}
 				ring = append(ring, tp)
 			}
-			geom = orb.Polygon{ring}
-		} else {
-			// more ring
-			pol := orb.Polygon{}
-			for _, r := range rs {
-				ps := strings.Split(trimSpaceBrackets(r), ",")
-				ring := orb.Ring{}
-				for _, p := range ps {
-					tp, err := parsePoint(trimSpaceBrackets(p))
-					if err != nil {
-						return nil, err
-					}
-					ring = append(ring, tp)
-				}
-				pol = append(pol, ring)
-			}
-			geom = pol
+			pol = append(pol, ring)
 		}
+		geom = pol
 	default:
 		return nil, ErrUnsupportedGeometry
 	}

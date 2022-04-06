@@ -1,10 +1,36 @@
 package wkt
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/paulmach/orb"
 )
+
+func TestMarshal(t *testing.T) {
+	cases := []struct {
+		name     string
+		geo      orb.Geometry
+		expected []byte
+	}{
+		{
+			name:     "point",
+			geo:      orb.Point{1, 2},
+			expected: []byte("POINT(1 2)"),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			v := Marshal(tc.geo)
+			if !bytes.Equal(v, tc.expected) {
+				t.Log(string(v))
+				t.Log(string(tc.expected))
+				t.Errorf("incorrect wkt marshalling")
+			}
+		})
+	}
+}
 
 func TestMarshalString(t *testing.T) {
 	cases := []struct {

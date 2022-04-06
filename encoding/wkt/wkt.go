@@ -7,7 +7,15 @@ import (
 	"github.com/paulmach/orb"
 )
 
-// MarshalString returns a WKT representation of the Geometry if possible.
+// Marshal returns a WKT representation of the geometry.
+func Marshal(g orb.Geometry) []byte {
+	buf := bytes.NewBuffer(nil)
+
+	wkt(buf, g)
+	return buf.Bytes()
+}
+
+// MarshalString returns a WKT representation of the geometry as a string.
 func MarshalString(g orb.Geometry) string {
 	buf := bytes.NewBuffer(nil)
 
