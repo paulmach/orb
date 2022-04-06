@@ -45,7 +45,7 @@ func errWrap(err error, es ...error) error {
 
 // UnmarshalPoint return point by parse wkt point string
 func UnmarshalPoint(s string) (p orb.Point, err error) {
-	geom, err := unmarshal(s)
+	geom, err := Unmarshal(s)
 	if err != nil {
 		return orb.Point{}, errWrap(err, errEmptyGeometry)
 	}
@@ -58,7 +58,7 @@ func UnmarshalPoint(s string) (p orb.Point, err error) {
 
 // UnmarshalMultiPoint return multipoint by parse wkt multipoint string
 func UnmarshalMultiPoint(s string) (p orb.MultiPoint, err error) {
-	geom, err := unmarshal(s)
+	geom, err := Unmarshal(s)
 	if err != nil {
 		return orb.MultiPoint{}, errWrap(err, errEmptyGeometry)
 	}
@@ -71,7 +71,7 @@ func UnmarshalMultiPoint(s string) (p orb.MultiPoint, err error) {
 
 // UnmarshalLineString return linestring by parse wkt linestring string
 func UnmarshalLineString(s string) (p orb.LineString, err error) {
-	geom, err := unmarshal(s)
+	geom, err := Unmarshal(s)
 	if err != nil {
 		return orb.LineString{}, errWrap(err, errEmptyGeometry)
 	}
@@ -84,7 +84,7 @@ func UnmarshalLineString(s string) (p orb.LineString, err error) {
 
 // UnmarshalMultiLineString return linestring by parse wkt multilinestring string
 func UnmarshalMultiLineString(s string) (p orb.MultiLineString, err error) {
-	geom, err := unmarshal(s)
+	geom, err := Unmarshal(s)
 	if err != nil {
 		return orb.MultiLineString{}, errWrap(err, errEmptyGeometry)
 	}
@@ -97,7 +97,7 @@ func UnmarshalMultiLineString(s string) (p orb.MultiLineString, err error) {
 
 // UnmarshalPolygon return linestring by parse wkt polygon string
 func UnmarshalPolygon(s string) (p orb.Polygon, err error) {
-	geom, err := unmarshal(s)
+	geom, err := Unmarshal(s)
 	if err != nil {
 		return orb.Polygon{}, errWrap(err, errEmptyGeometry)
 	}
@@ -110,7 +110,7 @@ func UnmarshalPolygon(s string) (p orb.Polygon, err error) {
 
 // UnmarshalMultiPolygon return linestring by parse wkt multipolygon string
 func UnmarshalMultiPolygon(s string) (p orb.MultiPolygon, err error) {
-	geom, err := unmarshal(s)
+	geom, err := Unmarshal(s)
 	if err != nil {
 		return orb.MultiPolygon{}, errWrap(err, errEmptyGeometry)
 	}
@@ -123,7 +123,7 @@ func UnmarshalMultiPolygon(s string) (p orb.MultiPolygon, err error) {
 
 // UnmarshalCollection return linestring by parse wkt collection string
 func UnmarshalCollection(s string) (p orb.Collection, err error) {
-	geom, err := unmarshal(s)
+	geom, err := Unmarshal(s)
 	if err != nil {
 		return orb.Collection{}, errWrap(err, errEmptyGeometry)
 	}
@@ -191,18 +191,8 @@ func splitGeometryCollection(s string) (r []string) {
 	return
 }
 
-/*
-unmarshal return a geometry by parse wkt string
-order:
-	GEOMETRYCOLLECTION
-	MULTIPOINT
-	POINT
-	MULTILINESTRING
-	LINESTRING
-	MULTIPOLYGON
-	POLYGON
-*/
-func unmarshal(s string) (geom orb.Geometry, err error) {
+// Unmarshal return a geometry by parsing the WKT string.
+func Unmarshal(s string) (geom orb.Geometry, err error) {
 	s = strings.ToUpper(strings.Trim(s, " "))
 	switch {
 	case strings.Contains(s, "GEOMETRYCOLLECTION"):
@@ -219,7 +209,7 @@ func unmarshal(s string) (geom orb.Geometry, err error) {
 			if len(v) == 0 {
 				continue
 			}
-			g, err := unmarshal(v)
+			g, err := Unmarshal(v)
 			if err != nil {
 				return nil, errWrap(errUnMarshaGeometryCollection, err)
 			}

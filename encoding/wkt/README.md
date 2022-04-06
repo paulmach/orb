@@ -4,13 +4,14 @@ This package provides encoding and decoding of [WKT](https://en.wikipedia.org/wi
 data. The interface is defined as:
 
 ```go
-func MarshalString(g orb.Geometry) string
+func MarshalString(orb.Geometry) string
 
-func UnmarshalCollection(s string) (p orb.Collection, err error)
-func UnmarshalLineString(s string) (p orb.LineString, err error)
-func UnmarshalMultiLineString(s string) (p orb.MultiLineString, err error)
-func UnmarshalMultiPoint(s string) (p orb.MultiPoint, err error)
-func UnmarshalMultiPolygon(s string) (p orb.MultiPolygon, err error)
-func UnmarshalPoint(s string) (p orb.Point, err error)
-func UnmarshalPolygon(s string) (p orb.Polygon, err error)
+func Unmarshal(string) (orb.Geometry, error)
+func UnmarshalPoint(string) (orb.Point, err error)
+func UnmarshalMultiPoint(string) (orb.MultiPoint, err error)
+func UnmarshalLineString(string) (orb.LineString, err error)
+func UnmarshalMultiLineString(string) (orb.MultiLineString, err error)
+func UnmarshalPolygon(string) (orb.Polygon, err error)
+func UnmarshalMultiPolygon(string) (orb.MultiPolygon, err error)
+func UnmarshalCollection(string) (orb.Collection, err error)
 ```
