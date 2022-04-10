@@ -374,6 +374,43 @@ func TestScanPoint_errors(t *testing.T) {
 	}
 }
 
+func TestPrefixScannerPrefixSRID(t *testing.T) {
+	cases := []struct {
+		name     string
+		data     []byte
+		srid     int
+		expected orb.Point
+	}{
+		{
+			name:     "point",
+			data:     append([]byte{230, 16, 0, 0}, MustMarshal(orb.Point{4, 5}, 0)...),
+			srid:     4326,
+			expected: orb.Point{4, 5},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var p orb.Point
+			s := ScannerPrefixSRID(&p)
+			err := s.Scan(tc.data)
+			if err != nil {
+				t.Fatalf("scan error: %v", err)
+			}
+
+			if !p.Equal(tc.expected) {
+				t.Errorf("unequal data")
+				t.Log(p)
+				t.Log(tc.expected)
+			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
+		})
+	}
+}
+
 func TestScanMultiPoint(t *testing.T) {
 	cases := []struct {
 		name     string

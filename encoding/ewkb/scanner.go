@@ -3,6 +3,7 @@ package ewkb
 import (
 	"database/sql"
 	"database/sql/driver"
+	"encoding/binary"
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/internal/wkbcommon"
@@ -26,10 +27,11 @@ var (
 //	  // NULL value
 //	}
 type GeometryScanner struct {
-	g        interface{}
-	SRID     int
-	Geometry orb.Geometry
-	Valid    bool // Valid is true if the geometry is not NULL
+	sridInPrefix bool
+	g            interface{}
+	SRID         int
+	Geometry     orb.Geometry
+	Valid        bool // Valid is true if the geometry is not NULL
 }
 
 // Scanner will return a GeometryScanner that can scan sql query results.
@@ -58,6 +60,23 @@ func Scanner(g interface{}) *GeometryScanner {
 	return &GeometryScanner{g: g}
 }
 
+// ScannerPrefixSRID will scan ewkb data were the SRID is in the first 4 bytes of the data.
+// Databases like mysql/mariadb use this as their raw format. This method should only be used when
+// working with such a database.
+//
+//	var p orb.Point
+//	err := db.QueryRow("SELECT latlon FROM foo WHERE id=?", id).Scan(wkb.PrefixSRIDScanner(&p))
+//
+// However, it is recommended to covert to wkb explicitly using something like:
+//
+//	var srid int
+//	var p orb.Point
+//	err := db.QueryRow("SELECT ST_SRID(latlon), ST_AsBinary(latlon) FROM foo WHERE id=?", id).
+//		Scan(&srid, wkb.Scanner(&p))
+func ScannerPrefixSRID(g interface{}) *GeometryScanner {
+	return &GeometryScanner{sridInPrefix: true, g: g}
+}
+
 // Scan will scan the input []byte data into a geometry.
 // This could be into the orb geometry type pointer or, if nil,
 // the scanner.Geometry attribute.
@@ -65,9 +84,37 @@ func (s *GeometryScanner) Scan(d interface{}) error {
 	s.Geometry = nil
 	s.Valid = false
 
-	g, srid, valid, err := wkbcommon.Scan(s.g, d)
+	var (
+		srid int
+		data interface{}
+	)
+
+	data = d
+	if s.sridInPrefix {
+		raw, ok := d.([]byte)
+		if !ok {
+			return ErrUnsupportedDataType
+		}
+
+		if raw == nil {
+			return nil
+		}
+
+		if len(raw) < 5 {
+			return ErrNotEWKB
+		}
+
+		srid = int(binary.LittleEndian.Uint32(raw))
+		data = raw[4:]
+	}
+
+	g, embeddedSRID, valid, err := wkbcommon.Scan(s.g, data)
 	if err != nil {
 		return mapCommonError(err)
+	}
+
+	if embeddedSRID != 0 {
+		srid = embeddedSRID
 	}
 
 	s.Geometry = g
