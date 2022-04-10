@@ -167,7 +167,7 @@ This works for most use cases.
 -   [`encoding/wkb`](encoding/wkb) - well-known binary as well as helpers to decode from the database queries
 -   [`encoding/wkt`](encoding/wkt) - well-known text encoding
 -   [`geojson`](geojson) - working with geojson and the types in this package
--   [`maptile`](maptile) - working with mercator map tiles
+-   [`maptile`](maptile) - working with mercator map tiles and quadkeys
 -   [`project`](project) - project geometries between geo and planar contexts
 -   [`quadtree`](quadtree) - quadtree implementation using the types in this package
 -   [`resample`](resample) - resample points in a line string geometry
