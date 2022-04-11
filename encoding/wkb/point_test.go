@@ -52,6 +52,34 @@ func TestPoint(t *testing.T) {
 	}
 }
 
+func TestPointToHex(t *testing.T) {
+	cases := []struct {
+		name     string
+		data     orb.Point
+		expected string
+	}{
+		{
+			name:     "point",
+			data:     orb.Point{1, 2},
+			expected: "0101000000000000000000f03f0000000000000040",
+		},
+		{
+			name:     "zero point",
+			data:     orb.Point{0, 0},
+			expected: "010100000000000000000000000000000000000000",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := MustMarshalToHex(tc.data)
+			if s != tc.expected {
+				t.Errorf("incorrect hex: %v", s)
+			}
+		})
+	}
+}
+
 var (
 	testMultiPoint     = orb.MultiPoint{{10, 40}, {40, 30}, {20, 20}, {30, 10}}
 	testMultiPointData = []byte{

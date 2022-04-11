@@ -5,6 +5,7 @@ package wkb
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"io"
 
@@ -86,6 +87,27 @@ func Marshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// MarshalToHex will encode the geometry into a hex string representation of the binary wkb.
+func MarshalToHex(geom orb.Geometry, byteOrder ...binary.ByteOrder) (string, error) {
+	data, err := Marshal(geom, byteOrder...)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(data), nil
+}
+
+// MustMarshalToHex will encode the geometry and panic on error.
+// Currently there is no reason to error during geometry marshalling.
+func MustMarshalToHex(geom orb.Geometry, byteOrder ...binary.ByteOrder) string {
+	d, err := MarshalToHex(geom, byteOrder...)
+	if err != nil {
+		panic(err)
+	}
+
+	return d
 }
 
 // NewEncoder creates a new Encoder for the given writer.

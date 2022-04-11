@@ -47,6 +47,37 @@ func TestPoint(t *testing.T) {
 	}
 }
 
+func TestPointToHex(t *testing.T) {
+	cases := []struct {
+		name     string
+		srid     int
+		data     orb.Point
+		expected string
+	}{
+		{
+			name:     "point",
+			srid:     4326,
+			data:     orb.Point{1, 2},
+			expected: "0101000020e6100000000000000000f03f0000000000000040",
+		},
+		{
+			name:     "zero point",
+			srid:     4,
+			data:     orb.Point{0, 0},
+			expected: "01010000200400000000000000000000000000000000000000",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := MustMarshalToHex(tc.data, tc.srid)
+			if s != tc.expected {
+				t.Errorf("incorrect hex: %v", s)
+			}
+		})
+	}
+}
+
 func TestMultiPoint(t *testing.T) {
 	large := orb.MultiPoint{}
 	for i := 0; i < wkbcommon.MaxPointsAlloc+100; i++ {

@@ -8,7 +8,9 @@ The interface is defined as:
 
 ```go
 func Marshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) ([]byte, error)
+func MarshalToHex(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) (string, error)
 func MustMarshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) []byte
+func MustMarshalToHex(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) string
 
 func NewEncoder(w io.Writer) *Encoder
 func (e *Encoder) SetByteOrder(bo binary.ByteOrder) *Encoder

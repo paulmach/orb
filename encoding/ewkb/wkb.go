@@ -3,6 +3,7 @@ package ewkb
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"io"
 
@@ -71,6 +72,7 @@ func MustMarshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) []b
 }
 
 // Marshal encodes the geometry with the given byte order.
+// An SRID of 0 will not be included in the encoding and the result will be a wkb encoding of the geometry.
 func Marshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) ([]byte, error) {
 	buf := bytes.NewBuffer(make([]byte, 0, wkbcommon.GeomLength(geom, srid != 0)))
 
@@ -91,6 +93,27 @@ func Marshal(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) ([]byte
 	}
 
 	return buf.Bytes(), nil
+}
+
+// MarshalToHex will encode the geometry into a hex string representation of the binary ewkb.
+func MarshalToHex(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) (string, error) {
+	data, err := Marshal(geom, srid, byteOrder...)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(data), nil
+}
+
+// MustMarshalToHex will encode the geometry and panic on error.
+// Currently there is no reason to error during geometry marshalling.
+func MustMarshalToHex(geom orb.Geometry, srid int, byteOrder ...binary.ByteOrder) string {
+	d, err := MarshalToHex(geom, srid, byteOrder...)
+	if err != nil {
+		panic(err)
+	}
+
+	return d
 }
 
 // NewEncoder creates a new Encoder for the given writer.

@@ -73,6 +73,8 @@ func Scanner(g interface{}) *GeometryScanner {
 //	var p orb.Point
 //	err := db.QueryRow("SELECT ST_SRID(latlon), ST_AsBinary(latlon) FROM foo WHERE id=?", id).
 //		Scan(&srid, wkb.Scanner(&p))
+//
+// https://dev.mysql.com/doc/refman/5.7/en/gis-data-formats.html
 func ScannerPrefixSRID(g interface{}) *GeometryScanner {
 	return &GeometryScanner{sridInPrefix: true, g: g}
 }
