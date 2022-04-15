@@ -84,7 +84,7 @@ func TestUnmarshalFeatureCollection(t *testing.T) {
 
 	// check unmarshal/marshal loop
 	var expected interface{}
-	err = json.Unmarshal([]byte(rawJSON), &expected)
+	err = unmarshalJSON([]byte(rawJSON), &expected)
 	if err != nil {
 		t.Fatalf("unmarshal error: %v", err)
 	}
@@ -95,7 +95,7 @@ func TestUnmarshalFeatureCollection(t *testing.T) {
 	}
 
 	var raw interface{}
-	err = json.Unmarshal(data, &raw)
+	err = unmarshalJSON(data, &raw)
 	if err != nil {
 		t.Fatalf("unmarshal error: %v", err)
 	}

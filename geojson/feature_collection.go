@@ -7,7 +7,6 @@ json.Unmarshaler interfaces as well as helper functions such as
 package geojson
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
@@ -63,7 +62,7 @@ func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
 		tmp["features"] = fc.Features
 	}
 
-	return json.Marshal(tmp)
+	return marshalJSON(tmp)
 }
 
 // UnmarshalJSON decodes the data into a GeoJSON feature collection.
@@ -71,7 +70,7 @@ func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
 func (fc *FeatureCollection) UnmarshalJSON(data []byte) error {
 	tmp := make(map[string]nocopyRawMessage, 4)
 
-	err := json.Unmarshal(data, &tmp)
+	err := unmarshalJSON(data, &tmp)
 	if err != nil {
 		return err
 	}
@@ -80,17 +79,17 @@ func (fc *FeatureCollection) UnmarshalJSON(data []byte) error {
 	for key, value := range tmp {
 		switch key {
 		case "type":
-			err := json.Unmarshal(value, &fc.Type)
+			err := unmarshalJSON(value, &fc.Type)
 			if err != nil {
 				return err
 			}
 		case "bbox":
-			err := json.Unmarshal(value, &fc.BBox)
+			err := unmarshalJSON(value, &fc.BBox)
 			if err != nil {
 				return err
 			}
 		case "features":
-			err := json.Unmarshal(value, &fc.Features)
+			err := unmarshalJSON(value, &fc.Features)
 			if err != nil {
 				return err
 			}
@@ -100,7 +99,7 @@ func (fc *FeatureCollection) UnmarshalJSON(data []byte) error {
 			}
 
 			var val interface{}
-			err := json.Unmarshal(value, &val)
+			err := unmarshalJSON(value, &val)
 			if err != nil {
 				return err
 			}
