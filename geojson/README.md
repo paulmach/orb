@@ -66,9 +66,9 @@ fc.ExtraMembers["timestamp"] // == "2020-06-15T01:02:03Z"
 // base featureCollection object.
 ```
 
-## Performance Performance Performance
+## Performance
 
-If GeoJSON encoding/decoding performance is critical consider using a
+For performance critical applications, consider a
 third party replacement of "encoding/json" like [github.com/json-iterator/go](https://github.com/json-iterator/go)
 
 This can be enabled with something like this:
@@ -82,7 +82,6 @@ import (
 var c = jsoniter.Config{
   EscapeHTML:              true,
   SortMapKeys:             false,
-  ValidateJsonRawMessage:  false,
   MarshalFloatWith6Digits: true,
 }.Froze()
 
@@ -125,8 +124,4 @@ f.Properties.MustBool(key string, def ...bool) bool
 f.Properties.MustFloat64(key string, def ...float64) float64
 f.Properties.MustInt(key string, def ...int) int
 f.Properties.MustString(key string, def ...string) string
-```
-
-```
-
 ```

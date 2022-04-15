@@ -15,9 +15,9 @@ import "encoding/json"
 //	var c = jsoniter.Config{
 //	  EscapeHTML:              true,
 //	  SortMapKeys:             false,
-//	  ValidateJsonRawMessage:  false,
 //	  MarshalFloatWith6Digits: true,
 //	}.Froze()
+//
 //	orb.CustomJSONMarshaler = c
 //	orb.CustomJSONUnmarshaler = c
 //
@@ -39,9 +39,9 @@ var CustomJSONMarshaler interface {
 //	var c = jsoniter.Config{
 //	  EscapeHTML:              true,
 //	  SortMapKeys:             false,
-//	  ValidateJsonRawMessage:  false,
 //	  MarshalFloatWith6Digits: true,
 //	}.Froze()
+//
 //	orb.CustomJSONMarshaler = c
 //	orb.CustomJSONUnmarshaler = c
 //

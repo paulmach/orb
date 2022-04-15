@@ -107,6 +107,10 @@ for _, f := range fc {
 }
 ```
 
+The library supports third party "encoding/json" replacements
+such [github.com/json-iterator/go](https://github.com/json-iterator/go).
+See the [geojson](geojson) readme for more details.
+
 ## Mapbox Vector Tiles
 
 The [encoding/mvt](encoding/mvt) sub-package implements Marshalling and
