@@ -146,3 +146,32 @@ func (v value) Value() (driver.Value, error) {
 	}
 	return val, err
 }
+
+type valuePrefixSRID struct {
+	srid int
+	v    orb.Geometry
+}
+
+// ValuePrefixSRID will create a driver.Valuer that will WKB the geometry
+// but add the srid as a 4 byte prefix.
+//
+//	db.Exec("INSERT INTO table (point_column) VALUES (?)", ewkb.Value(p, 4326))
+func ValuePrefixSRID(g orb.Geometry, srid int) driver.Valuer {
+	return valuePrefixSRID{srid: srid, v: g}
+
+}
+
+func (v valuePrefixSRID) Value() (driver.Value, error) {
+	val, err := Marshal(v.v, 0)
+	if val == nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	data := make([]byte, 4, 4+len(val))
+	binary.LittleEndian.PutUint32(data, uint32(v.srid))
+	return append(data, val...), nil
+}

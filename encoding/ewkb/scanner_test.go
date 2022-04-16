@@ -374,12 +374,12 @@ func TestScanPoint_errors(t *testing.T) {
 	}
 }
 
-func TestPrefixScannerPrefixSRID(t *testing.T) {
+func TestScannerPrefixSRID(t *testing.T) {
 	cases := []struct {
 		name     string
 		data     []byte
 		srid     int
-		expected orb.Point
+		expected orb.Geometry
 	}{
 		{
 			name:     "point",
@@ -391,21 +391,52 @@ func TestPrefixScannerPrefixSRID(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			var p orb.Point
-			s := ScannerPrefixSRID(&p)
+			s := ScannerPrefixSRID(nil)
 			err := s.Scan(tc.data)
 			if err != nil {
 				t.Fatalf("scan error: %v", err)
 			}
 
-			if !p.Equal(tc.expected) {
+			if !orb.Equal(s.Geometry, tc.expected) {
 				t.Errorf("unequal data")
-				t.Log(p)
+				t.Log(s.Geometry)
 				t.Log(tc.expected)
 			}
 
 			if s.SRID != tc.srid {
 				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
+		})
+	}
+}
+
+func TestValuePrefixSRID(t *testing.T) {
+	cases := []struct {
+		name     string
+		geom     orb.Geometry
+		srid     int
+		expected []byte
+	}{
+		{
+			name:     "point",
+			geom:     orb.Point{4, 5},
+			srid:     4326,
+			expected: append([]byte{230, 16, 0, 0}, MustMarshal(orb.Point{4, 5}, 0)...),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			v := ValuePrefixSRID(tc.geom, tc.srid)
+			data, err := v.Value()
+			if err != nil {
+				t.Fatalf("value error: %v", err)
+			}
+
+			if !bytes.Equal(data.([]byte), tc.expected) {
+				t.Errorf("unequal data")
+				t.Log(data)
+				t.Log(tc.expected)
 			}
 		})
 	}
