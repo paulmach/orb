@@ -136,7 +136,6 @@ type value struct {
 //	db.Exec("INSERT INTO table (point_column) VALUES (?)", ewkb.Value(p, 4326))
 func Value(g orb.Geometry, srid int) driver.Valuer {
 	return value{srid: srid, v: g}
-
 }
 
 func (v value) Value() (driver.Value, error) {
@@ -158,7 +157,6 @@ type valuePrefixSRID struct {
 //	db.Exec("INSERT INTO table (point_column) VALUES (?)", ewkb.Value(p, 4326))
 func ValuePrefixSRID(g orb.Geometry, srid int) driver.Valuer {
 	return valuePrefixSRID{srid: srid, v: g}
-
 }
 
 func (v valuePrefixSRID) Value() (driver.Value, error) {
