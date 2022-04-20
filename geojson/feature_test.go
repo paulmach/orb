@@ -281,6 +281,19 @@ func TestMarshalRing(t *testing.T) {
 	}
 }
 
+// uncomment to test/benchmark custom json marshalling
+// func init() {
+// 	var c = jsoniter.Config{
+// 		EscapeHTML:              true,
+// 		SortMapKeys:             false,
+// 		ValidateJsonRawMessage:  false,
+// 		MarshalFloatWith6Digits: true,
+// 	}.Froze()
+
+// 	CustomJSONMarshaler = c
+// 	CustomJSONUnmarshaler = c
+// }
+
 func BenchmarkFeatureMarshalJSON(b *testing.B) {
 	data, err := ioutil.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
 	if err != nil {
@@ -296,7 +309,7 @@ func BenchmarkFeatureMarshalJSON(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := json.Marshal(tile)
+		_, err := marshalJSON(tile)
 		if err != nil {
 			b.Fatalf("marshal error: %v", err)
 		}
@@ -313,7 +326,7 @@ func BenchmarkFeatureUnmarshalJSON(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		tile := map[string]*FeatureCollection{}
-		err = json.Unmarshal(data, &tile)
+		err = unmarshalJSON(data, &tile)
 		if err != nil {
 			b.Fatalf("could not unmarshal: %v", err)
 		}
