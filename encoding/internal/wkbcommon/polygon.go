@@ -1,4 +1,4 @@
-package wkb
+package wkbcommon
 
 import (
 	"errors"
@@ -16,9 +16,9 @@ func unmarshalPolygon(order byteOrder, data []byte) (orb.Polygon, error) {
 	data = data[4:]
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.Polygon, 0, alloc)
 
@@ -42,9 +42,9 @@ func readPolygon(r io.Reader, order byteOrder, buf []byte) (orb.Polygon, error) 
 	}
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.Polygon, 0, alloc)
 
@@ -60,13 +60,12 @@ func readPolygon(r io.Reader, order byteOrder, buf []byte) (orb.Polygon, error) 
 	return result, nil
 }
 
-func (e *Encoder) writePolygon(p orb.Polygon) error {
-	e.order.PutUint32(e.buf, polygonType)
-	e.order.PutUint32(e.buf[4:], uint32(len(p)))
-	_, err := e.w.Write(e.buf[:8])
+func (e *Encoder) writePolygon(p orb.Polygon, srid int) error {
+	err := e.writeTypePrefix(polygonType, len(p), srid)
 	if err != nil {
 		return err
 	}
+
 	for _, r := range p {
 		e.order.PutUint32(e.buf, uint32(len(r)))
 		_, err := e.w.Write(e.buf[:4])
@@ -93,14 +92,14 @@ func unmarshalMultiPolygon(order byteOrder, data []byte) (orb.MultiPolygon, erro
 	data = data[4:]
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.MultiPolygon, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		p, err := scanPolygon(data)
+		p, _, err := ScanPolygon(data)
 		if err != nil {
 			return nil, err
 		}
@@ -124,14 +123,14 @@ func readMultiPolygon(r io.Reader, order byteOrder, buf []byte) (orb.MultiPolygo
 	}
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.MultiPolygon, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		pOrder, typ, err := readByteOrderType(r, buf)
+		pOrder, typ, _, err := readByteOrderType(r, buf)
 		if err != nil {
 			return nil, err
 		}
@@ -151,16 +150,14 @@ func readMultiPolygon(r io.Reader, order byteOrder, buf []byte) (orb.MultiPolygo
 	return result, nil
 }
 
-func (e *Encoder) writeMultiPolygon(mp orb.MultiPolygon) error {
-	e.order.PutUint32(e.buf, multiPolygonType)
-	e.order.PutUint32(e.buf[4:], uint32(len(mp)))
-	_, err := e.w.Write(e.buf[:8])
+func (e *Encoder) writeMultiPolygon(mp orb.MultiPolygon, srid int) error {
+	err := e.writeTypePrefix(multiPolygonType, len(mp), srid)
 	if err != nil {
 		return err
 	}
 
 	for _, p := range mp {
-		err := e.Encode(p)
+		err := e.Encode(p, 0)
 		if err != nil {
 			return err
 		}

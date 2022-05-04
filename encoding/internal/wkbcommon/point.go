@@ -1,4 +1,4 @@
-package wkb
+package wkbcommon
 
 import (
 	"encoding/binary"
@@ -21,9 +21,9 @@ func unmarshalPoints(order byteOrder, data []byte) ([]orb.Point, error) {
 	}
 
 	alloc := num
-	if alloc > maxPointsAlloc {
+	if alloc > MaxPointsAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxPointsAlloc
+		alloc = MaxPointsAlloc
 	}
 	result := make([]orb.Point, 0, alloc)
 
@@ -78,9 +78,16 @@ func readPoint(r io.Reader, order byteOrder, buf []byte) (orb.Point, error) {
 	return p, nil
 }
 
-func (e *Encoder) writePoint(p orb.Point) error {
-	e.order.PutUint32(e.buf, pointType)
-	_, err := e.w.Write(e.buf[:4])
+func (e *Encoder) writePoint(p orb.Point, srid int) error {
+	var err error
+	if srid != 0 {
+		e.order.PutUint32(e.buf, pointType|ewkbType)
+		e.order.PutUint32(e.buf[4:], uint32(srid))
+		_, err = e.w.Write(e.buf[:8])
+	} else {
+		e.order.PutUint32(e.buf, pointType)
+		_, err = e.w.Write(e.buf[:4])
+	}
 	if err != nil {
 		return err
 	}
@@ -99,14 +106,14 @@ func unmarshalMultiPoint(order byteOrder, data []byte) (orb.MultiPoint, error) {
 	data = data[4:]
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.MultiPoint, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		p, err := scanPoint(data)
+		p, _, err := ScanPoint(data)
 		if err != nil {
 			return nil, err
 		}
@@ -125,14 +132,14 @@ func readMultiPoint(r io.Reader, order byteOrder, buf []byte) (orb.MultiPoint, e
 	}
 
 	alloc := num
-	if alloc > maxPointsAlloc {
+	if alloc > MaxPointsAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxPointsAlloc
+		alloc = MaxPointsAlloc
 	}
 	result := make(orb.MultiPoint, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		pOrder, typ, err := readByteOrderType(r, buf)
+		pOrder, typ, _, err := readByteOrderType(r, buf)
 		if err != nil {
 			return nil, err
 		}
@@ -152,16 +159,14 @@ func readMultiPoint(r io.Reader, order byteOrder, buf []byte) (orb.MultiPoint, e
 	return result, nil
 }
 
-func (e *Encoder) writeMultiPoint(mp orb.MultiPoint) error {
-	e.order.PutUint32(e.buf, multiPointType)
-	e.order.PutUint32(e.buf[4:], uint32(len(mp)))
-	_, err := e.w.Write(e.buf[:8])
+func (e *Encoder) writeMultiPoint(mp orb.MultiPoint, srid int) error {
+	err := e.writeTypePrefix(multiPointType, len(mp), srid)
 	if err != nil {
 		return err
 	}
 
 	for _, p := range mp {
-		err := e.Encode(p)
+		err := e.Encode(p, 0)
 		if err != nil {
 			return err
 		}

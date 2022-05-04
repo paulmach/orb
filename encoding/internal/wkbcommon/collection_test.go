@@ -1,10 +1,9 @@
-package wkb
+package wkbcommon
 
 import (
 	"testing"
 
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/encoding/internal/wkbcommon"
 )
 
 var (
@@ -32,12 +31,13 @@ var (
 
 func TestCollection(t *testing.T) {
 	large := orb.Collection{}
-	for i := 0; i < wkbcommon.MaxMultiAlloc+100; i++ {
+	for i := 0; i < MaxMultiAlloc+100; i++ {
 		large = append(large, orb.Point{float64(i), float64(-i)})
 	}
 
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.Collection
 	}{
@@ -48,14 +48,20 @@ func TestCollection(t *testing.T) {
 		},
 		{
 			name:     "large",
-			data:     MustMarshal(large),
+			data:     MustMarshal(large, 0),
+			expected: large,
+		},
+		{
+			name:     "large with srid",
+			srid:     475858,
+			data:     MustMarshal(large, 475858),
 			expected: large,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }

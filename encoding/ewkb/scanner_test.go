@@ -1,4 +1,4 @@
-package wkb
+package ewkb
 
 import (
 	"bytes"
@@ -8,17 +8,144 @@ import (
 	"github.com/paulmach/orb"
 )
 
-var SRID = []byte{215, 15, 0, 0}
+var (
+	testPolygon = orb.Polygon{{
+		{30, 10}, {40, 40}, {20, 40}, {10, 20}, {30, 10},
+	}}
+	testPolygonData = []byte{
+		//01    02    03    04    05    06    07    08
+		0x01, 0x03, 0x00, 0x00, 0x20,
+		0xE6, 0x10, 0x00, 0x00,
+		0x01, 0x00, 0x00, 0x00, // Number of Rings 1
+		0x05, 0x00, 0x00, 0x00, // Number of Points 5
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X1 30
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y1 10
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // X2 40
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // Y2 40
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // X3 20
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // Y3 40
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X4 10
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y4 20
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X5 30
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y5 10
+	}
+)
+
+var (
+	testMultiPolygon = orb.MultiPolygon{
+		{{{30, 20}, {45, 40}, {10, 40}, {30, 20}}},
+		{{{15, 5}, {40, 10}, {10, 20}, {5, 10}, {15, 5}}},
+	}
+	testMultiPolygonData = []byte{
+		//01    02    03    04    05    06    07    08
+		0x01, 0x06, 0x00, 0x00, 0x20,
+		0xE6, 0x10, 0x00, 0x00,
+		0x02, 0x00, 0x00, 0x00, // Number of Polygons (2)
+		0x01,                   // Byte Encoding Little
+		0x03, 0x00, 0x00, 0x00, // Type Polygon1 (3)
+		0x01, 0x00, 0x00, 0x00, // Number of Lines (1)
+		0x04, 0x00, 0x00, 0x00, // Number of Points (4)
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X1 30
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y1 20
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x46, 0x40, // X2 45
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // Y2 40
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X3 10
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // Y3 40
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X4 30
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // X4 20
+		0x01,                   // Byte Encoding Little
+		0x03, 0x00, 0x00, 0x00, // Type Polygon2 (3)
+		0x01, 0x00, 0x00, 0x00, // Number of Lines (1)
+		0x05, 0x00, 0x00, 0x00, // Number of Points (5)
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2e, 0x40, // X1 15
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x40, // Y1  5
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x40, // X2 40
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y2 10
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X3 10
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y3 20
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x40, // X4  5
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y4 10
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2e, 0x40, // X5 15
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x40, // Y5  5
+	}
+
+	testMultiPolygonSingle = orb.MultiPolygon{
+		{
+			{{20, 35}, {10, 30}, {10, 10}, {30, 5}, {45, 20}, {20, 35}},
+			{{30, 20}, {20, 15}, {20, 25}, {30, 20}}},
+	}
+	testMultiPolygonSingleData = []byte{
+		//01    02    03    04    05    06    07    08
+		0x01, 0x06, 0x00, 0x00, 0x20,
+		0xE6, 0x10, 0x00, 0x00,
+		0x01, 0x00, 0x00, 0x00, // Number of Polygons (1)
+		0x01,                   // Byte order marker little
+		0x03, 0x00, 0x00, 0x00, // Type Polygon(3)
+		0x02, 0x00, 0x00, 0x00, // Number of Lines(2)
+		0x06, 0x00, 0x00, 0x00, // Number of Points(6)
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // X1 20
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x41, 0x40, // Y1 35
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X2 10
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // Y2 30
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // X3 10
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y3 10
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X4 30
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x40, // Y4 5
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x46, 0x40, // X5 45
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y5 20
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // X6 20
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x41, 0x40, // Y6 35
+		0x04, 0x00, 0x00, 0x00, // Number of Points(4)
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X1 30
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y1 20
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // X2 20
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2e, 0x40, // Y2 15
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // X3 20
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x39, 0x40, // Y3 25
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x40, // X4 30
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x34, 0x40, // Y4 20
+	}
+)
+
+var (
+	testCollection = orb.Collection{
+		orb.Point{4, 6},
+		orb.LineString{{4, 6}, {7, 10}},
+	}
+	testCollectionData = []byte{
+		//01    02    03    04    05    06    07    08
+		0x01, 0x07, 0x00, 0x00, 0x20,
+		0xE6, 0x10, 0x00, 0x00,
+		0x02, 0x00, 0x00, 0x00, // Number of Geometries in Collection
+		0x01,                   // Byte order marker little
+		0x01, 0x00, 0x00, 0x00, // Type (1) Point
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x40, // X1 4
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x40, // Y1 6
+		0x01,                   // Byte order marker little
+		0x02, 0x00, 0x00, 0x00, // Type (2) Line
+		0x02, 0x00, 0x00, 0x00, // Number of Points (2)
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x40, // X1 4
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x40, // Y1 6
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1c, 0x40, // X2 7
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x40, // Y2 10
+	}
+)
 
 func TestScanNil(t *testing.T) {
+	testPoint := orb.Point{1, 2}
+
 	s := Scanner(nil)
-	err := s.Scan(testPointData)
+	err := s.Scan(MustMarshal(testPoint, 4326))
 	if err != nil {
 		t.Fatalf("scan error: %v", err)
 	}
 
 	if !orb.Equal(s.Geometry, testPoint) {
 		t.Errorf("incorrect geometry: %v != %v", s.Geometry, testPoint)
+	}
+
+	if s.SRID != 4326 {
+		t.Errorf("incorrect srid: %v != %v", s.SRID, 4326)
 	}
 
 	t.Run("scan nil data", func(t *testing.T) {
@@ -78,12 +205,22 @@ func TestScanHexData(t *testing.T) {
 	}{
 		{
 			name:     "point lower case",
-			data:     []byte(`\x0101000000e0d57267266e4840b22ac24d46b50240`),
+			data:     []byte(`\x0101000020e6100000e0d57267266e4840b22ac24d46b50240`),
 			expected: orb.Point{48.860547, 2.338513},
 		},
 		{
 			name:     "point upper case",
-			data:     []byte(`\x0101000000e0d57267266e4840b22ac24d46b50240`),
+			data:     []byte(`\x0101000020E6100000E0D57267266E4840B22AC24D46B50240`),
+			expected: orb.Point{48.860547, 2.338513},
+		},
+		{
+			name:     "no prefix, point lower case",
+			data:     []byte(`0101000020e6100000e0d57267266e4840b22ac24d46b50240`),
+			expected: orb.Point{48.860547, 2.338513},
+		},
+		{
+			name:     "no prefix, point upper case",
+			data:     []byte(`0101000020E6100000E0D57267266E4840B22AC24D46B50240`),
 			expected: orb.Point{48.860547, 2.338513},
 		},
 	}
@@ -102,6 +239,10 @@ func TestScanHexData(t *testing.T) {
 				t.Errorf("unequal data")
 				t.Log(p)
 				t.Log(tc.expected)
+			}
+
+			if s.SRID != 4326 {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, 4326)
 			}
 		})
 	}
@@ -137,27 +278,20 @@ func TestScanPoint(t *testing.T) {
 	cases := []struct {
 		name     string
 		data     []byte
+		srid     int
 		expected orb.Point
 	}{
 		{
 			name:     "point",
-			data:     testPointData,
-			expected: testPoint,
-		},
-		{
-			name:     "point with MySQL SRID",
-			data:     append(SRID, testPointData...),
-			expected: testPoint,
+			data:     MustMarshal(orb.Point{4, 5}, 4326),
+			srid:     4326,
+			expected: orb.Point{4, 5},
 		},
 		{
 			name:     "single multi-point",
-			data:     testMultiPointSingleData,
-			expected: testMultiPointSingle[0],
-		},
-		{
-			name:     "single multi-point with MySQL SRID",
-			data:     append(SRID, testMultiPointSingleData...),
-			expected: testMultiPointSingle[0],
+			data:     MustMarshal(orb.MultiPoint{{1, 2}}, 4326),
+			srid:     4326,
+			expected: orb.Point{1, 2},
 		},
 	}
 
@@ -183,6 +317,10 @@ func TestScanPoint(t *testing.T) {
 			if !s.Valid {
 				t.Errorf("should set valid to true")
 			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
 		})
 	}
 }
@@ -202,21 +340,16 @@ func TestScanPoint_errors(t *testing.T) {
 		{
 			name: "not wkb, too short",
 			data: []byte{0, 0, 0, 0, 1, 192, 94, 157, 24, 227, 60, 152, 15, 64, 66, 222, 128, 39},
-			err:  ErrNotWKB,
+			err:  ErrNotEWKB,
 		},
 		{
 			name: "invalid first byte",
 			data: []byte{3, 1, 0, 0, 0, 15, 152, 60, 227, 24, 157, 94, 192, 205, 11, 17, 39, 128, 222, 66, 64},
-			err:  ErrIncorrectGeometry,
+			err:  ErrNotEWKB,
 		},
 		{
 			name: "incorrect geometry",
-			data: testLineStringData,
-			err:  ErrIncorrectGeometry,
-		},
-		{
-			name: "incorrect geometry with MySQL SRID",
-			data: append(SRID, testLineStringData...),
+			data: MustMarshal(orb.LineString{{0, 0}, {1, 2}}, 4326),
 			err:  ErrIncorrectGeometry,
 		},
 	}
@@ -241,26 +374,92 @@ func TestScanPoint_errors(t *testing.T) {
 	}
 }
 
+func TestScannerPrefixSRID(t *testing.T) {
+	cases := []struct {
+		name     string
+		data     []byte
+		srid     int
+		expected orb.Geometry
+	}{
+		{
+			name:     "point",
+			data:     append([]byte{230, 16, 0, 0}, MustMarshal(orb.Point{4, 5}, 0)...),
+			srid:     4326,
+			expected: orb.Point{4, 5},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := ScannerPrefixSRID(nil)
+			err := s.Scan(tc.data)
+			if err != nil {
+				t.Fatalf("scan error: %v", err)
+			}
+
+			if !orb.Equal(s.Geometry, tc.expected) {
+				t.Errorf("unequal data")
+				t.Log(s.Geometry)
+				t.Log(tc.expected)
+			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
+		})
+	}
+}
+
+func TestValuePrefixSRID(t *testing.T) {
+	cases := []struct {
+		name     string
+		geom     orb.Geometry
+		srid     int
+		expected []byte
+	}{
+		{
+			name:     "point",
+			geom:     orb.Point{4, 5},
+			srid:     4326,
+			expected: append([]byte{230, 16, 0, 0}, MustMarshal(orb.Point{4, 5}, 0)...),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			v := ValuePrefixSRID(tc.geom, tc.srid)
+			data, err := v.Value()
+			if err != nil {
+				t.Fatalf("value error: %v", err)
+			}
+
+			if !bytes.Equal(data.([]byte), tc.expected) {
+				t.Errorf("unequal data")
+				t.Log(data)
+				t.Log(tc.expected)
+			}
+		})
+	}
+}
+
 func TestScanMultiPoint(t *testing.T) {
 	cases := []struct {
 		name     string
 		data     []byte
+		srid     int
 		expected orb.MultiPoint
 	}{
 		{
 			name:     "multi point",
-			data:     testMultiPointData,
-			expected: testMultiPoint,
-		},
-		{
-			name:     "multi point with MySQL SRID",
-			data:     append(SRID, testMultiPointData...),
-			expected: testMultiPoint,
+			data:     MustMarshal(orb.MultiPoint{{1, 2}, {3, 4}}, 4326),
+			srid:     4326,
+			expected: orb.MultiPoint{{1, 2}, {3, 4}},
 		},
 		{
 			name:     "point should covert to multi point",
-			data:     testPointData,
-			expected: orb.MultiPoint{testPoint},
+			data:     MustMarshal(orb.Point{1, 2}, 4326),
+			srid:     4326,
+			expected: orb.MultiPoint{{1, 2}},
 		},
 	}
 
@@ -286,6 +485,10 @@ func TestScanMultiPoint(t *testing.T) {
 			if !s.Valid {
 				t.Errorf("should set valid to true")
 			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
 		})
 	}
 }
@@ -298,7 +501,7 @@ func TestScanMultiPoint_errors(t *testing.T) {
 	}{
 		{
 			name: "does not like line string",
-			data: testLineStringData,
+			data: MustMarshal(orb.LineString{{0, 0}}, 4326),
 			err:  ErrIncorrectGeometry,
 		},
 		{
@@ -309,7 +512,7 @@ func TestScanMultiPoint_errors(t *testing.T) {
 		{
 			name: "not wkb",
 			data: []byte{0, 0, 0, 0, 1, 192, 94},
-			err:  ErrNotWKB,
+			err:  ErrNotEWKB,
 		},
 	}
 
@@ -337,22 +540,20 @@ func TestScanLineString(t *testing.T) {
 	cases := []struct {
 		name     string
 		data     []byte
+		srid     int
 		expected orb.LineString
 	}{
 		{
 			name:     "line string",
-			data:     testLineStringData,
-			expected: testLineString,
-		},
-		{
-			name:     "line string with MySQL SRID",
-			data:     append(SRID, testLineStringData...),
-			expected: testLineString,
+			data:     MustMarshal(orb.LineString{{1, 2}, {3, 4}}, 4326),
+			srid:     4326,
+			expected: orb.LineString{{1, 2}, {3, 4}},
 		},
 		{
 			name:     "single multi line string",
-			data:     testMultiLineStringSingleData,
-			expected: testMultiLineStringSingle[0],
+			data:     MustMarshal(orb.MultiLineString{{{1, 2}, {3, 4}}}, 4326),
+			srid:     4326,
+			expected: orb.LineString{{1, 2}, {3, 4}},
 		},
 	}
 
@@ -378,6 +579,10 @@ func TestScanLineString(t *testing.T) {
 			if !s.Valid {
 				t.Errorf("should set valid to true")
 			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
 		})
 	}
 }
@@ -390,7 +595,7 @@ func TestScanLineString_errors(t *testing.T) {
 	}{
 		{
 			name: "does not like multi point",
-			data: testMultiPointData,
+			data: MustMarshal(orb.MultiPoint{{1, 2}, {3, 4}}, 4326),
 			err:  ErrIncorrectGeometry,
 		},
 		{
@@ -401,7 +606,7 @@ func TestScanLineString_errors(t *testing.T) {
 		{
 			name: "not wkb",
 			data: []byte{0, 0, 0, 0, 2, 192, 94},
-			err:  ErrNotWKB,
+			err:  ErrNotEWKB,
 		},
 	}
 
@@ -429,27 +634,20 @@ func TestScanMultiLineString(t *testing.T) {
 	cases := []struct {
 		name     string
 		data     []byte
+		srid     int
 		expected orb.MultiLineString
 	}{
 		{
 			name:     "line string",
-			data:     testLineStringData,
-			expected: orb.MultiLineString{testLineString},
+			data:     MustMarshal(orb.LineString{{1, 2}, {3, 4}}, 4326),
+			srid:     4326,
+			expected: orb.MultiLineString{{{1, 2}, {3, 4}}},
 		},
 		{
 			name:     "multi line string",
-			data:     testMultiLineStringData,
-			expected: testMultiLineString,
-		},
-		{
-			name:     "multi line string with MySQL SRID",
-			data:     append(SRID, testMultiLineStringData...),
-			expected: testMultiLineString,
-		},
-		{
-			name:     "single multi line string",
-			data:     testMultiLineStringSingleData,
-			expected: testMultiLineStringSingle,
+			data:     MustMarshal(orb.MultiLineString{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}}, 4326),
+			srid:     4326,
+			expected: orb.MultiLineString{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}},
 		},
 	}
 
@@ -475,6 +673,10 @@ func TestScanMultiLineString(t *testing.T) {
 			if !s.Valid {
 				t.Errorf("should set valid to true")
 			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
 		})
 	}
 }
@@ -487,7 +689,7 @@ func TestScanMultiLineString_errors(t *testing.T) {
 	}{
 		{
 			name: "does not like multi point",
-			data: testMultiPointData,
+			data: MustMarshal(orb.MultiPoint{{1, 2}}, 4326),
 			err:  ErrIncorrectGeometry,
 		},
 		{
@@ -498,7 +700,7 @@ func TestScanMultiLineString_errors(t *testing.T) {
 		{
 			name: "not wkb",
 			data: []byte{0, 0, 0, 0, 5, 192, 94},
-			err:  ErrNotWKB,
+			err:  ErrNotEWKB,
 		},
 	}
 
@@ -526,12 +728,14 @@ func TestScanRing(t *testing.T) {
 	cases := []struct {
 		name     string
 		data     []byte
+		srid     int
 		expected orb.Ring
 	}{
 		{
 			name:     "polygon",
-			data:     testPolygonData,
-			expected: testPolygon[0],
+			data:     MustMarshal(orb.Polygon{{{0, 0}, {0, 1}, {1, 0}, {0, 0}}}, 1234),
+			srid:     1234,
+			expected: orb.Ring{{0, 0}, {0, 1}, {1, 0}, {0, 0}},
 		},
 	}
 
@@ -557,6 +761,10 @@ func TestScanRing(t *testing.T) {
 			if !s.Valid {
 				t.Errorf("should set valid to true")
 			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
 		})
 	}
 }
@@ -569,7 +777,7 @@ func TestScanRing_errors(t *testing.T) {
 	}{
 		{
 			name: "does not like line strings",
-			data: testLineStringData,
+			data: MustMarshal(orb.LineString{{0, 0}, {0, 1}, {1, 0}, {0, 0}}, 4326),
 			err:  ErrIncorrectGeometry,
 		},
 		{
@@ -580,7 +788,7 @@ func TestScanRing_errors(t *testing.T) {
 		{
 			name: "not wkb",
 			data: []byte{0, 0, 0, 0, 1, 192, 94},
-			err:  ErrNotWKB,
+			err:  ErrNotEWKB,
 		},
 	}
 
@@ -608,21 +816,19 @@ func TestScanPolygon(t *testing.T) {
 	cases := []struct {
 		name     string
 		data     []byte
+		srid     int
 		expected orb.Polygon
 	}{
 		{
 			name:     "polygon",
 			data:     testPolygonData,
-			expected: testPolygon,
-		},
-		{
-			name:     "polygon with MySQL SRID",
-			data:     append(SRID, testPolygonData...),
+			srid:     4326,
 			expected: testPolygon,
 		},
 		{
 			name:     "single multi polygon",
 			data:     testMultiPolygonSingleData,
+			srid:     4326,
 			expected: testMultiPolygonSingle[0],
 		},
 	}
@@ -649,6 +855,10 @@ func TestScanPolygon(t *testing.T) {
 			if !s.Valid {
 				t.Errorf("should set valid to true")
 			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
 		})
 	}
 }
@@ -661,7 +871,7 @@ func TestScanPolygon_errors(t *testing.T) {
 	}{
 		{
 			name: "does not like line strings",
-			data: testLineStringData,
+			data: MustMarshal(orb.LineString{{0, 0}, {0, 1}, {1, 0}, {0, 0}}, 4326),
 			err:  ErrIncorrectGeometry,
 		},
 		{
@@ -672,7 +882,7 @@ func TestScanPolygon_errors(t *testing.T) {
 		{
 			name: "not wkb",
 			data: []byte{0, 0, 0, 0, 3, 192, 94},
-			err:  ErrNotWKB,
+			err:  ErrNotEWKB,
 		},
 	}
 
@@ -700,26 +910,25 @@ func TestScanMultiPolygon(t *testing.T) {
 	cases := []struct {
 		name     string
 		data     []byte
+		srid     int
 		expected orb.MultiPolygon
 	}{
 		{
 			name:     "multi polygon",
 			data:     testMultiPolygonData,
-			expected: testMultiPolygon,
-		},
-		{
-			name:     "multi polygon with MySQL SRID",
-			data:     append(SRID, testMultiPolygonData...),
+			srid:     4326,
 			expected: testMultiPolygon,
 		},
 		{
 			name:     "single multi polygon",
 			data:     testMultiPolygonSingleData,
+			srid:     4326,
 			expected: testMultiPolygonSingle,
 		},
 		{
 			name:     "polygon",
 			data:     testPolygonData,
+			srid:     4326,
 			expected: orb.MultiPolygon{testPolygon},
 		},
 	}
@@ -746,6 +955,10 @@ func TestScanMultiPolygon(t *testing.T) {
 			if !s.Valid {
 				t.Errorf("should set valid to true")
 			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
 		})
 	}
 }
@@ -758,7 +971,7 @@ func TestScanMultiPolygon_errors(t *testing.T) {
 	}{
 		{
 			name: "does not like line strings",
-			data: testLineStringData,
+			data: MustMarshal(orb.LineString{{0, 0}, {0, 1}, {1, 0}, {0, 0}}, 4326),
 			err:  ErrIncorrectGeometry,
 		},
 		{
@@ -769,7 +982,7 @@ func TestScanMultiPolygon_errors(t *testing.T) {
 		{
 			name: "not wkb",
 			data: []byte{0, 0, 0, 0, 6, 192, 94},
-			err:  ErrNotWKB,
+			err:  ErrNotEWKB,
 		},
 	}
 
@@ -797,11 +1010,13 @@ func TestScanCollection(t *testing.T) {
 	cases := []struct {
 		name     string
 		data     []byte
+		srid     int
 		expected orb.Collection
 	}{
 		{
 			name:     "collection",
 			data:     testCollectionData,
+			srid:     4326,
 			expected: testCollection,
 		},
 	}
@@ -828,6 +1043,10 @@ func TestScanCollection(t *testing.T) {
 			if !s.Valid {
 				t.Errorf("should set valid to true")
 			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
 		})
 	}
 }
@@ -840,7 +1059,7 @@ func TestScanCollection_errors(t *testing.T) {
 	}{
 		{
 			name: "does not like line strings",
-			data: testLineStringData,
+			data: MustMarshal(orb.LineString{{0, 0}, {0, 1}, {1, 0}, {0, 0}}, 4326),
 			err:  ErrIncorrectGeometry,
 		},
 		{
@@ -851,7 +1070,7 @@ func TestScanCollection_errors(t *testing.T) {
 		{
 			name: "not wkb",
 			data: []byte{0, 0, 0, 0, 7, 192, 94},
-			err:  ErrNotWKB,
+			err:  ErrNotEWKB,
 		},
 	}
 
@@ -879,52 +1098,20 @@ func TestScanBound(t *testing.T) {
 	cases := []struct {
 		name     string
 		data     []byte
+		srid     int
 		expected orb.Bound
 	}{
 		{
 			name:     "point",
-			data:     testPointData,
-			expected: testPoint.Bound(),
-		},
-		{
-			name:     "multi point",
-			data:     testMultiPointData,
-			expected: testMultiPoint.Bound(),
-		},
-		{
-			name:     "single multi point",
-			data:     testMultiPointSingleData,
-			expected: testMultiPointSingle.Bound(),
+			data:     MustMarshal(orb.Point{1, 2}, 4326),
+			srid:     4326,
+			expected: orb.Point{1, 2}.Bound(),
 		},
 		{
 			name:     "linestring",
-			data:     testLineStringData,
-			expected: testLineString.Bound(),
-		},
-		{
-			name:     "multi linestring",
-			data:     testMultiLineStringData,
-			expected: testMultiLineString.Bound(),
-		},
-		{
-			name:     "single multi linestring",
-			data:     testMultiLineStringSingleData,
-			expected: testMultiLineStringSingle.Bound(),
-		},
-		{
-			name:     "polygon",
-			data:     testPolygonData,
-			expected: testPolygon.Bound(),
-		},
-		{
-			name:     "multi polygon",
-			data:     testMultiPolygonData,
-			expected: testMultiPolygon.Bound(),
-		},
-		{
-			name:     "single multi polygon",
-			data:     testMultiPolygonSingleData,
-			expected: testMultiPolygonSingle.Bound(),
+			data:     MustMarshal(orb.LineString{{0, 0}, {0, 1}, {1, 0}, {0, 0}}, 4326),
+			srid:     4326,
+			expected: orb.LineString{{0, 0}, {0, 1}, {1, 0}, {0, 0}}.Bound(),
 		},
 	}
 
@@ -950,6 +1137,10 @@ func TestScanBound(t *testing.T) {
 			if !s.Valid {
 				t.Errorf("should set valid to true")
 			}
+
+			if s.SRID != tc.srid {
+				t.Errorf("incorrect SRID: %v != %v", s.SRID, tc.srid)
+			}
 		})
 	}
 }
@@ -968,7 +1159,7 @@ func TestScanBound_errors(t *testing.T) {
 		{
 			name: "not wkb",
 			data: []byte{0, 0, 0, 0, 1, 192, 94},
-			err:  ErrNotWKB,
+			err:  ErrNotEWKB,
 		},
 	}
 
@@ -994,7 +1185,9 @@ func TestScanBound_errors(t *testing.T) {
 
 func TestValue(t *testing.T) {
 	t.Run("marshalls geometry", func(t *testing.T) {
-		val, err := Value(testPoint).Value()
+		testPoint := orb.Point{1, 2}
+		testPointData := MustMarshal(testPoint, 4326)
+		val, err := Value(testPoint, 4326).Value()
 		if err != nil {
 			t.Errorf("value error: %v", err)
 		}
@@ -1007,7 +1200,7 @@ func TestValue(t *testing.T) {
 	})
 
 	t.Run("nil value in should set nil value", func(t *testing.T) {
-		val, err := Value(nil).Value()
+		val, err := Value(nil, 4326).Value()
 		if err != nil {
 			t.Errorf("value error: %v", err)
 		}
@@ -1065,7 +1258,7 @@ func TestValue_nil(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			val, err := Value(tc.geom).Value()
+			val, err := Value(tc.geom, 4326).Value()
 			if err != nil {
 				t.Errorf("value error: %v", err)
 			}
@@ -1079,7 +1272,7 @@ func TestValue_nil(t *testing.T) {
 
 func BenchmarkScan_point(b *testing.B) {
 	p := orb.Point{1, 2}
-	data, err := Marshal(p)
+	data, err := Marshal(p, 4326)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1099,7 +1292,7 @@ func BenchmarkScan_point(b *testing.B) {
 
 func BenchmarkDecode_point(b *testing.B) {
 	p := orb.Point{1, 2}
-	data, err := Marshal(p)
+	data, err := Marshal(p, 4326)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1110,7 +1303,7 @@ func BenchmarkDecode_point(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := d.Decode()
+		_, _, err := d.Decode()
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -1124,7 +1317,7 @@ func BenchmarkScan_lineString(b *testing.B) {
 	for i := 0; i < 100; i++ {
 		ls = append(ls, orb.Point{float64(i), float64(i)})
 	}
-	data, err := Marshal(ls)
+	data, err := Marshal(ls, 4326)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1147,7 +1340,7 @@ func BenchmarkDecode_lineString(b *testing.B) {
 	for i := 0; i < 100; i++ {
 		ls = append(ls, orb.Point{float64(i), float64(i)})
 	}
-	data, err := Marshal(ls)
+	data, err := Marshal(ls, 4326)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1158,7 +1351,7 @@ func BenchmarkDecode_lineString(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := d.Decode()
+		_, _, err := d.Decode()
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -1176,7 +1369,7 @@ func BenchmarkScan_multiLineString(b *testing.B) {
 		}
 		mls = append(mls, ls)
 	}
-	data, err := Marshal(mls)
+	data, err := Marshal(mls, 4326)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1203,7 +1396,7 @@ func BenchmarkDecode_multiLineString(b *testing.B) {
 		}
 		mls = append(mls, ls)
 	}
-	data, err := Marshal(mls)
+	data, err := Marshal(mls, 4326)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1214,7 +1407,7 @@ func BenchmarkDecode_multiLineString(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := d.Decode()
+		_, _, err := d.Decode()
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -1232,7 +1425,7 @@ func BenchmarkScan_polygon(b *testing.B) {
 		}
 		p = append(p, r)
 	}
-	data, err := Marshal(p)
+	data, err := Marshal(p, 4326)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1259,7 +1452,7 @@ func BenchmarkDecode_polygon(b *testing.B) {
 		}
 		p = append(p, r)
 	}
-	data, err := Marshal(p)
+	data, err := Marshal(p, 4326)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1270,7 +1463,7 @@ func BenchmarkDecode_polygon(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := d.Decode()
+		_, _, err := d.Decode()
 		if err != nil {
 			b.Fatal(err)
 		}

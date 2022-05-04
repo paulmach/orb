@@ -1,10 +1,9 @@
-package wkb
+package wkbcommon
 
 import (
 	"testing"
 
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/encoding/internal/wkbcommon"
 )
 
 var (
@@ -31,12 +30,13 @@ var (
 
 func TestPolygon(t *testing.T) {
 	large := orb.Polygon{}
-	for i := 0; i < wkbcommon.MaxMultiAlloc+100; i++ {
+	for i := 0; i < MaxMultiAlloc+100; i++ {
 		large = append(large, orb.Ring{})
 	}
 
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.Polygon
 	}{
@@ -47,7 +47,13 @@ func TestPolygon(t *testing.T) {
 		},
 		{
 			name:     "large",
-			data:     MustMarshal(large),
+			data:     MustMarshal(large, 0),
+			expected: large,
+		},
+		{
+			name:     "large with srid",
+			srid:     4326,
+			data:     MustMarshal(large, 4326),
 			expected: large,
 		},
 		{
@@ -86,7 +92,7 @@ func TestPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }
@@ -167,12 +173,13 @@ var (
 
 func TestMultiPolygon(t *testing.T) {
 	large := orb.MultiPolygon{}
-	for i := 0; i < wkbcommon.MaxMultiAlloc+100; i++ {
+	for i := 0; i < MaxMultiAlloc+100; i++ {
 		large = append(large, orb.Polygon{})
 	}
 
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.MultiPolygon
 	}{
@@ -188,7 +195,13 @@ func TestMultiPolygon(t *testing.T) {
 		},
 		{
 			name:     "large",
-			data:     MustMarshal(large),
+			data:     MustMarshal(large, 0),
+			expected: large,
+		},
+		{
+			name:     "large with srid",
+			srid:     4326,
+			data:     MustMarshal(large, 4326),
 			expected: large,
 		},
 		{
@@ -250,7 +263,7 @@ func TestMultiPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }

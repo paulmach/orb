@@ -1,10 +1,9 @@
-package wkb
+package wkbcommon
 
 import (
 	"testing"
 
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/encoding/internal/wkbcommon"
 )
 
 var (
@@ -20,6 +19,7 @@ var (
 func TestPoint(t *testing.T) {
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.Point
 	}{
@@ -43,39 +43,17 @@ func TestPoint(t *testing.T) {
 			data:     []byte{1, 1, 0, 0, 0, 253, 104, 56, 101, 110, 114, 87, 192, 192, 9, 133, 8, 56, 50, 64, 64},
 			expected: orb.Point{-93.787988, 32.392335},
 		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
-		})
-	}
-}
-
-func TestPointToHex(t *testing.T) {
-	cases := []struct {
-		name     string
-		data     orb.Point
-		expected string
-	}{
 		{
-			name:     "point",
-			data:     orb.Point{1, 2},
-			expected: "0101000000000000000000f03f0000000000000040",
-		},
-		{
-			name:     "zero point",
-			data:     orb.Point{0, 0},
-			expected: "010100000000000000000000000000000000000000",
+			name:     "ewkb with srid",
+			srid:     4326,
+			data:     []byte{1, 1, 0, 0, 0x20, 0xE6, 0x10, 0, 0, 253, 104, 56, 101, 110, 114, 87, 192, 192, 9, 133, 8, 56, 50, 64, 64},
+			expected: orb.Point{-93.787988, 32.392335},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := MustMarshalToHex(tc.data)
-			if s != tc.expected {
-				t.Errorf("incorrect hex: %v", s)
-			}
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }
@@ -116,12 +94,13 @@ var (
 
 func TestMultiPoint(t *testing.T) {
 	large := orb.MultiPoint{}
-	for i := 0; i < wkbcommon.MaxPointsAlloc+100; i++ {
+	for i := 0; i < MaxPointsAlloc+100; i++ {
 		large = append(large, orb.Point{float64(i), float64(-i)})
 	}
 
 	cases := []struct {
 		name     string
+		srid     int
 		data     []byte
 		expected orb.MultiPoint
 	}{
@@ -137,14 +116,20 @@ func TestMultiPoint(t *testing.T) {
 		},
 		{
 			name:     "large multi point",
-			data:     MustMarshal(large),
+			data:     MustMarshal(large, 0),
+			expected: large,
+		},
+		{
+			name:     "large multi point with srid",
+			srid:     7777,
+			data:     MustMarshal(large, 7777),
 			expected: large,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			compare(t, tc.expected, tc.data)
+			compare(t, tc.expected, tc.srid, tc.data)
 		})
 	}
 }

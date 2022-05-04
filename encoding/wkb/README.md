@@ -5,7 +5,9 @@ data. The interface is defined as:
 
 ```go
 func Marshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) ([]byte, error)
+func MarshalToHex(geom orb.Geometry, byteOrder ...binary.ByteOrder) (string, error)
 func MustMarshal(geom orb.Geometry, byteOrder ...binary.ByteOrder) []byte
+func MustMarshalToHex(geom orb.Geometry, byteOrder ...binary.ByteOrder) string
 
 func NewEncoder(w io.Writer) *Encoder
 func (e *Encoder) SetByteOrder(bo binary.ByteOrder)
@@ -30,6 +32,8 @@ err := row.Scan(wkb.Scanner(&p))
 
 db.Exec("INSERT INTO table (point_column) VALUES (?)", wkb.Value(p))
 ```
+
+The column can also be wrapped in `ST_AsEWKB`. The SRID will be ignored.
 
 If you don't know the type of the geometry try something like
 

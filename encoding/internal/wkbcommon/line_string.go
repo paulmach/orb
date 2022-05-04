@@ -1,4 +1,4 @@
-package wkb
+package wkbcommon
 
 import (
 	"errors"
@@ -24,9 +24,9 @@ func readLineString(r io.Reader, order byteOrder, buf []byte) (orb.LineString, e
 	}
 
 	alloc := num
-	if alloc > maxPointsAlloc {
+	if alloc > MaxPointsAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxPointsAlloc
+		alloc = MaxPointsAlloc
 	}
 	result := make(orb.LineString, 0, alloc)
 
@@ -42,10 +42,8 @@ func readLineString(r io.Reader, order byteOrder, buf []byte) (orb.LineString, e
 	return result, nil
 }
 
-func (e *Encoder) writeLineString(ls orb.LineString) error {
-	e.order.PutUint32(e.buf, lineStringType)
-	e.order.PutUint32(e.buf[4:], uint32(len(ls)))
-	_, err := e.w.Write(e.buf[:8])
+func (e *Encoder) writeLineString(ls orb.LineString, srid int) error {
+	err := e.writeTypePrefix(lineStringType, len(ls), srid)
 	if err != nil {
 		return err
 	}
@@ -70,14 +68,14 @@ func unmarshalMultiLineString(order byteOrder, data []byte) (orb.MultiLineString
 	data = data[4:]
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.MultiLineString, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		ls, err := scanLineString(data)
+		ls, _, err := ScanLineString(data)
 		if err != nil {
 			return nil, err
 		}
@@ -96,14 +94,14 @@ func readMultiLineString(r io.Reader, order byteOrder, buf []byte) (orb.MultiLin
 	}
 
 	alloc := num
-	if alloc > maxMultiAlloc {
+	if alloc > MaxMultiAlloc {
 		// invalid data can come in here and allocate tons of memory.
-		alloc = maxMultiAlloc
+		alloc = MaxMultiAlloc
 	}
 	result := make(orb.MultiLineString, 0, alloc)
 
 	for i := 0; i < int(num); i++ {
-		lOrder, typ, err := readByteOrderType(r, buf)
+		lOrder, typ, _, err := readByteOrderType(r, buf)
 		if err != nil {
 			return nil, err
 		}
@@ -123,16 +121,14 @@ func readMultiLineString(r io.Reader, order byteOrder, buf []byte) (orb.MultiLin
 	return result, nil
 }
 
-func (e *Encoder) writeMultiLineString(mls orb.MultiLineString) error {
-	e.order.PutUint32(e.buf, multiLineStringType)
-	e.order.PutUint32(e.buf[4:], uint32(len(mls)))
-	_, err := e.w.Write(e.buf[:8])
+func (e *Encoder) writeMultiLineString(mls orb.MultiLineString, srid int) error {
+	err := e.writeTypePrefix(multiLineStringType, len(mls), srid)
 	if err != nil {
 		return err
 	}
 
 	for _, ls := range mls {
-		err := e.Encode(ls)
+		err := e.Encode(ls, 0)
 		if err != nil {
 			return err
 		}
