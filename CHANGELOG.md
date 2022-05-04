@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.6.0](https://github.com/paulmach/orb/compare/v0.5.0...v0.6.0) - 2022-05-04
+
+### Added
+
+-   geo: add correctly spelled LengthHaversine by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/97
+-   geojson: add support for "external" json encoders/decoders by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/98
+-   Add ewkb encoding/decoding support by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/88
+
 ## [v0.5.0](https://github.com/paulmach/orb/compare/v0.4.0...v0.5.0) - 2022-04-06
 
 ### Added
