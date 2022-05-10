@@ -96,11 +96,11 @@ func TestTestdata(t *testing.T) {
 
 			expected := loadFeatureCollection(t, "./testdata/"+tc.name+"_out.geojson")
 
-			tiles := Geometry(f.Geometry, tc.max)
+			tiles, _ := Geometry(f.Geometry, tc.max)
 			result := MergeUp(tiles, tc.min).ToFeatureCollection()
 			compareFeatureCollections(t, tc.name, result, expected)
 
-			tiles = Geometry(f.Geometry, tc.max)
+			tiles, _ = Geometry(f.Geometry, tc.max)
 			result = MergeUpPartial(tiles, tc.min, 4).ToFeatureCollection()
 			compareFeatureCollections(t, tc.name, result, expected)
 		})
@@ -123,7 +123,7 @@ func TestCountries(t *testing.T) {
 	for _, country := range countries {
 		t.Run(country, func(t *testing.T) {
 			f := loadFeature(t, "./testdata/world/"+country+".geo.json")
-			tiles := Geometry(f.Geometry, 6)
+			tiles, _ := Geometry(f.Geometry, 6)
 			tiles = MergeUp(tiles, 1)
 
 			expected := loadFeatureCollection(t, "./testdata/world/"+country+"_out.geojson")

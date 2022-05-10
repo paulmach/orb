@@ -82,7 +82,7 @@ func BenchmarkRussia_z0z9(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		tiles := Geometry(g, 9)
+		tiles, _ := Geometry(g, 9)
 		MergeUp(tiles, 0)
 	}
 }
