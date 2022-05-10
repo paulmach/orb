@@ -8,7 +8,10 @@ which is a port from Google's S2 library. The same set of tests pass.
 
 ```go
 poly := orb.Polygon{}
-tiles := tilecover.Geometry(poly, zoom)
+tiles, err := tilecover.Geometry(poly, zoom)
+if err != nil {
+	// indicates a non-closed ring
+}
 
 for t := range tiles {
     // do something with tile
