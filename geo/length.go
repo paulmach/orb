@@ -21,8 +21,6 @@ func LengthHaversign(g orb.Geometry) float64 {
 
 // LengthHaversine returns the length of the boundary of the geometry
 // using the geo haversine formula
-//
-// Deprecated: misspelled, use correctly spelled `LengthHaversine` instead.
 func LengthHaversine(g orb.Geometry) float64 {
 	return length.Length(g, DistanceHaversine)
 }
