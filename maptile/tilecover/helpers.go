@@ -74,7 +74,7 @@ func Bound(b orb.Bound, z maptile.Zoom) maptile.Set {
 }
 
 // Collection returns the covering set of tiles for the
-// geoemtry collection.
+// geometry collection.
 func Collection(c orb.Collection, z maptile.Zoom) (maptile.Set, error) {
 	set := make(maptile.Set)
 	for _, g := range c {
