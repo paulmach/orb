@@ -60,10 +60,10 @@ layers.Simplify(simplify.DouglasPeucker(1.0))
 layers.RemoveEmpty(1.0, 1.0)
 
 // encoding using the Mapbox Vector Tile protobuf encoding.
-data, err := layers.Marshal() // this data is NOT gzipped.
+data, err := mvt.Marshal(layers) // this data is NOT gzipped.
 
 // Sometimes MVT data is stored and transfered gzip compressed. In that case:
-data, err := layers.MarshalGzipped()
+data, err := mvt.MarshalGzipped(layers)
 ```
 
 ## Feature IDs
