@@ -11,7 +11,7 @@ import (
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
 	"github.com/paulmach/orb/geojson"
 
-	"github.com/gogo/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 // MarshalGzipped will marshal the layers into Mapbox Vector Tile format

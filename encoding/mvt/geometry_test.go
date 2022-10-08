@@ -8,6 +8,7 @@ import (
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
 	"github.com/paulmach/protoscan"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestGeometry_Point(t *testing.T) {
@@ -360,7 +361,7 @@ func sliceToIterator(vals []uint32) *protoscan.Iterator {
 		Geometry: vals,
 	}
 
-	data, err := feature.Marshal()
+	data, err := proto.Marshal(feature)
 	if err != nil {
 		panic(err)
 	}
