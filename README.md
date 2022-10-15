@@ -2,7 +2,7 @@
 
 Package `orb` defines a set of types for working with 2d geo and planar/projected geometric data in Golang.
 There are a set of sub-packages that use these types to do interesting things.
-They each provider their own README with extra info.
+They each provide their own README with extra info.
 
 ## Interesting features
 
