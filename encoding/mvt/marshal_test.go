@@ -1,7 +1,7 @@
 package mvt
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -546,7 +546,7 @@ func TestStableMarshalling(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		marshal, _ := Marshal(layers)
-		checksum := md5.Sum(marshal)
+		checksum := sha256.Sum256(marshal)
 		sum := hex.EncodeToString(checksum[:])
 		values[sum] = true
 	}
