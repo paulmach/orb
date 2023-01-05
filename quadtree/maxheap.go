@@ -6,7 +6,7 @@ import "github.com/paulmach/orb"
 // the furthest point from the query point in the list, hence maxHeap.
 // When we find a point closer than the furthest away, we remove
 // furthest and add the new point to the heap.
-type maxHeap []*heapItem
+type maxHeap []heapItem
 
 type heapItem struct {
 	point    orb.Pointer
@@ -14,19 +14,10 @@ type heapItem struct {
 }
 
 func (h *maxHeap) Push(point orb.Pointer, distance float64) {
-	// Common usage is Push followed by a Pop if we have > k points.
-	// We're reusing the k+1 heapItem object to reduce memory allocations.
-	// First we manaully lengthen the slice,
-	// then we see if the last item has been allocated already.
-
 	prevLen := len(*h)
 	*h = (*h)[:prevLen+1]
-	if (*h)[prevLen] == nil {
-		(*h)[prevLen] = &heapItem{point: point, distance: distance}
-	} else {
-		(*h)[prevLen].point = point
-		(*h)[prevLen].distance = distance
-	}
+	(*h)[prevLen].point = point
+	(*h)[prevLen].distance = distance
 
 	i := len(*h) - 1
 	for i > 0 {
@@ -53,21 +44,20 @@ func (h *maxHeap) Push(point orb.Pointer, distance float64) {
 
 // Pop returns the "greatest" item in the list.
 // The returned item should not be saved across push/pop operations.
-func (h *maxHeap) Pop() *heapItem {
-	removed := (*h)[0]
+func (h *maxHeap) Pop() {
 	lastItem := (*h)[len(*h)-1]
 	(*h) = (*h)[:len(*h)-1]
 
 	mh := (*h)
 	if len(mh) == 0 {
-		return removed
+		return
 	}
 
 	// move the last item to the top and reset the heap
-	mh[0] = lastItem
+	mh[0].point = lastItem.point
+	mh[0].distance = lastItem.distance
 
 	i := 0
-	current := mh[i]
 	for {
 		right := (i + 1) << 1
 		left := right - 1
@@ -92,11 +82,12 @@ func (h *maxHeap) Pop() *heapItem {
 		}
 
 		// swap the nodes
-		mh[i] = child
-		mh[childIndex] = current
+		mh[i].point = child.point
+		mh[i].distance = child.distance
+
+		mh[childIndex].point = lastItem.point
+		mh[childIndex].distance = lastItem.distance
 
 		i = childIndex
 	}
-
-	return removed
 }

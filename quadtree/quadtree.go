@@ -113,6 +113,7 @@ func (q *Quadtree) add(n *node, p orb.Pointer, point orb.Point, left, right, bot
 // Remove will remove the pointer from the quadtree. By default it'll match
 // using the points, but a FilterFunc can be provided for a more specific test
 // if there are elements with the same point value in the tree. For example:
+//
 //	func(pointer orb.Pointer) {
 //		return pointer.(*MyType).ID == lookingFor.ID
 //	}
@@ -273,7 +274,8 @@ func (q *Quadtree) KNearestMatching(buf []orb.Pointer, p orb.Point, k int, f Fil
 	}
 
 	for i := len(v.maxHeap) - 1; i >= 0; i-- {
-		buf[i] = v.maxHeap.Pop().point
+		buf[i] = v.maxHeap[0].point
+		v.maxHeap.Pop()
 	}
 
 	return buf
