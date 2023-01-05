@@ -14,9 +14,11 @@ func TestMaxHeap(t *testing.T) {
 			h.Push(nil, r.Float64())
 		}
 
-		current := h.Pop().distance
+		current := h[0].distance
+		h.Pop()
 		for len(h) > 0 {
-			next := h.Pop().distance
+			next := h[0].distance
+			h.Pop()
 			if next > current {
 				t.Errorf("incorrect")
 			}

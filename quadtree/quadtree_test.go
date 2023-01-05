@@ -483,6 +483,27 @@ func TestQuadtreeKNearest_sorted(t *testing.T) {
 	}
 }
 
+func TestQuadtreeKNearest_sorted2(t *testing.T) {
+	q := New(orb.Bound{Max: orb.Point{8, 8}})
+	q.Add(orb.Point{0, 0})
+	q.Add(orb.Point{1, 1})
+	q.Add(orb.Point{2, 2})
+	q.Add(orb.Point{3, 3})
+	q.Add(orb.Point{4, 4})
+	q.Add(orb.Point{5, 5})
+	q.Add(orb.Point{6, 6})
+	q.Add(orb.Point{7, 7})
+
+	nearest := q.KNearest(nil, orb.Point{5.25, 5.25}, 3)
+
+	expected := []orb.Point{{5, 5}, {6, 6}, {4, 4}}
+	for i, p := range expected {
+		if n := nearest[i].Point(); !n.Equal(p) {
+			t.Errorf("incorrect point %d: %v", i, n)
+		}
+	}
+}
+
 func TestQuadtreeKNearest_DistanceLimit(t *testing.T) {
 	type dataPointer struct {
 		orb.Pointer
