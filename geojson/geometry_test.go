@@ -106,15 +106,15 @@ func TestGeometryUnmarshal(t *testing.T) {
 	}{
 		{
 			name: "point",
-			geom: orb.Point{},
+			geom: orb.Point{1, 2},
 		},
 		{
 			name: "multi point",
-			geom: orb.MultiPoint{},
+			geom: orb.MultiPoint{{1, 2}, {3, 4}},
 		},
 		{
 			name: "linestring",
-			geom: orb.LineString{},
+			geom: orb.LineString{{1, 2}, {3, 4}, {5, 6}},
 		},
 		{
 			name: "multi linestring",
@@ -130,7 +130,7 @@ func TestGeometryUnmarshal(t *testing.T) {
 		},
 		{
 			name: "collection",
-			geom: orb.Collection{orb.LineString{}},
+			geom: orb.Collection{orb.LineString{{1, 2}, {3, 4}}, orb.Point{5, 6}},
 		},
 	}
 
@@ -192,6 +192,47 @@ func TestGeometryUnmarshal(t *testing.T) {
 
 	if !strings.Contains(err.Error(), "invalid geometry") {
 		t.Errorf("incorrect error: %v", err)
+	}
+}
+
+func TestGeometryUnmarshal_errors(t *testing.T) {
+	cases := []struct {
+		name string
+		data string
+	}{
+		{
+			name: "point",
+			data: `{"type":"Point","coordinates":1}`,
+		},
+		{
+			name: "multi point",
+			data: `{"type":"MultiPoint","coordinates":2}`,
+		},
+		{
+			name: "linestring",
+			data: `{"type":"LineString","coordinates":3}`,
+		},
+		{
+			name: "multi linestring",
+			data: `{"type":"MultiLineString","coordinates":4}`,
+		},
+		{
+			name: "polygon",
+			data: `{"type":"Polygon","coordinates":10.2}`,
+		},
+		{
+			name: "multi polygon",
+			data: `{"type":"MultiPolygon","coordinates":{}}`,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := UnmarshalGeometry([]byte(tc.data))
+			if err == nil {
+				t.Errorf("expected error, got nothing")
+			}
+		})
 	}
 }
 
