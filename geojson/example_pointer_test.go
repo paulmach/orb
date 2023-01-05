@@ -16,11 +16,11 @@ type CentroidPoint struct {
 func (cp CentroidPoint) Point() orb.Point {
 	// this is where you would decide how to define
 	// the representative point of the feature.
-	c, _ := planar.CentroidArea(cp.Feature.Geometry)
+	c, _ := planar.CentroidArea(cp.Geometry)
 	return c
 }
 
-func main() {
+func Example_centroid() {
 	qt := quadtree.New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
 
 	// feature with center {0.5, 0.5} but centroid {0.25, 0.25}

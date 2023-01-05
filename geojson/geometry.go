@@ -113,26 +113,44 @@ func (g *Geometry) UnmarshalJSON(data []byte) error {
 	case "Point":
 		p := orb.Point{}
 		err = unmarshalJSON(jg.Coordinates, &p)
+		if err != nil {
+			return err
+		}
 		g.Coordinates = p
 	case "MultiPoint":
 		mp := orb.MultiPoint{}
 		err = unmarshalJSON(jg.Coordinates, &mp)
+		if err != nil {
+			return err
+		}
 		g.Coordinates = mp
 	case "LineString":
 		ls := orb.LineString{}
 		err = unmarshalJSON(jg.Coordinates, &ls)
+		if err != nil {
+			return err
+		}
 		g.Coordinates = ls
 	case "MultiLineString":
 		mls := orb.MultiLineString{}
 		err = unmarshalJSON(jg.Coordinates, &mls)
+		if err != nil {
+			return err
+		}
 		g.Coordinates = mls
 	case "Polygon":
 		p := orb.Polygon{}
 		err = unmarshalJSON(jg.Coordinates, &p)
+		if err != nil {
+			return err
+		}
 		g.Coordinates = p
 	case "MultiPolygon":
 		mp := orb.MultiPolygon{}
 		err = unmarshalJSON(jg.Coordinates, &mp)
+		if err != nil {
+			return err
+		}
 		g.Coordinates = mp
 	case "GeometryCollection":
 		g.Geometries = jg.Geometries
