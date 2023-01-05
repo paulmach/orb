@@ -13,6 +13,16 @@ func TestTrimSpaceBrackets(t *testing.T) {
 		expected string
 	}{
 		{
+			name:     "empty string",
+			s:        "",
+			expected: "",
+		},
+		{
+			name:     "blank string",
+			s:        "   ",
+			expected: "",
+		},
+		{
 			name:     "single point",
 			s:        "(1 2)",
 			expected: "1 2",
@@ -84,6 +94,39 @@ func TestUnmarshalPoint(t *testing.T) {
 	}
 }
 
+func TestUnmarshalPoint_errors(t *testing.T) {
+	cases := []struct {
+		name string
+		s    string
+		err  error
+	}{
+		{
+			name: "just name",
+			s:    "POINT",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "too many points",
+			s:    "POINT(1.34 2.35 3.36)",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "not a point",
+			s:    "MULTIPOINT((1.34 2.35))",
+			err:  ErrIncorrectGeometry,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := UnmarshalPoint(tc.s)
+			if err != tc.err {
+				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+			}
+		})
+	}
+}
+
 func TestUnmarshalMultiPoint(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -123,6 +166,39 @@ func TestUnmarshalMultiPoint(t *testing.T) {
 	}
 }
 
+func TestUnmarshalMultiPoint_errors(t *testing.T) {
+	cases := []struct {
+		name string
+		s    string
+		err  error
+	}{
+		{
+			name: "just name",
+			s:    "MULTIPOINT",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "too many points",
+			s:    "MULTIPOINT((1 2),(3 4 5))",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "not a multipoint",
+			s:    "POINT(1 2)",
+			err:  ErrIncorrectGeometry,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := UnmarshalMultiPoint(tc.s)
+			if err != tc.err {
+				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+			}
+		})
+	}
+}
+
 func TestUnmarshalLineString(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -157,6 +233,39 @@ func TestUnmarshalLineString(t *testing.T) {
 	}
 }
 
+func TestUnmarshalLineString_errors(t *testing.T) {
+	cases := []struct {
+		name string
+		s    string
+		err  error
+	}{
+		{
+			name: "just name",
+			s:    "LINESTRING",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "too many points",
+			s:    "LINESTRING(1 2,3 4 5)",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "not a multipoint",
+			s:    "POINT(1 2)",
+			err:  ErrIncorrectGeometry,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := UnmarshalLineString(tc.s)
+			if err != tc.err {
+				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+			}
+		})
+	}
+}
+
 func TestUnmarshalMultiLineString(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -186,6 +295,39 @@ func TestUnmarshalMultiLineString(t *testing.T) {
 				t.Log(geom)
 				t.Log(tc.expected)
 				t.Errorf("incorrect wkt unmarshalling")
+			}
+		})
+	}
+}
+
+func TestUnmarshalMultiLineString_errors(t *testing.T) {
+	cases := []struct {
+		name string
+		s    string
+		err  error
+	}{
+		{
+			name: "just name",
+			s:    "MULTILINESTRING",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "too many points",
+			s:    "MULTILINESTRING((1 2,3 4 5))",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "not a multi linestring",
+			s:    "POINT(1 2)",
+			err:  ErrIncorrectGeometry,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := UnmarshalMultiLineString(tc.s)
+			if err != tc.err {
+				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
 			}
 		})
 	}
@@ -230,6 +372,39 @@ func TestUnmarshalPolygon(t *testing.T) {
 	}
 }
 
+func TestUnmarshalPolygon_errors(t *testing.T) {
+	cases := []struct {
+		name string
+		s    string
+		err  error
+	}{
+		{
+			name: "just name",
+			s:    "POLYGON",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "too many points",
+			s:    "POLYGON((1 2,3 4 5))",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "not a polygon",
+			s:    "POINT(1 2)",
+			err:  ErrIncorrectGeometry,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := UnmarshalPolygon(tc.s)
+			if err != tc.err {
+				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+			}
+		})
+	}
+}
+
 func TestUnmarshalMutilPolygon(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -258,6 +433,39 @@ func TestUnmarshalMutilPolygon(t *testing.T) {
 				t.Log(geom)
 				t.Log(tc.expected)
 				t.Errorf("incorrect wkt unmarshalling")
+			}
+		})
+	}
+}
+
+func TestUnmarshalMultiPolygon_errors(t *testing.T) {
+	cases := []struct {
+		name string
+		s    string
+		err  error
+	}{
+		{
+			name: "just name",
+			s:    "MULTIPOLYGON",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "too many points",
+			s:    "MULTIPOLYGON(((1 2,3 4 5)))",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "not a multi polygon",
+			s:    "POINT(1 2)",
+			err:  ErrIncorrectGeometry,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := UnmarshalMultiPolygon(tc.s)
+			if err != tc.err {
+				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
 			}
 		})
 	}
@@ -303,6 +511,39 @@ func TestUnmarshalCollection(t *testing.T) {
 				t.Log(geom)
 				t.Log(tc.expected)
 				t.Errorf("incorrect wkt unmarshalling")
+			}
+		})
+	}
+}
+
+func TestUnmarshalCollection_errors(t *testing.T) {
+	cases := []struct {
+		name string
+		s    string
+		err  error
+	}{
+		{
+			name: "just name",
+			s:    "GEOMETRYCOLLECTION",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "too many points",
+			s:    "GEOMETRYCOLLECTION(POINT(1 2 3))",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "not a geometry collection",
+			s:    "POINT(1 2)",
+			err:  ErrIncorrectGeometry,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := UnmarshalCollection(tc.s)
+			if err != tc.err {
+				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
 			}
 		})
 	}
