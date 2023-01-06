@@ -122,6 +122,9 @@ func UnmarshalCollection(s string) (p orb.Collection, err error) {
 // trimSpaceBrackets trim space and brackets
 func trimSpaceBrackets(s string) string {
 	s = strings.Trim(s, " ")
+	if len(s) == 0 {
+		return ""
+	}
 	if s[0] == '(' {
 		s = s[1:]
 	}
@@ -187,6 +190,9 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 			return orb.Collection{}, nil
 		}
 		s = strings.Replace(s, "GEOMETRYCOLLECTION", "", -1)
+		if len(s) == 0 {
+			return nil, ErrNotWKT
+		}
 		c := orb.Collection{}
 		ms := splitGeometryCollection(s)
 		if len(ms) == 0 {
