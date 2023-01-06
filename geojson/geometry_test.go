@@ -356,7 +356,10 @@ func BenchmarkGeometryMarshalJSON(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		g.MarshalJSON()
+		_, err := g.MarshalJSON()
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -375,6 +378,9 @@ func BenchmarkGeometryUnmarshalJSON(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		g.UnmarshalJSON(data)
+		err := g.UnmarshalJSON(data)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }

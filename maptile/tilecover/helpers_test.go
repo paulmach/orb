@@ -8,6 +8,9 @@ import (
 
 func TestGeometry(t *testing.T) {
 	for _, g := range orb.AllGeometries {
-		Geometry(g, 1)
+		_, err := Geometry(g, 1)
+		if err != nil {
+			t.Fatalf("unexpected error for %T: %v", g, err)
+		}
 	}
 }

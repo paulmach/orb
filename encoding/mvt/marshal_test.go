@@ -558,7 +558,10 @@ func BenchmarkMarshal(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		Marshal(layers)
+		_, err := Marshal(layers)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -573,7 +576,10 @@ func BenchmarkUnmarshal(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		Unmarshal(data)
+		_, err := Unmarshal(data)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 

@@ -16,7 +16,10 @@ func BenchmarkAdd(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		qt.Add(orb.Point{r.Float64(), r.Float64()})
+		err := qt.Add(orb.Point{r.Float64(), r.Float64()})
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -25,7 +28,10 @@ func BenchmarkRandomFind1000(b *testing.B) {
 	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
 
 	for i := 0; i < 1000; i++ {
-		qt.Add(orb.Point{r.Float64(), r.Float64()})
+		err := qt.Add(orb.Point{r.Float64(), r.Float64()})
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 
 	b.ReportAllocs()
@@ -44,7 +50,10 @@ func BenchmarkRandomFind1000Naive(b *testing.B) {
 	for i := 0; i < 1000; i++ {
 		p := orb.Point{r.Float64(), r.Float64()}
 
-		qt.Add(p)
+		err := qt.Add(p)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 		points = append(points, p)
 	}
 
@@ -71,7 +80,11 @@ func BenchmarkRandomInBound1000(b *testing.B) {
 
 	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
 	for i := 0; i < 1000; i++ {
-		qt.Add(orb.Point{r.Float64(), r.Float64()})
+		p := orb.Point{r.Float64(), r.Float64()}
+		err := qt.Add(p)
+		if err != nil {
+			b.Fatalf("unexpected error for %v: %v", p, err)
+		}
 	}
 
 	b.ReportAllocs()
@@ -91,7 +104,11 @@ func BenchmarkRandomInBound1000Naive(b *testing.B) {
 	for i := 0; i < 1000; i++ {
 		p := orb.Point{r.Float64(), r.Float64()}
 
-		qt.Add(p)
+		err := qt.Add(p)
+		if err != nil {
+			b.Fatalf("unexpected error for %v: %v", p, err)
+		}
+
 		points = append(points, p)
 	}
 
@@ -120,7 +137,11 @@ func BenchmarkRandomInBound1000Buf(b *testing.B) {
 
 	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
 	for i := 0; i < 1000; i++ {
-		qt.Add(orb.Point{r.Float64(), r.Float64()})
+		p := orb.Point{r.Float64(), r.Float64()}
+		err := qt.Add(p)
+		if err != nil {
+			b.Fatalf("unexpected error for %v: %v", p, err)
+		}
 	}
 
 	var buf []orb.Pointer
@@ -137,7 +158,11 @@ func BenchmarkRandomKNearest10(b *testing.B) {
 
 	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
 	for i := 0; i < 1000; i++ {
-		qt.Add(orb.Point{r.Float64(), r.Float64()})
+		p := orb.Point{r.Float64(), r.Float64()}
+		err := qt.Add(p)
+		if err != nil {
+			b.Fatalf("unexpected error for %v: %v", p, err)
+		}
 	}
 
 	buf := make([]orb.Pointer, 0, 10)
@@ -154,7 +179,11 @@ func BenchmarkRandomKNearest100(b *testing.B) {
 
 	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
 	for i := 0; i < 1000; i++ {
-		qt.Add(orb.Point{r.Float64(), r.Float64()})
+		p := orb.Point{r.Float64(), r.Float64()}
+		err := qt.Add(p)
+		if err != nil {
+			b.Fatalf("unexpected error for %v: %v", p, err)
+		}
 	}
 
 	buf := make([]orb.Pointer, 0, 100)

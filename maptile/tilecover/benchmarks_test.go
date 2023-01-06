@@ -12,7 +12,10 @@ func BenchmarkPoint(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Geometry(p, 6)
+		_, err := Geometry(p, 6)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -22,7 +25,10 @@ func BenchmarkRoad_z6(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Geometry(g, 6)
+		_, err := Geometry(g, 6)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -32,7 +38,10 @@ func BenchmarkRoad_z18(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Geometry(g, 18)
+		_, err := Geometry(g, 18)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -42,7 +51,10 @@ func BenchmarkRoad_z28(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Geometry(g, 28)
+		_, err := Geometry(g, 28)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -52,7 +64,10 @@ func BenchmarkRussia_z6(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Geometry(g, 6)
+		_, err := Geometry(g, 6)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -62,7 +77,10 @@ func BenchmarkRussia_z8(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Geometry(g, 8)
+		_, err := Geometry(g, 8)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -72,7 +90,10 @@ func BenchmarkRussia_z10(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Geometry(g, 10)
+		_, err := Geometry(g, 10)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -94,7 +115,10 @@ func BenchmarkRussiaLine_z6(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Geometry(g, 6)
+		_, err := Geometry(g, 6)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -105,7 +129,10 @@ func BenchmarkRussiaLine_z8(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Geometry(g, 8)
+		_, err := Geometry(g, 8)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -116,6 +143,9 @@ func BenchmarkRussiaLine_z10(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Geometry(g, 10)
+		_, err := Geometry(g, 10)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }

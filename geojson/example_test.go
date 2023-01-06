@@ -15,7 +15,10 @@ func ExampleFeature_Point() {
 	f.Properties["key"] = "value"
 
 	qt := quadtree.New(f.Geometry.Bound().Pad(1))
-	qt.Add(f) // add the feature to a quadtree
+	err := qt.Add(f) // add the feature to a quadtree
+	if err != nil {
+		log.Fatalf("unexpected error: %v", err)
+	}
 
 	// type assert the feature back into a Feature from
 	// the orb.Pointer interface.
@@ -39,7 +42,10 @@ func ExampleFeatureCollection_foreignMembers() {
 	  }`)
 
 	fc := geojson.NewFeatureCollection()
-	json.Unmarshal(rawJSON, &fc)
+	err := json.Unmarshal(rawJSON, &fc)
+	if err != nil {
+		log.Fatalf("invalid json: %v", err)
+	}
 
 	fmt.Println(fc.Features[0].Geometry)
 	fmt.Println(fc.ExtraMembers["title"])
@@ -90,7 +96,10 @@ func ExampleFeatureCollection_foreignMembersCustom() {
 	  }`)
 
 	fc := &MyFeatureCollection{}
-	json.Unmarshal(rawJSON, &fc)
+	err := json.Unmarshal(rawJSON, &fc)
+	if err != nil {
+		log.Fatalf("invalid json: %v", err)
+	}
 
 	fmt.Println(fc.FeatureCollection.Features[0].Geometry)
 	fmt.Println(fc.Features[0].Geometry)
@@ -151,13 +160,13 @@ func ExampleFeatureCollection_MarshalJSON() {
 	fc := geojson.NewFeatureCollection()
 	fc.Append(geojson.NewFeature(orb.Point{1, 2}))
 
-	data, err := fc.MarshalJSON()
+	_, err := fc.MarshalJSON()
 	if err != nil {
 		log.Fatalf("marshal error: %v", err)
 	}
 
 	// standard lib encoding/json package will also work
-	data, err = json.MarshalIndent(fc, "", " ")
+	data, err := json.MarshalIndent(fc, "", " ")
 	if err != nil {
 		log.Fatalf("marshal error: %v", err)
 	}

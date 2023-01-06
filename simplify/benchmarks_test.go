@@ -66,9 +66,9 @@ func TestRadial_BenchmarkData(t *testing.T) {
 
 	ls := benchmarkData()
 	for i, tc := range cases {
-		ls := Radial(planar.Distance, tc.threshold).LineString(ls.Clone())
-		if len(ls) != tc.length {
-			t.Errorf("%d: data reduced poorly: %v != %v", i, len(ls), tc.length)
+		r := Radial(planar.Distance, tc.threshold).LineString(ls.Clone())
+		if len(r) != tc.length {
+			t.Errorf("%d: data reduced poorly: %v != %v", i, len(r), tc.length)
 		}
 	}
 }
@@ -122,7 +122,7 @@ func TestVisvalingam_BenchmarkData(t *testing.T) {
 	for i, tc := range cases {
 		r := VisvalingamThreshold(tc.threshold).LineString(ls.Clone())
 		if len(r) != tc.length {
-			t.Errorf("%d: data reduced poorly: %v != %v", i, len(ls), tc.length)
+			t.Errorf("%d: data reduced poorly: %v != %v", i, len(r), tc.length)
 		}
 	}
 }
@@ -167,7 +167,10 @@ func benchmarkData() orb.LineString {
 	defer f.Close()
 
 	var points []float64
-	json.NewDecoder(f).Decode(&points)
+	err = json.NewDecoder(f).Decode(&points)
+	if err != nil {
+		panic(err)
+	}
 
 	var ls orb.LineString
 	for i := 0; i < len(points); i += 2 {

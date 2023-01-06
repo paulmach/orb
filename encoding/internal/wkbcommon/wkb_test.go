@@ -10,7 +10,10 @@ import (
 
 func TestMarshal(t *testing.T) {
 	for _, g := range orb.AllGeometries {
-		Marshal(g, 0, binary.BigEndian)
+		_, err := Marshal(g, 0, binary.BigEndian)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 

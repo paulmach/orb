@@ -12,7 +12,10 @@ import (
 
 func TestMarshal(t *testing.T) {
 	for _, g := range orb.AllGeometries {
-		Marshal(g, binary.BigEndian)
+		_, err := Marshal(g, binary.BigEndian)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -29,7 +32,10 @@ func BenchmarkEncode_Point(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		e.Encode(g)
+		err := e.Encode(g)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -43,7 +49,10 @@ func BenchmarkEncode_LineString(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		e.Encode(g)
+		err := e.Encode(g)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 

@@ -13,7 +13,10 @@ import (
 
 func TestMarshal(t *testing.T) {
 	for _, g := range orb.AllGeometries {
-		Marshal(g, 0, binary.BigEndian)
+		_, err := Marshal(g, 0, binary.BigEndian)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -39,7 +42,10 @@ func BenchmarkEncode_Point(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		e.Encode(g)
+		err := e.Encode(g)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -53,7 +59,10 @@ func BenchmarkEncode_LineString(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		e.Encode(g)
+		err := e.Encode(g)
+		if err != nil {
+			b.Fatalf("unexpected error: %v", err)
+		}
 	}
 }
 
@@ -129,7 +138,7 @@ func compare(t testing.TB, e orb.Geometry, s int, b []byte) {
 	// pass in srid
 	buf.Reset()
 	en.SetSRID(10101)
-	en.Encode(e, s)
+	err = en.Encode(e, s)
 	if err != nil {
 		t.Errorf("encode with srid error: %v", err)
 	}

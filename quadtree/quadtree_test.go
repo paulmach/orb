@@ -26,7 +26,10 @@ func TestQuadtreeAdd(t *testing.T) {
 	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
 	for i := 0; i < 10; i++ {
 		// should be able to insert the same point over and over.
-		qt.Add(p)
+		err := qt.Add(p)
+		if err != nil {
+			t.Fatalf("unexpected error for %v: %v", p, err)
+		}
 	}
 }
 
@@ -37,7 +40,10 @@ func TestQuadtreeRemove(t *testing.T) {
 	mp := orb.MultiPoint{}
 	for i := 0; i < 1000; i++ {
 		mp = append(mp, orb.Point{r.Float64(), r.Float64()})
-		qt.Add(mp[i])
+		err := qt.Add(mp[i])
+		if err != nil {
+			t.Fatalf("unexpected error for %v: %v", mp[i], err)
+		}
 	}
 
 	for i := 0; i < 1000; i += 3 {
@@ -81,9 +87,18 @@ func TestQuadtreeRemoveAndAdd_inOrder(t *testing.T) {
 	p2 := &PExtra{p: orb.Point{p1.p[0], p1.p[1]}, id: "2"}
 	p3 := &PExtra{p: orb.Point{p1.p[0], p1.p[1]}, id: "3"}
 
-	qt.Add(p1)
-	qt.Add(p2)
-	qt.Add(p3)
+	err := qt.Add(p1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	err = qt.Add(p2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	err = qt.Add(p3)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	// rm 3
 	found := qt.Remove(p3, func(p orb.Pointer) bool {
@@ -143,9 +158,18 @@ func TestQuadtreeRemoveAndAdd_sameLoc(t *testing.T) {
 	p4 := &PExtra{p: orb.Point{p1.p[0], p1.p[1]}, id: "4"}
 	p5 := &PExtra{p: orb.Point{p1.p[0], p1.p[1]}, id: "5"}
 
-	qt.Add(p1)
-	qt.Add(p2)
-	qt.Add(p3)
+	err := qt.Add(p1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	err = qt.Add(p2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	err = qt.Add(p3)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	// remove middle point
 	found := qt.Remove(p2, func(p orb.Pointer) bool {
@@ -172,7 +196,10 @@ func TestQuadtreeRemoveAndAdd_sameLoc(t *testing.T) {
 	}
 
 	// add a 4th point
-	qt.Add(p4)
+	err = qt.Add(p4)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	// remove third point
 	found = qt.Remove(p3, func(p orb.Pointer) bool {
@@ -187,7 +214,10 @@ func TestQuadtreeRemoveAndAdd_sameLoc(t *testing.T) {
 	}
 
 	// add a 5th point
-	qt.Add(p5)
+	err = qt.Add(p5)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	// remove the 5th point
 	found = qt.Remove(p5, func(p orb.Pointer) bool {
@@ -203,7 +233,10 @@ func TestQuadtreeRemoveAndAdd_sameLoc(t *testing.T) {
 	}
 
 	// add a 3th point again
-	qt.Add(p3)
+	err = qt.Add(p3)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	// should reuse the tail point left by p5
 	if c := countNodes(qt.root); c != 2 {
@@ -236,7 +269,10 @@ func TestQuadtreeRemoveAndAdd_sameLoc(t *testing.T) {
 	}
 
 	// add back a point to be put in the root
-	qt.Add(p3)
+	err = qt.Add(p3)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	if c := countNodes(qt.root); c != 1 {
 		t.Errorf("incorrect number of nodes: %v != 1", c)
@@ -262,7 +298,12 @@ func TestQuadtreeRemoveAndAdd_random(t *testing.T) {
 			y := r.Int63n(30)
 			id++
 			p := &PExtra{p: orb.Point{float64(x), float64(y)}, id: fmt.Sprintf("%d", id)}
-			qt.Add(p)
+
+			err := qt.Add(p)
+			if err != nil {
+				t.Fatalf("unexpected error for %v: %v", p, err)
+			}
+
 			points = append(points, p)
 
 		}
@@ -294,7 +335,10 @@ func TestQuadtreeFind(t *testing.T) {
 
 	qt := New(points.Bound())
 	for _, p := range points {
-		qt.Add(p)
+		err := qt.Add(p)
+		if err != nil {
+			t.Fatalf("unexpected error for %v: %v", p, err)
+		}
 	}
 
 	cases := []struct {
@@ -322,7 +366,10 @@ func TestQuadtreeFind_Random(t *testing.T) {
 	mp := orb.MultiPoint{}
 	for i := 0; i < 1000; i++ {
 		mp = append(mp, orb.Point{r.Float64(), r.Float64()})
-		qt.Add(mp[i])
+		err := qt.Add(mp[i])
+		if err != nil {
+			t.Fatalf("unexpected error for %v: %v", mp[i], err)
+		}
 	}
 
 	for i := 0; i < 1000; i++ {
@@ -344,8 +391,14 @@ func TestQuadtreeMatching(t *testing.T) {
 	}
 
 	qt := New(orb.Bound{Min: orb.Point{0, 0}, Max: orb.Point{1, 1}})
-	qt.Add(dataPointer{orb.Point{0, 0}, false})
-	qt.Add(dataPointer{orb.Point{1, 1}, true})
+	err := qt.Add(dataPointer{orb.Point{0, 0}, false})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	err = qt.Add(dataPointer{orb.Point{1, 1}, true})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	cases := []struct {
 		name     string
@@ -396,12 +449,22 @@ func TestQuadtreeKNearest(t *testing.T) {
 	}
 
 	q := New(orb.Bound{Max: orb.Point{5, 5}})
-	q.Add(dataPointer{orb.Point{0, 0}, false})
-	q.Add(dataPointer{orb.Point{1, 1}, true})
-	q.Add(dataPointer{orb.Point{2, 2}, false})
-	q.Add(dataPointer{orb.Point{3, 3}, true})
-	q.Add(dataPointer{orb.Point{4, 4}, false})
-	q.Add(dataPointer{orb.Point{5, 5}, true})
+
+	pointers := []dataPointer{
+		{orb.Point{0, 0}, false},
+		{orb.Point{1, 1}, true},
+		{orb.Point{2, 2}, false},
+		{orb.Point{3, 3}, true},
+		{orb.Point{4, 4}, false},
+		{orb.Point{5, 5}, true},
+	}
+
+	for _, p := range pointers {
+		err := q.Add(p)
+		if err != nil {
+			t.Fatalf("unexpected error for %v: %v", p, err)
+		}
+	}
 
 	filters := map[bool]FilterFunc{
 		false: nil,
@@ -466,12 +529,12 @@ func TestQuadtreeKNearest(t *testing.T) {
 
 func TestQuadtreeKNearest_sorted(t *testing.T) {
 	q := New(orb.Bound{Max: orb.Point{5, 5}})
-	q.Add(orb.Point{0, 0})
-	q.Add(orb.Point{1, 1})
-	q.Add(orb.Point{2, 2})
-	q.Add(orb.Point{3, 3})
-	q.Add(orb.Point{4, 4})
-	q.Add(orb.Point{5, 5})
+	for i := 0; i <= 5; i++ {
+		err := q.Add(orb.Point{float64(i), float64(i)})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	}
 
 	nearest := q.KNearest(nil, orb.Point{2.25, 2.25}, 5)
 
@@ -485,14 +548,12 @@ func TestQuadtreeKNearest_sorted(t *testing.T) {
 
 func TestQuadtreeKNearest_sorted2(t *testing.T) {
 	q := New(orb.Bound{Max: orb.Point{8, 8}})
-	q.Add(orb.Point{0, 0})
-	q.Add(orb.Point{1, 1})
-	q.Add(orb.Point{2, 2})
-	q.Add(orb.Point{3, 3})
-	q.Add(orb.Point{4, 4})
-	q.Add(orb.Point{5, 5})
-	q.Add(orb.Point{6, 6})
-	q.Add(orb.Point{7, 7})
+	for i := 0; i <= 7; i++ {
+		err := q.Add(orb.Point{float64(i), float64(i)})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	}
 
 	nearest := q.KNearest(nil, orb.Point{5.25, 5.25}, 3)
 
@@ -511,12 +572,22 @@ func TestQuadtreeKNearest_DistanceLimit(t *testing.T) {
 	}
 
 	q := New(orb.Bound{Max: orb.Point{5, 5}})
-	q.Add(dataPointer{orb.Point{0, 0}, false})
-	q.Add(dataPointer{orb.Point{1, 1}, true})
-	q.Add(dataPointer{orb.Point{2, 2}, false})
-	q.Add(dataPointer{orb.Point{3, 3}, true})
-	q.Add(dataPointer{orb.Point{4, 4}, false})
-	q.Add(dataPointer{orb.Point{5, 5}, true})
+
+	pointers := []dataPointer{
+		{orb.Point{0, 0}, false},
+		{orb.Point{1, 1}, true},
+		{orb.Point{2, 2}, false},
+		{orb.Point{3, 3}, true},
+		{orb.Point{4, 4}, false},
+		{orb.Point{5, 5}, true},
+	}
+
+	for _, p := range pointers {
+		err := q.Add(p)
+		if err != nil {
+			t.Fatalf("unexpected error for %v: %v", p, err)
+		}
+	}
 
 	filters := map[bool]FilterFunc{
 		false: nil,
@@ -583,12 +654,22 @@ func TestQuadtreeInBoundMatching(t *testing.T) {
 	}
 
 	q := New(orb.Bound{Max: orb.Point{5, 5}})
-	q.Add(dataPointer{orb.Point{0, 0}, false})
-	q.Add(dataPointer{orb.Point{1, 1}, true})
-	q.Add(dataPointer{orb.Point{2, 2}, false})
-	q.Add(dataPointer{orb.Point{3, 3}, true})
-	q.Add(dataPointer{orb.Point{4, 4}, false})
-	q.Add(dataPointer{orb.Point{5, 5}, true})
+
+	pointers := []dataPointer{
+		{orb.Point{0, 0}, false},
+		{orb.Point{1, 1}, true},
+		{orb.Point{2, 2}, false},
+		{orb.Point{3, 3}, true},
+		{orb.Point{4, 4}, false},
+		{orb.Point{5, 5}, true},
+	}
+
+	for _, p := range pointers {
+		err := q.Add(p)
+		if err != nil {
+			t.Fatalf("unexpected error for %v: %v", p, err)
+		}
+	}
 
 	filters := map[bool]FilterFunc{
 		false: nil,
@@ -652,7 +733,10 @@ func TestQuadtreeInBound_Random(t *testing.T) {
 	mp := orb.MultiPoint{}
 	for i := 0; i < 1000; i++ {
 		mp = append(mp, orb.Point{r.Float64(), r.Float64()})
-		qt.Add(mp[i])
+		err := qt.Add(mp[i])
+		if err != nil {
+			t.Fatalf("unexpected error for %v: %v", mp[i], err)
+		}
 	}
 
 	for i := 0; i < 1000; i++ {

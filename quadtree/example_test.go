@@ -15,7 +15,10 @@ func ExampleQuadtree_Find() {
 
 	// add 1000 random points
 	for i := 0; i < 1000; i++ {
-		qt.Add(orb.Point{r.Float64(), r.Float64()})
+		err := qt.Add(orb.Point{r.Float64(), r.Float64()})
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	nearest := qt.Find(orb.Point{0.5, 0.5})
@@ -37,10 +40,16 @@ func ExampleQuadtree_Matching() {
 
 	// add 100 random points
 	for i := 0; i < 100; i++ {
-		qt.Add(dataPoint{orb.Point{r.Float64(), r.Float64()}, false})
+		err := qt.Add(dataPoint{orb.Point{r.Float64(), r.Float64()}, false})
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	qt.Add(dataPoint{orb.Point{0, 0}, true})
+	err := qt.Add(dataPoint{orb.Point{0, 0}, true})
+	if err != nil {
+		panic(err)
+	}
 
 	nearest := qt.Matching(
 		orb.Point{0.5, 0.5},
@@ -60,7 +69,10 @@ func ExampleQuadtree_InBound() {
 
 	// add 1000 random points
 	for i := 0; i < 1000; i++ {
-		qt.Add(orb.Point{r.Float64(), r.Float64()})
+		err := qt.Add(orb.Point{r.Float64(), r.Float64()})
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	bounded := qt.InBound(nil, orb.Point{0.5, 0.5}.Bound().Pad(0.05))

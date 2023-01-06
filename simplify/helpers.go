@@ -120,19 +120,3 @@ func runSimplify(s simplifier, ls orb.LineString) orb.LineString {
 	ls, _ = s.simplify(ls, false)
 	return ls
 }
-
-func runSimplifyWithIndexes(s simplifier, ls orb.LineString) (orb.LineString, []int) {
-	if len(ls) == 0 {
-		return ls, []int{}
-	}
-
-	if len(ls) == 1 {
-		return ls, []int{0}
-	}
-
-	if len(ls) == 2 {
-		return ls, []int{0, 1}
-	}
-
-	return s.simplify(ls, true)
-}
