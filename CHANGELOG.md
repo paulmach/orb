@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.8.0](https://github.com/paulmach/orb/compare/v0.7.1...v0.8.0) - 2023-01-05
+
+### Fixed
+
+-   quadtree: fix bad sort due to pointer allocation issue by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/115
+-   geojson: ensure geometry unmarshal errors get returned by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/117
+-   encoding/mvt: remove use of crypto/md5 to compare marshalling in tests by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/118
+-   encoding/wkt: fix panic for some invalid wkt data by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/119
+
+### Other
+
+-   fix typo by [@rubenpoppe](https://github.com/rubenpoppe) in https://github.com/paulmach/orb/pull/107
+-   Fixed a small twister in README.md by [@Timahawk](https://github.com/Timahawk) in https://github.com/paulmach/orb/pull/108
+-   update github ci to use go 1.19 by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/116
+
 ## [v0.7.1](https://github.com/paulmach/orb/compare/v0.7.0...v0.7.1) - 2022-05-16
 
 No changes
