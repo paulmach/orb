@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/paulmach/orb"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
 
 // ErrInvalidGeometry will be returned if a the json of the geometry is invalid.
@@ -43,7 +45,7 @@ func NewGeometry(g orb.Geometry) *Geometry {
 
 // Geometry returns the orb.Geometry for the geojson Geometry.
 // This will convert the "Geometries" into a orb.Collection if applicable.
-func (g Geometry) Geometry() orb.Geometry {
+func (g *Geometry) Geometry() orb.Geometry {
 	if g.Coordinates != nil {
 		return g.Coordinates
 	}
@@ -55,13 +57,40 @@ func (g Geometry) Geometry() orb.Geometry {
 	return c
 }
 
-// MarshalJSON will marshal the geometry into the correct json structure.
-func (g Geometry) MarshalJSON() ([]byte, error) {
+// MarshalJSON will marshal the geometry into the correct JSON structure.
+func (g *Geometry) MarshalJSON() ([]byte, error) {
 	if g.Coordinates == nil && len(g.Geometries) == 0 {
 		return []byte(`null`), nil
 	}
 
-	ng := &jsonGeometryMarshall{}
+	ng := newGeometryMarshallDoc(g)
+	return marshalJSON(ng)
+}
+
+// MarshalBSON will convert the geometry into a BSON document with the structure
+// of a GeoJSON Geometry. This function is used when the geometry is the top level
+// document to be marshalled.
+func (g *Geometry) MarshalBSON() ([]byte, error) {
+	ng := newGeometryMarshallDoc(g)
+	return bson.Marshal(ng)
+}
+
+// MarshalBSONValue will marshal the geometry into a BSON value
+// with the structure of a GeoJSON Geometry.
+func (g *Geometry) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	// implementing MarshalBSONValue allows us to marshal into a null value
+	// needed to match behavior with the JSON marshalling.
+
+	if g.Coordinates == nil && len(g.Geometries) == 0 {
+		return bsontype.Null, nil, nil
+	}
+
+	ng := newGeometryMarshallDoc(g)
+	return bson.MarshalValue(ng)
+}
+
+func newGeometryMarshallDoc(g *Geometry) *geometryMarshallDoc {
+	ng := &geometryMarshallDoc{}
 	switch g := g.Coordinates.(type) {
 	case orb.Ring:
 		ng.Coordinates = orb.Polygon{g}
@@ -86,10 +115,10 @@ func (g Geometry) MarshalJSON() ([]byte, error) {
 		ng.Type = orb.Collection{}.GeoJSONType()
 	}
 
-	return marshalJSON(ng)
+	return ng
 }
 
-// UnmarshalGeometry decodes the data into a GeoJSON feature.
+// UnmarshalGeometry decodes the JSON data into a GeoJSON feature.
 // Alternately one can call json.Unmarshal(g) directly for the same result.
 func UnmarshalGeometry(data []byte) (*Geometry, error) {
 	g := &Geometry{}
@@ -101,7 +130,7 @@ func UnmarshalGeometry(data []byte) (*Geometry, error) {
 	return g, nil
 }
 
-// UnmarshalJSON will unmarshal the correct geometry from the json structure.
+// UnmarshalJSON will unmarshal the correct geometry from the JSON structure.
 func (g *Geometry) UnmarshalJSON(data []byte) error {
 	jg := &jsonGeometry{}
 	err := unmarshalJSON(data, jg)
@@ -163,6 +192,69 @@ func (g *Geometry) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// UnmarshalBSON will unmarshal a BSON document created with bson.Marshal.
+func (g *Geometry) UnmarshalBSON(data []byte) error {
+	bg := &bsonGeometry{}
+	err := bson.Unmarshal(data, bg)
+	if err != nil {
+		return err
+	}
+
+	switch bg.Type {
+	case "Point":
+		p := orb.Point{}
+		err = bg.Coordinates.Unmarshal(&p)
+		if err != nil {
+			return err
+		}
+		g.Coordinates = p
+	case "MultiPoint":
+		mp := orb.MultiPoint{}
+		err = bg.Coordinates.Unmarshal(&mp)
+		if err != nil {
+			return err
+		}
+		g.Coordinates = mp
+	case "LineString":
+		ls := orb.LineString{}
+
+		err = bg.Coordinates.Unmarshal(&ls)
+		if err != nil {
+			return err
+		}
+		g.Coordinates = ls
+	case "MultiLineString":
+		mls := orb.MultiLineString{}
+		err = bg.Coordinates.Unmarshal(&mls)
+		if err != nil {
+			return err
+		}
+		g.Coordinates = mls
+	case "Polygon":
+		p := orb.Polygon{}
+		err = bg.Coordinates.Unmarshal(&p)
+		if err != nil {
+			return err
+		}
+		g.Coordinates = p
+	case "MultiPolygon":
+		mp := orb.MultiPolygon{}
+		err = bg.Coordinates.Unmarshal(&mp)
+		if err != nil {
+			return err
+		}
+		g.Coordinates = mp
+	case "GeometryCollection":
+		g.Geometries = bg.Geometries
+	default:
+		return ErrInvalidGeometry
+	}
+
+	g.Type = g.Geometry().GeoJSONType()
+
+	return nil
+}
+
 // A Point is a helper type that will marshal to/from a GeoJSON Point geometry.
 type Point orb.Point
 
@@ -173,13 +265,35 @@ func (p Point) Geometry() orb.Geometry {
 
 // MarshalJSON will convert the Point into a GeoJSON Point geometry.
 func (p Point) MarshalJSON() ([]byte, error) {
-	return marshalJSON(Geometry{Coordinates: orb.Point(p)})
+	return marshalJSON(&Geometry{Coordinates: orb.Point(p)})
+}
+
+// MarshalBSON will convert the Point into a BSON value following the GeoJSON Point structure.
+func (p Point) MarshalBSON() ([]byte, error) {
+	return bson.Marshal(&Geometry{Coordinates: orb.Point(p)})
 }
 
 // UnmarshalJSON will unmarshal the GeoJSON Point geometry.
 func (p *Point) UnmarshalJSON(data []byte) error {
 	g := &Geometry{}
 	err := unmarshalJSON(data, &g)
+	if err != nil {
+		return err
+	}
+
+	point, ok := g.Coordinates.(orb.Point)
+	if !ok {
+		return errors.New("geojson: not a Point type")
+	}
+
+	*p = Point(point)
+	return nil
+}
+
+// UnmarshalBSON will unmarshal GeoJSON Point geometry.
+func (p *Point) UnmarshalBSON(data []byte) error {
+	g := &Geometry{}
+	err := bson.Unmarshal(data, &g)
 	if err != nil {
 		return err
 	}
@@ -203,13 +317,35 @@ func (mp MultiPoint) Geometry() orb.Geometry {
 
 // MarshalJSON will convert the MultiPoint into a GeoJSON MultiPoint geometry.
 func (mp MultiPoint) MarshalJSON() ([]byte, error) {
-	return marshalJSON(Geometry{Coordinates: orb.MultiPoint(mp)})
+	return marshalJSON(&Geometry{Coordinates: orb.MultiPoint(mp)})
+}
+
+// MarshalBSON will convert the MultiPoint into a GeoJSON MultiPoint geometry BSON.
+func (mp MultiPoint) MarshalBSON() ([]byte, error) {
+	return bson.Marshal(&Geometry{Coordinates: orb.MultiPoint(mp)})
 }
 
 // UnmarshalJSON will unmarshal the GeoJSON MultiPoint geometry.
 func (mp *MultiPoint) UnmarshalJSON(data []byte) error {
 	g := &Geometry{}
 	err := unmarshalJSON(data, &g)
+	if err != nil {
+		return err
+	}
+
+	multiPoint, ok := g.Coordinates.(orb.MultiPoint)
+	if !ok {
+		return errors.New("geojson: not a MultiPoint type")
+	}
+
+	*mp = MultiPoint(multiPoint)
+	return nil
+}
+
+// UnmarshalBSON will unmarshal the GeoJSON MultiPoint geometry.
+func (mp *MultiPoint) UnmarshalBSON(data []byte) error {
+	g := &Geometry{}
+	err := bson.Unmarshal(data, &g)
 	if err != nil {
 		return err
 	}
@@ -233,13 +369,35 @@ func (ls LineString) Geometry() orb.Geometry {
 
 // MarshalJSON will convert the LineString into a GeoJSON LineString geometry.
 func (ls LineString) MarshalJSON() ([]byte, error) {
-	return marshalJSON(Geometry{Coordinates: orb.LineString(ls)})
+	return marshalJSON(&Geometry{Coordinates: orb.LineString(ls)})
+}
+
+// MarshalBSON will convert the LineString into a GeoJSON LineString geometry.
+func (ls LineString) MarshalBSON() ([]byte, error) {
+	return bson.Marshal(&Geometry{Coordinates: orb.LineString(ls)})
 }
 
 // UnmarshalJSON will unmarshal the GeoJSON MultiPoint geometry.
 func (ls *LineString) UnmarshalJSON(data []byte) error {
 	g := &Geometry{}
 	err := unmarshalJSON(data, &g)
+	if err != nil {
+		return err
+	}
+
+	lineString, ok := g.Coordinates.(orb.LineString)
+	if !ok {
+		return errors.New("geojson: not a LineString type")
+	}
+
+	*ls = LineString(lineString)
+	return nil
+}
+
+// UnmarshalBSON will unmarshal the GeoJSON MultiPoint geometry.
+func (ls *LineString) UnmarshalBSON(data []byte) error {
+	g := &Geometry{}
+	err := bson.Unmarshal(data, &g)
 	if err != nil {
 		return err
 	}
@@ -263,13 +421,35 @@ func (mls MultiLineString) Geometry() orb.Geometry {
 
 // MarshalJSON will convert the MultiLineString into a GeoJSON MultiLineString geometry.
 func (mls MultiLineString) MarshalJSON() ([]byte, error) {
-	return marshalJSON(Geometry{Coordinates: orb.MultiLineString(mls)})
+	return marshalJSON(&Geometry{Coordinates: orb.MultiLineString(mls)})
+}
+
+// MarshalBSON will convert the MultiLineString into a GeoJSON MultiLineString geometry.
+func (mls MultiLineString) MarshalBSON() ([]byte, error) {
+	return bson.Marshal(&Geometry{Coordinates: orb.MultiLineString(mls)})
 }
 
 // UnmarshalJSON will unmarshal the GeoJSON MultiPoint geometry.
 func (mls *MultiLineString) UnmarshalJSON(data []byte) error {
 	g := &Geometry{}
 	err := unmarshalJSON(data, &g)
+	if err != nil {
+		return err
+	}
+
+	multilineString, ok := g.Coordinates.(orb.MultiLineString)
+	if !ok {
+		return errors.New("geojson: not a MultiLineString type")
+	}
+
+	*mls = MultiLineString(multilineString)
+	return nil
+}
+
+// UnmarshalBSON will unmarshal the GeoJSON MultiPoint geometry.
+func (mls *MultiLineString) UnmarshalBSON(data []byte) error {
+	g := &Geometry{}
+	err := bson.Unmarshal(data, &g)
 	if err != nil {
 		return err
 	}
@@ -293,13 +473,35 @@ func (p Polygon) Geometry() orb.Geometry {
 
 // MarshalJSON will convert the Polygon into a GeoJSON Polygon geometry.
 func (p Polygon) MarshalJSON() ([]byte, error) {
-	return marshalJSON(Geometry{Coordinates: orb.Polygon(p)})
+	return marshalJSON(&Geometry{Coordinates: orb.Polygon(p)})
+}
+
+// MarshalBSON will convert the Polygon into a GeoJSON Polygon geometry.
+func (p Polygon) MarshalBSON() ([]byte, error) {
+	return bson.Marshal(&Geometry{Coordinates: orb.Polygon(p)})
 }
 
 // UnmarshalJSON will unmarshal the GeoJSON Polygon geometry.
 func (p *Polygon) UnmarshalJSON(data []byte) error {
 	g := &Geometry{}
 	err := unmarshalJSON(data, &g)
+	if err != nil {
+		return err
+	}
+
+	polygon, ok := g.Coordinates.(orb.Polygon)
+	if !ok {
+		return errors.New("geojson: not a Polygon type")
+	}
+
+	*p = Polygon(polygon)
+	return nil
+}
+
+// UnmarshalBSON will unmarshal the GeoJSON Polygon geometry.
+func (p *Polygon) UnmarshalBSON(data []byte) error {
+	g := &Geometry{}
+	err := bson.Unmarshal(data, &g)
 	if err != nil {
 		return err
 	}
@@ -323,7 +525,12 @@ func (mp MultiPolygon) Geometry() orb.Geometry {
 
 // MarshalJSON will convert the MultiPolygon into a GeoJSON MultiPolygon geometry.
 func (mp MultiPolygon) MarshalJSON() ([]byte, error) {
-	return marshalJSON(Geometry{Coordinates: orb.MultiPolygon(mp)})
+	return marshalJSON(&Geometry{Coordinates: orb.MultiPolygon(mp)})
+}
+
+// MarshalBSON will convert the MultiPolygon into a GeoJSON MultiPolygon geometry.
+func (mp MultiPolygon) MarshalBSON() ([]byte, error) {
+	return bson.Marshal(&Geometry{Coordinates: orb.MultiPolygon(mp)})
 }
 
 // UnmarshalJSON will unmarshal the GeoJSON MultiPolygon geometry.
@@ -343,14 +550,37 @@ func (mp *MultiPolygon) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// UnmarshalBSON will unmarshal the GeoJSON MultiPolygon geometry.
+func (mp *MultiPolygon) UnmarshalBSON(data []byte) error {
+	g := &Geometry{}
+	err := bson.Unmarshal(data, &g)
+	if err != nil {
+		return err
+	}
+
+	multiPolygon, ok := g.Coordinates.(orb.MultiPolygon)
+	if !ok {
+		return errors.New("geojson: not a MultiPolygon type")
+	}
+
+	*mp = MultiPolygon(multiPolygon)
+	return nil
+}
+
+type bsonGeometry struct {
+	Type        string        `json:"type" bson:"type"`
+	Coordinates bson.RawValue `json:"coordinates" bson:"coordinates"`
+	Geometries  []*Geometry   `json:"geometries,omitempty" bson:"geometries"`
+}
+
 type jsonGeometry struct {
 	Type        string           `json:"type"`
 	Coordinates nocopyRawMessage `json:"coordinates"`
 	Geometries  []*Geometry      `json:"geometries,omitempty"`
 }
 
-type jsonGeometryMarshall struct {
-	Type        string       `json:"type"`
-	Coordinates orb.Geometry `json:"coordinates,omitempty"`
-	Geometries  []*Geometry  `json:"geometries,omitempty"`
+type geometryMarshallDoc struct {
+	Type        string       `json:"type" bson:"type"`
+	Coordinates orb.Geometry `json:"coordinates,omitempty" bson:"coordinates,omitempty"`
+	Geometries  []*Geometry  `json:"geometries,omitempty" bson:"geometries,omitempty"`
 }
