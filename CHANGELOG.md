@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.8.0](https://github.com/paulmach/orb/compare/v0.8.0...v0.9.0) - 2023-02-19
+
+### Added
+
+-   geojson: marshal/unmarshal BSON [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/123
+
 ## [v0.8.0](https://github.com/paulmach/orb/compare/v0.7.1...v0.8.0) - 2023-01-05
 
 ### Fixed
