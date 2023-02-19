@@ -2,9 +2,14 @@
 
 This package **encodes and decodes** [GeoJSON](http://geojson.org/) into Go structs
 using the geometries in the [orb](https://github.com/paulmach/orb) package.
-Supports both the [json.Marshaler](http://golang.org/pkg/encoding/json/#Marshaler) and
-[json.Unmarshaler](http://golang.org/pkg/encoding/json/#Unmarshaler) interfaces.
+
+Supports both the [json.Marshaler](https://pkg.go.dev/encoding/json#Marshaler) and
+[json.Unmarshaler](https://pkg.go.dev/encoding/json#Unmarshaler) interfaces.
 The package also provides helper functions such as `UnmarshalFeatureCollection` and `UnmarshalFeature`.
+
+The types also support BSON via the [bson.Marshaler](https://pkg.go.dev/go.mongodb.org/mongo-driver/bson#Marshaler) and
+[bson.Unmarshaler](https://pkg.go.dev/go.mongodb.org/mongo-driver/bson#Unmarshaler) interfaces.
+These types can be used directly when working with MongoDB.
 
 ## Unmarshalling (JSON -> Go)
 
