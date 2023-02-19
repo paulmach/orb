@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/paulmach/orb"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
 
 func TestNewFeature(t *testing.T) {
@@ -90,15 +92,26 @@ func TestFeatureMarshal(t *testing.T) {
 	}
 }
 
-func TestFeatureMarshalValue(t *testing.T) {
+func TestFeature_marshalValue(t *testing.T) {
 	f := NewFeature(orb.Point{1, 2})
-	blob, err := json.Marshal(*f)
 
+	// json
+	blob, err := json.Marshal(*f)
 	if err != nil {
 		t.Fatalf("should marshal to json just fine but got %v", err)
 	}
 
 	if !bytes.Contains(blob, []byte(`"properties":null`)) {
+		t.Errorf("json should set properties to null if there are none")
+	}
+
+	// bson
+	blob, err = bson.Marshal(*f)
+	if err != nil {
+		t.Fatalf("should marshal to bson just fine but got %v", err)
+	}
+
+	if !bytes.Contains(blob, append([]byte{byte(bsontype.Null)}, []byte("properties")...)) {
 		t.Errorf("json should set properties to null if there are none")
 	}
 }
@@ -180,6 +193,32 @@ func TestUnmarshalFeature_missingGeometry(t *testing.T) {
 		f, err := UnmarshalFeature([]byte(rawJSON))
 		if err != nil {
 			t.Fatalf("should not error: %v", err)
+		}
+
+		if f == nil {
+			t.Fatalf("feature should not be nil")
+		}
+	})
+}
+
+func TestUnmarshalBSON_missingGeometry(t *testing.T) {
+	t.Run("missing geometry", func(t *testing.T) {
+		f := NewFeature(nil)
+		f.Geometry = nil
+
+		data, err := bson.Marshal(f)
+		if err != nil {
+			t.Fatalf("marshal error: %v", err)
+		}
+
+		nf := &Feature{}
+		err = bson.Unmarshal(data, &nf)
+		if err != nil {
+			t.Fatalf("unmarshal error: %v", err)
+		}
+
+		if f.Geometry != nil {
+			t.Fatalf("geometry should be nil")
 		}
 
 		if f == nil {
@@ -327,6 +366,56 @@ func BenchmarkFeatureUnmarshalJSON(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		tile := map[string]*FeatureCollection{}
 		err = unmarshalJSON(data, &tile)
+		if err != nil {
+			b.Fatalf("could not unmarshal: %v", err)
+		}
+	}
+}
+
+func BenchmarkFeatureMarshalBSON(b *testing.B) {
+	data, err := ioutil.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
+	if err != nil {
+		b.Fatalf("could not open file: %v", err)
+	}
+
+	tile := map[string]*FeatureCollection{}
+	err = json.Unmarshal(data, &tile)
+	if err != nil {
+		b.Fatalf("could not unmarshal: %v", err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := bson.Marshal(tile)
+		if err != nil {
+			b.Fatalf("marshal error: %v", err)
+		}
+	}
+}
+
+func BenchmarkFeatureUnmarshalBSON(b *testing.B) {
+	data, err := ioutil.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
+	if err != nil {
+		b.Fatalf("could not open file: %v", err)
+	}
+
+	tile := map[string]*FeatureCollection{}
+	err = json.Unmarshal(data, &tile)
+	if err != nil {
+		b.Fatalf("could not unmarshal: %v", err)
+	}
+
+	bdata, err := bson.Marshal(tile)
+	if err != nil {
+		b.Fatalf("could not marshal: %v", err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		tile := map[string]*FeatureCollection{}
+		err = bson.Unmarshal(bdata, &tile)
 		if err != nil {
 			b.Fatalf("could not unmarshal: %v", err)
 		}

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/paulmach/orb"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TestNewFeatureCollection(t *testing.T) {
@@ -266,5 +267,213 @@ func TestFeatureCollectionMarshalJSON_extraMembers(t *testing.T) {
 
 	if !bytes.Contains(data, []byte(`"foo":"bar"`)) {
 		t.Fatalf("extras not in marshalled data")
+	}
+}
+
+func TestFeatureCollection_MarshalBSON(t *testing.T) {
+	cases := []struct {
+		name string
+		geo  orb.Geometry
+	}{
+		{
+			name: "point",
+			geo:  orb.Point{1, 2},
+		},
+		{
+			name: "multi point",
+			geo:  orb.MultiPoint{{1, 2}, {3, 4}, {5, 6}},
+		},
+		{
+			name: "line string",
+			geo:  orb.LineString{{1, 2}, {3, 4}, {5, 6}},
+		},
+		{
+			name: "multi line string",
+			geo:  orb.MultiLineString{{{1, 2}, {3, 4}, {5, 6}}, {{7, 8}, {9, 8}, {7, 6}}},
+		},
+		{
+			name: "polygon",
+			geo:  orb.Polygon{{{1, 2}, {3, 4}, {5, 6}}, {{7, 8}, {9, 8}, {7, 6}}},
+		},
+		{
+			name: "multi polygon",
+			geo: orb.MultiPolygon{
+				{
+					{{1, 2}, {3, 4}, {5, 6}}, {{7, 8}, {9, 8}, {7, 6}},
+					{{9, 8}, {7, 6}, {5, 4}}, {{3, 2}, {1, 0}},
+				},
+				{
+					{{9, 8}, {7, 6}, {5, 4}}, {{3, 2}, {1, 0}},
+					{{1, 2}, {3, 4}, {5, 6}}, {{7, 8}, {9, 8}, {7, 6}},
+				},
+			},
+		},
+		{
+			name: "geometry collection",
+			geo: orb.Collection{
+				orb.Point{1, 2},
+				orb.MultiPoint{{1, 2}, {3, 4}, {5, 6}},
+				orb.LineString{{1, 2}, {3, 4}, {5, 6}},
+				orb.MultiLineString{{{1, 2}, {3, 4}, {5, 6}}, {{7, 8}, {9, 8}, {7, 6}}},
+				orb.Polygon{{{1, 2}, {3, 4}, {5, 6}}, {{7, 8}, {9, 8}, {7, 6}}},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := NewFeatureCollection()
+			fc.Append(NewFeature(tc.geo))
+
+			data, err := bson.Marshal(fc)
+			if err != nil {
+				t.Fatalf("unable to marshal feature collection: %v", err)
+			}
+
+			nfc := NewFeatureCollection()
+			err = bson.Unmarshal(data, &nfc)
+			if err != nil {
+				t.Fatalf("unable to unmarshal feature collection: %v", err)
+			}
+
+			if nfc.Type != "FeatureCollection" {
+				t.Errorf("feature collection type not set: %v", nfc.Type)
+			}
+
+			if nfc.Features[0].Geometry.GeoJSONType() != tc.geo.GeoJSONType() {
+				t.Errorf("incorrect geometry type: %v != %v", nfc.Features[0].Geometry.GeoJSONType(), tc.geo.GeoJSONType())
+			}
+
+			if !orb.Equal(nfc.Features[0].Geometry, tc.geo) {
+				t.Errorf("incorrect geometry: %v != %v", nfc.Features[0].Geometry, tc.geo)
+			}
+
+			if nfc.Features[0].Type != "Feature" {
+				t.Errorf("feature type not set: %v", nfc.Type)
+			}
+		})
+	}
+}
+
+func TestFeatureCollection_MarshalBSON_bbox(t *testing.T) {
+	cases := []struct {
+		name string
+		bbox BBox
+	}{
+		{
+			name: "nil",
+			bbox: nil,
+		},
+		{
+			name: "empty",
+			bbox: BBox{},
+		},
+		{
+			name: "set",
+			bbox: BBox{1, 2, 3, 4},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := NewFeatureCollection()
+			fc.BBox = tc.bbox
+
+			data, err := bson.Marshal(fc)
+			if err != nil {
+				t.Fatalf("unable to marshal feature collection: %v", err)
+			}
+
+			nfc := NewFeatureCollection()
+			err = bson.Unmarshal(data, &nfc)
+			if err != nil {
+				t.Fatalf("unable to unmarshal feature collection: %v", err)
+			}
+
+			if !reflect.DeepEqual(nfc.BBox, tc.bbox) {
+				t.Errorf("incorrect bbox: %v != %v", nfc.BBox, tc.bbox)
+			}
+		})
+	}
+}
+
+func TestFeatureCollection_MarshalBSON_ring(t *testing.T) {
+	ring := orb.Ring{{1, 2}, {3, 4}, {5, 6}}
+
+	fc := NewFeatureCollection()
+	fc.Append(NewFeature(ring))
+
+	data, err := bson.Marshal(fc)
+	if err != nil {
+		t.Fatalf("unable to marshal feature collection: %v", err)
+	}
+
+	nfc := NewFeatureCollection()
+	err = bson.Unmarshal(data, &nfc)
+	if err != nil {
+		t.Fatalf("unable to unmarshal feature collection: %v", err)
+	}
+
+	if nfc.Features[0].Geometry.GeoJSONType() != "Polygon" {
+		t.Errorf("incorrect geometry type: %v != Polygon", nfc.Features[0].Geometry.GeoJSONType())
+	}
+
+	if !orb.Equal(nfc.Features[0].Geometry, orb.Polygon{ring}) {
+		t.Errorf("incorrect geometry: %v", nfc.Features[0].Geometry)
+	}
+}
+
+func TestFeatureCollection_MarshalBSON_bound(t *testing.T) {
+	bound := orb.Bound{Min: orb.Point{1, 2}, Max: orb.Point{3, 4}}
+
+	fc := NewFeatureCollection()
+	fc.Append(NewFeature(bound))
+
+	data, err := bson.Marshal(fc)
+	if err != nil {
+		t.Fatalf("unable to marshal feature collection: %v", err)
+	}
+
+	nfc := NewFeatureCollection()
+	err = bson.Unmarshal(data, &nfc)
+	if err != nil {
+		t.Fatalf("unable to unmarshal feature collection: %v", err)
+	}
+
+	if nfc.Features[0].Geometry.GeoJSONType() != "Polygon" {
+		t.Errorf("incorrect geometry type: %v != Polygon", nfc.Features[0].Geometry.GeoJSONType())
+	}
+
+	if !orb.Equal(nfc.Features[0].Geometry, bound.ToPolygon()) {
+		t.Errorf("incorrect geometry: %v", nfc.Features[0].Geometry)
+	}
+}
+
+func TestFeatureCollection_MarshalBSON_extraMembers(t *testing.T) {
+	fc := NewFeatureCollection()
+	fc.Append(NewFeature(orb.Point{1, 2}))
+
+	fc.ExtraMembers = map[string]interface{}{
+		"a": 1.0,
+		"b": 2.0,
+	}
+
+	data, err := bson.Marshal(fc)
+	if err != nil {
+		t.Fatalf("unable to marshal feature collection: %v", err)
+	}
+
+	nfc := NewFeatureCollection()
+	err = bson.Unmarshal(data, &nfc)
+	if err != nil {
+		t.Fatalf("unable to unmarshal feature collection: %v", err)
+	}
+
+	if v := nfc.ExtraMembers["a"]; v != 1.0 {
+		t.Errorf("incorrect extra member: %v != %v", v, 1.0)
+	}
+
+	if v := nfc.ExtraMembers["b"]; v != 2.0 {
+		t.Errorf("incorrect extra member: %v != %v", v, 2.0)
 	}
 }

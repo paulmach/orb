@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/paulmach/orb"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // A Feature corresponds to GeoJSON feature object
@@ -37,7 +38,18 @@ var _ orb.Pointer = &Feature{}
 // It will handle the encoding of all the child geometries.
 // Alternately one can call json.Marshal(f) directly for the same result.
 func (f Feature) MarshalJSON() ([]byte, error) {
-	jf := &jsonFeature{
+	return marshalJSON(newFeatureDoc(&f))
+}
+
+// MarshalBSON converts the feature object into the proper JSON.
+// It will handle the encoding of all the child geometries.
+// Alternately one can call json.Marshal(f) directly for the same result.
+func (f Feature) MarshalBSON() ([]byte, error) {
+	return bson.Marshal(newFeatureDoc(&f))
+}
+
+func newFeatureDoc(f *Feature) *featureDoc {
+	doc := &featureDoc{
 		ID:         f.ID,
 		Type:       "Feature",
 		Properties: f.Properties,
@@ -45,11 +57,11 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 		Geometry:   NewGeometry(f.Geometry),
 	}
 
-	if len(jf.Properties) == 0 {
-		jf.Properties = nil
+	if len(doc.Properties) == 0 {
+		doc.Properties = nil
 	}
 
-	return marshalJSON(jf)
+	return doc
 }
 
 // UnmarshalFeature decodes the data into a GeoJSON feature.
@@ -67,39 +79,54 @@ func UnmarshalFeature(data []byte) (*Feature, error) {
 // UnmarshalJSON handles the correct unmarshalling of the data
 // into the orb.Geometry types.
 func (f *Feature) UnmarshalJSON(data []byte) error {
-	jf := &jsonFeature{}
-	err := unmarshalJSON(data, &jf)
+	doc := &featureDoc{}
+	err := unmarshalJSON(data, &doc)
 	if err != nil {
 		return err
 	}
 
-	if jf.Type != "Feature" {
-		return fmt.Errorf("geojson: not a feature: type=%s", jf.Type)
+	return featureUnmarshalFinish(doc, f)
+}
+
+// UnmarshalBSON will unmarshal a BSON document created with bson.Marshal.
+func (f *Feature) UnmarshalBSON(data []byte) error {
+	doc := &featureDoc{}
+	err := bson.Unmarshal(data, &doc)
+	if err != nil {
+		return err
+	}
+
+	return featureUnmarshalFinish(doc, f)
+}
+
+func featureUnmarshalFinish(doc *featureDoc, f *Feature) error {
+	if doc.Type != "Feature" {
+		return fmt.Errorf("geojson: not a feature: type=%s", doc.Type)
 	}
 
 	var g orb.Geometry
-	if jf.Geometry != nil {
-		if jf.Geometry.Coordinates == nil && jf.Geometry.Geometries == nil {
+	if doc.Geometry != nil {
+		if doc.Geometry.Coordinates == nil && doc.Geometry.Geometries == nil {
 			return ErrInvalidGeometry
 		}
-		g = jf.Geometry.Geometry()
+		g = doc.Geometry.Geometry()
 	}
 
 	*f = Feature{
-		ID:         jf.ID,
-		Type:       jf.Type,
-		Properties: jf.Properties,
-		BBox:       jf.BBox,
+		ID:         doc.ID,
+		Type:       doc.Type,
+		Properties: doc.Properties,
+		BBox:       doc.BBox,
 		Geometry:   g,
 	}
 
 	return nil
 }
 
-type jsonFeature struct {
-	ID         interface{} `json:"id,omitempty"`
-	Type       string      `json:"type"`
-	BBox       BBox        `json:"bbox,omitempty"`
-	Geometry   *Geometry   `json:"geometry"`
-	Properties Properties  `json:"properties"`
+type featureDoc struct {
+	ID         interface{} `json:"id,omitempty" bson:"id"`
+	Type       string      `json:"type" bson:"type"`
+	BBox       BBox        `json:"bbox,omitempty" bson:"bbox,omitempty"`
+	Geometry   *Geometry   `json:"geometry" bson:"geometry"`
+	Properties Properties  `json:"properties" bson:"properties"`
 }
