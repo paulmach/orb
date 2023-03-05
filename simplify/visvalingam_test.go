@@ -26,8 +26,8 @@ func TestVisvalingamThreshold(t *testing.T) {
 			name:      "reduction",
 			threshold: 1.1,
 			ls:        orb.LineString{{0, 0}, {1, 1}, {0, 2}, {1, 3}, {0, 4}},
-			expected:  orb.LineString{{0, 0}, {0, 4}},
-			indexMap:  []int{0, 4},
+			expected:  orb.LineString{{0, 0}, {0, 2}, {0, 4}},
+			indexMap:  []int{0, 2, 4},
 		},
 	}
 
