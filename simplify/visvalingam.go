@@ -26,7 +26,7 @@ func Visvalingam(threshold float64, minPointsToKeep int) *VisvalingamSimplifier 
 // VisvalingamThreshold runs the Visvalingam-Whyatt algorithm removing
 // triangles whose area is below the threshold.
 func VisvalingamThreshold(threshold float64) *VisvalingamSimplifier {
-	return Visvalingam(threshold, 0)
+	return Visvalingam(threshold, 3)
 }
 
 // VisvalingamKeep runs the Visvalingam-Whyatt algorithm removing
