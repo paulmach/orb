@@ -2,6 +2,7 @@ package wkt
 
 import (
 	"errors"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -18,6 +19,10 @@ var (
 
 	// ErrUnsupportedGeometry is returned when geometry type is not supported by this lib.
 	ErrUnsupportedGeometry = errors.New("wkt: unsupported geometry")
+
+	doubleParen = regexp.MustCompile(`\)[\s|\t]*\)[\s|\t]*,[\s|\t]*\([\s|\t]*\(`)
+	singleParen = regexp.MustCompile(`\)[\s|\t]*,[\s|\t]*\(`)
+	noParen     = regexp.MustCompile(`[\s|\t]*,[\s|\t]*`)
 )
 
 // UnmarshalPoint returns the point represented by the wkt string.
@@ -131,7 +136,6 @@ func trimSpaceBrackets(s string) string {
 	if s[len(s)-1] == ')' {
 		s = s[:len(s)-1]
 	}
-
 	return strings.Trim(s, " ")
 }
 
@@ -216,7 +220,7 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 		}
 		s = strings.Replace(s, "MULTIPOINT", "", -1)
 		s = trimSpaceBrackets(s)
-		ps := strings.Split(s, ",")
+		ps := splitByRegexp(s, noParen)
 		mp := orb.MultiPoint{}
 		for _, p := range ps {
 			tp, err := parsePoint(trimSpaceBrackets(p))
@@ -241,9 +245,9 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 		}
 		s = strings.Replace(s, "MULTILINESTRING", "", -1)
 		ml := orb.MultiLineString{}
-		for _, l := range strings.Split(trimSpaceBrackets(s), "),(") {
+		for _, l := range splitByRegexp(trimSpaceBrackets(s), singleParen) {
 			tl := orb.LineString{}
-			for _, p := range strings.Split(trimSpaceBrackets(l), ",") {
+			for _, p := range splitByRegexp(trimSpaceBrackets(l), noParen) {
 				tp, err := parsePoint(trimSpaceBrackets(p))
 				if err != nil {
 					return nil, err
@@ -260,7 +264,7 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 		}
 		s = strings.Replace(s, "LINESTRING", "", -1)
 		s = trimSpaceBrackets(s)
-		ps := strings.Split(s, ",")
+		ps := splitByRegexp(s, noParen)
 		ls := orb.LineString{}
 		for _, p := range ps {
 			tp, err := parsePoint(trimSpaceBrackets(p))
@@ -277,11 +281,12 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 		}
 		s = strings.Replace(s, "MULTIPOLYGON", "", -1)
 		mpol := orb.MultiPolygon{}
-		for _, ps := range strings.Split(trimSpaceBrackets(s), ")),((") {
+
+		for _, ps := range splitByRegexp(trimSpaceBrackets(s), doubleParen) {
 			pol := orb.Polygon{}
-			for _, ls := range strings.Split(trimSpaceBrackets(ps), "),(") {
+			for _, ls := range splitByRegexp(trimSpaceBrackets(ps), singleParen) {
 				ring := orb.Ring{}
-				for _, p := range strings.Split(ls, ",") {
+				for _, p := range splitByRegexp(ls, noParen) {
 					tp, err := parsePoint(trimSpaceBrackets(p))
 					if err != nil {
 						return nil, err
@@ -301,10 +306,10 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 		s = strings.Replace(s, "POLYGON", "", -1)
 		s = trimSpaceBrackets(s)
 
-		rs := strings.Split(s, "),(")
+		rs := splitByRegexp(s, singleParen)
 		pol := make(orb.Polygon, 0, len(rs))
 		for _, r := range rs {
-			ps := strings.Split(trimSpaceBrackets(r), ",")
+			ps := splitByRegexp(trimSpaceBrackets(r), noParen)
 			ring := orb.Ring{}
 			for _, p := range ps {
 				tp, err := parsePoint(trimSpaceBrackets(p))
@@ -321,4 +326,16 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 	}
 
 	return
+}
+
+func splitByRegexp(s string, re *regexp.Regexp) []string {
+	indexes := re.FindAllStringIndex(s, -1)
+	start := 0
+	result := make([]string, len(indexes)+1)
+	for i, element := range indexes {
+		result[i] = s[start:element[0]]
+		start = element[1]
+	}
+	result[len(indexes)] = s[start:]
+	return result
 }

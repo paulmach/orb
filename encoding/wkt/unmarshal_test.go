@@ -148,6 +148,11 @@ func TestUnmarshalMultiPoint(t *testing.T) {
 			s:        "MULTIPOINT((1 2),(0.5 1.5))",
 			expected: orb.MultiPoint{{1, 2}, {0.5, 1.5}},
 		},
+		{
+			name:     "spaces",
+			s:        "MULTIPOINT((1 2)  ,	(0.5 1.5))",
+			expected: orb.MultiPoint{{1, 2}, {0.5, 1.5}},
+		},
 	}
 
 	for _, tc := range cases {
@@ -213,6 +218,11 @@ func TestUnmarshalLineString(t *testing.T) {
 		{
 			name:     "2 points",
 			s:        "LINESTRING(1 2,0.5 1.5)",
+			expected: orb.LineString{{1, 2}, {0.5, 1.5}},
+		},
+		{
+			name:     "spaces",
+			s:        "LINESTRING(1 2 , 0.5 1.5)",
 			expected: orb.LineString{{1, 2}, {0.5, 1.5}},
 		},
 	}
@@ -354,6 +364,11 @@ func TestUnmarshalPolygon(t *testing.T) {
 			s:        "POLYGON((1 2,3 4),(5 6,7 8))",
 			expected: orb.Polygon{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}},
 		},
+		{
+			name:     "two rings with spaces",
+			s:        "POLYGON((1 2,3 4)   ,   (5 6  ,  7 8))",
+			expected: orb.Polygon{{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}},
+		},
 	}
 
 	for _, tc := range cases {
@@ -419,6 +434,11 @@ func TestUnmarshalMutilPolygon(t *testing.T) {
 		{
 			name:     "mulit-polygon",
 			s:        "MULTIPOLYGON(((1 2,3 4)),((5 6,7 8),(1 2,5 4)))",
+			expected: orb.MultiPolygon{{{{1, 2}, {3, 4}}}, {{{5, 6}, {7, 8}}, {{1, 2}, {5, 4}}}},
+		},
+		{
+			name:     "mulit-polygon with spaces",
+			s:        "MULTIPOLYGON(((1 2,3 4))  , 		((5 6,7 8),  (1 2,5 4)))",
 			expected: orb.MultiPolygon{{{{1, 2}, {3, 4}}}, {{{5, 6}, {7, 8}}, {{1, 2}, {5, 4}}}},
 		},
 	}
