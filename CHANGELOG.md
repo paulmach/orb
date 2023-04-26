@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.9.1](https://github.com/paulmach/orb/compare/v0.9.0...v0.9.1) - 2023-04-26
+
+### Fixed
+
+-   Bump up mongo driver to 1.11.4 by [@m-pavel](https://github.com/m-pavel) in https://github.com/paulmach/orb/pull/129
+-   encoding/wkt: split strings with regexp by [@m-pavel](https://github.com/m-pavel) in https://github.com/paulmach/orb/pull/128
+
 ## [v0.9.0](https://github.com/paulmach/orb/compare/v0.8.0...v0.9.0) - 2023-02-19
 
 ### Added
