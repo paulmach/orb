@@ -51,10 +51,48 @@ func TestTrimSpaceBrackets(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if trimSpaceBrackets(tc.s) != tc.expected {
+			v, err := trimSpaceBrackets(tc.s)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if v != tc.expected {
 				t.Log(trimSpaceBrackets(tc.s))
 				t.Log(tc.expected)
 				t.Errorf("trim space and brackets error")
+			}
+		})
+	}
+}
+
+func TestTrimSpaceBrackets_errors(t *testing.T) {
+	cases := []struct {
+		name string
+		s    string
+		err  error
+	}{
+		{
+			name: "no brackets",
+			s:    "1 2",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "no start bracket",
+			s:    "1 2)",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "no end bracket",
+			s:    "(1 2",
+			err:  ErrNotWKT,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := trimSpaceBrackets(tc.s)
+			if err != tc.err {
+				t.Fatalf("wrong error: %v != %v", err, tc.err)
 			}
 		})
 	}
@@ -121,7 +159,7 @@ func TestUnmarshalPoint_errors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := UnmarshalPoint(tc.s)
 			if err != tc.err {
-				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+				t.Fatalf("incorrect error: %v != %v", err, tc.err)
 			}
 		})
 	}
@@ -198,7 +236,7 @@ func TestUnmarshalMultiPoint_errors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := UnmarshalMultiPoint(tc.s)
 			if err != tc.err {
-				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+				t.Fatalf("incorrect error: %v != %v", err, tc.err)
 			}
 		})
 	}
@@ -270,7 +308,7 @@ func TestUnmarshalLineString_errors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := UnmarshalLineString(tc.s)
 			if err != tc.err {
-				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+				t.Fatalf("incorrect error: %v != %v", err, tc.err)
 			}
 		})
 	}
@@ -337,7 +375,7 @@ func TestUnmarshalMultiLineString_errors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := UnmarshalMultiLineString(tc.s)
 			if err != tc.err {
-				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+				t.Fatalf("incorrect error: %v != %v", err, tc.err)
 			}
 		})
 	}
@@ -414,7 +452,7 @@ func TestUnmarshalPolygon_errors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := UnmarshalPolygon(tc.s)
 			if err != tc.err {
-				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+				t.Fatalf("incorrect error: %v != %v", err, tc.err)
 			}
 		})
 	}
@@ -432,12 +470,12 @@ func TestUnmarshalMutilPolygon(t *testing.T) {
 			expected: orb.MultiPolygon{},
 		},
 		{
-			name:     "mulit-polygon",
+			name:     "multi-polygon",
 			s:        "MULTIPOLYGON(((1 2,3 4)),((5 6,7 8),(1 2,5 4)))",
 			expected: orb.MultiPolygon{{{{1, 2}, {3, 4}}}, {{{5, 6}, {7, 8}}, {{1, 2}, {5, 4}}}},
 		},
 		{
-			name:     "mulit-polygon with spaces",
+			name:     "multi-polygon with spaces",
 			s:        "MULTIPOLYGON(((1 2,3 4))  , 		((5 6,7 8),  (1 2,5 4)))",
 			expected: orb.MultiPolygon{{{{1, 2}, {3, 4}}}, {{{5, 6}, {7, 8}}, {{1, 2}, {5, 4}}}},
 		},
@@ -475,6 +513,11 @@ func TestUnmarshalMultiPolygon_errors(t *testing.T) {
 			err:  ErrNotWKT,
 		},
 		{
+			name: "missing trailing )",
+			s:    "MULTIPOLYGON(((0 1,3 0,4 3,0 4,0 1)), ((3 4,6 3,5 5,3 4)), ((0 0,-1 -2,-3 -2,-2 -1,0 0))",
+			err:  ErrNotWKT,
+		},
+		{
 			name: "not a multi polygon",
 			s:    "POINT(1 2)",
 			err:  ErrIncorrectGeometry,
@@ -485,7 +528,7 @@ func TestUnmarshalMultiPolygon_errors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := UnmarshalMultiPolygon(tc.s)
 			if err != tc.err {
-				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+				t.Fatalf("incorrect error: %v != %v", err, tc.err)
 			}
 		})
 	}
@@ -509,7 +552,7 @@ func TestUnmarshalCollection(t *testing.T) {
 		},
 		{
 			name: "lots of things",
-			s:    "GEOMETRYCOLLECTION(POINT(1 2),LINESTRING(3 4,5 6),MULTILINESTRING((1 2,3 4),(5 6,7 8)),POLYGON((0 0,1 0,1 1,0 0)),POLYGON((1 2,3 4),(5 6,7 8)),MULTIPOLYGON(((1 2,3 4)),((5 6,7 8),(1 2,5 4)))",
+			s:    "GEOMETRYCOLLECTION(POINT(1 2),LINESTRING(3 4,5 6),MULTILINESTRING((1 2,3 4),(5 6,7 8)),POLYGON((0 0,1 0,1 1,0 0)),POLYGON((1 2,3 4),(5 6,7 8)),MULTIPOLYGON(((1 2,3 4)),((5 6,7 8),(1 2,5 4))))",
 			expected: orb.Collection{
 				orb.Point{1, 2},
 				orb.LineString{{3, 4}, {5, 6}},
@@ -553,6 +596,11 @@ func TestUnmarshalCollection_errors(t *testing.T) {
 			err:  ErrNotWKT,
 		},
 		{
+			name: "missing trailing paren",
+			s:    "GEOMETRYCOLLECTION(POINT(1 2 3)",
+			err:  ErrNotWKT,
+		},
+		{
 			name: "not a geometry collection",
 			s:    "POINT(1 2)",
 			err:  ErrIncorrectGeometry,
@@ -563,7 +611,7 @@ func TestUnmarshalCollection_errors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := UnmarshalCollection(tc.s)
 			if err != tc.err {
-				t.Fatalf("incorrect error: %v!= %v", err, tc.err)
+				t.Fatalf("incorrect error: %v != %v", err, tc.err)
 			}
 		})
 	}

@@ -20,9 +20,9 @@ var (
 	// ErrUnsupportedGeometry is returned when geometry type is not supported by this lib.
 	ErrUnsupportedGeometry = errors.New("wkt: unsupported geometry")
 
-	doubleParen = regexp.MustCompile(`\)[\s|\t]*\)[\s|\t]*,[\s|\t]*\([\s|\t]*\(`)
-	singleParen = regexp.MustCompile(`\)[\s|\t]*,[\s|\t]*\(`)
-	noParen     = regexp.MustCompile(`[\s|\t]*,[\s|\t]*`)
+	doubleParen = regexp.MustCompile(`\)[\s|\t]*\)([\s|\t]*,[\s|\t]*)\([\s|\t]*\(`)
+	singleParen = regexp.MustCompile(`\)([\s|\t]*,[\s|\t]*)\(`)
+	noParen     = regexp.MustCompile(`([\s|\t]*,[\s|\t]*)`)
 )
 
 // UnmarshalPoint returns the point represented by the wkt string.
@@ -125,18 +125,24 @@ func UnmarshalCollection(s string) (p orb.Collection, err error) {
 }
 
 // trimSpaceBrackets trim space and brackets
-func trimSpaceBrackets(s string) string {
+func trimSpaceBrackets(s string) (string, error) {
 	s = strings.Trim(s, " ")
 	if len(s) == 0 {
-		return ""
+		return "", nil
 	}
+
 	if s[0] == '(' {
 		s = s[1:]
+	} else {
+		return "", ErrNotWKT
 	}
+
 	if s[len(s)-1] == ')' {
 		s = s[:len(s)-1]
+	} else {
+		return "", ErrNotWKT
 	}
-	return strings.Trim(s, " ")
+	return strings.Trim(s, " "), nil
 }
 
 // parsePoint pase point by (x y)
@@ -193,134 +199,199 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 		if s == "GEOMETRYCOLLECTION EMPTY" {
 			return orb.Collection{}, nil
 		}
-		s = strings.Replace(s, "GEOMETRYCOLLECTION", "", -1)
+
+		s = strings.ReplaceAll(s, "GEOMETRYCOLLECTION", "")
 		if len(s) == 0 {
 			return nil, ErrNotWKT
 		}
-		c := orb.Collection{}
-		ms := splitGeometryCollection(s)
-		if len(ms) == 0 {
+
+		tc := orb.Collection{}
+		geometries := splitGeometryCollection(s)
+		if len(geometries) == 0 {
 			return nil, err
 		}
-		for _, v := range ms {
-			if len(v) == 0 {
+
+		for _, g := range geometries {
+			if len(g) == 0 {
 				continue
 			}
-			g, err := Unmarshal(v)
+
+			tg, err := Unmarshal(g)
 			if err != nil {
 				return nil, err
 			}
-			c = append(c, g)
+
+			tc = append(tc, tg)
 		}
-		geom = c
+
+		geom = tc
 
 	case strings.Contains(s, "MULTIPOINT"):
 		if s == "MULTIPOINT EMPTY" {
 			return orb.MultiPoint{}, nil
 		}
-		s = strings.Replace(s, "MULTIPOINT", "", -1)
-		s = trimSpaceBrackets(s)
-		ps := splitByRegexp(s, noParen)
-		mp := orb.MultiPoint{}
-		for _, p := range ps {
-			tp, err := parsePoint(trimSpaceBrackets(p))
-			if err != nil {
-				return nil, err
-			}
-			mp = append(mp, tp)
-		}
-		geom = mp
 
-	case strings.Contains(s, "POINT"):
-		s = strings.Replace(s, "POINT", "", -1)
-		tp, err := parsePoint(trimSpaceBrackets(s))
+		s, err := trimSpaceBrackets(strings.ReplaceAll(s, "MULTIPOINT", ""))
 		if err != nil {
 			return nil, err
 		}
+
+		ps := splitByRegexp(s, noParen)
+		tmp := orb.MultiPoint{}
+		for _, p := range ps {
+			p, err := trimSpaceBrackets(p)
+			if err != nil {
+				return nil, err
+			}
+
+			tp, err := parsePoint(p)
+			if err != nil {
+				return nil, err
+			}
+
+			tmp = append(tmp, tp)
+		}
+
+		geom = tmp
+
+	case strings.Contains(s, "POINT"):
+		s, err := trimSpaceBrackets(strings.ReplaceAll(s, "POINT", ""))
+		if err != nil {
+			return nil, err
+		}
+
+		tp, err := parsePoint(s)
+		if err != nil {
+			return nil, err
+		}
+
 		geom = tp
 
 	case strings.Contains(s, "MULTILINESTRING"):
 		if s == "MULTILINESTRING EMPTY" {
 			return orb.MultiLineString{}, nil
 		}
-		s = strings.Replace(s, "MULTILINESTRING", "", -1)
-		ml := orb.MultiLineString{}
-		for _, l := range splitByRegexp(trimSpaceBrackets(s), singleParen) {
-			tl := orb.LineString{}
-			for _, p := range splitByRegexp(trimSpaceBrackets(l), noParen) {
-				tp, err := parsePoint(trimSpaceBrackets(p))
+
+		s, err := trimSpaceBrackets(strings.ReplaceAll(s, "MULTILINESTRING", ""))
+		if err != nil {
+			return nil, err
+		}
+
+		tmls := orb.MultiLineString{}
+		for _, ls := range splitByRegexp(s, singleParen) {
+			ls, err := trimSpaceBrackets(ls)
+			if err != nil {
+				return nil, err
+			}
+
+			tls := orb.LineString{}
+			for _, p := range splitByRegexp(ls, noParen) {
+				tp, err := parsePoint(p)
 				if err != nil {
 					return nil, err
 				}
-				tl = append(tl, tp)
+				tls = append(tls, tp)
 			}
-			ml = append(ml, tl)
+			tmls = append(tmls, tls)
 		}
-		geom = ml
+
+		geom = tmls
 
 	case strings.Contains(s, "LINESTRING"):
 		if s == "LINESTRING EMPTY" {
 			return orb.LineString{}, nil
 		}
-		s = strings.Replace(s, "LINESTRING", "", -1)
-		s = trimSpaceBrackets(s)
-		ps := splitByRegexp(s, noParen)
-		ls := orb.LineString{}
-		for _, p := range ps {
-			tp, err := parsePoint(trimSpaceBrackets(p))
+
+		s, err := trimSpaceBrackets(strings.ReplaceAll(s, "LINESTRING", ""))
+		if err != nil {
+			return nil, err
+		}
+
+		ls := splitByRegexp(s, noParen)
+		tls := orb.LineString{}
+		for _, p := range ls {
+			tp, err := parsePoint(p)
 			if err != nil {
 				return nil, err
 			}
-			ls = append(ls, tp)
+
+			tls = append(tls, tp)
 		}
-		geom = ls
+
+		geom = tls
 
 	case strings.Contains(s, "MULTIPOLYGON"):
 		if s == "MULTIPOLYGON EMPTY" {
 			return orb.MultiPolygon{}, nil
 		}
-		s = strings.Replace(s, "MULTIPOLYGON", "", -1)
-		mpol := orb.MultiPolygon{}
 
-		for _, ps := range splitByRegexp(trimSpaceBrackets(s), doubleParen) {
-			pol := orb.Polygon{}
-			for _, ls := range splitByRegexp(trimSpaceBrackets(ps), singleParen) {
-				ring := orb.Ring{}
-				for _, p := range splitByRegexp(ls, noParen) {
-					tp, err := parsePoint(trimSpaceBrackets(p))
+		s, err := trimSpaceBrackets(strings.ReplaceAll(s, "MULTIPOLYGON", ""))
+		if err != nil {
+			return nil, err
+		}
+
+		tmpoly := orb.MultiPolygon{}
+		for _, poly := range splitByRegexp(s, doubleParen) {
+			poly, err := trimSpaceBrackets(poly)
+			if err != nil {
+				return nil, err
+			}
+
+			tpoly := orb.Polygon{}
+			for _, r := range splitByRegexp(poly, singleParen) {
+				r, err := trimSpaceBrackets(r)
+				if err != nil {
+					return nil, err
+				}
+
+				tr := orb.Ring{}
+				for _, p := range splitByRegexp(r, noParen) {
+					tp, err := parsePoint(p)
 					if err != nil {
 						return nil, err
 					}
-					ring = append(ring, tp)
+
+					tr = append(tr, tp)
 				}
-				pol = append(pol, ring)
+
+				tpoly = append(tpoly, tr)
 			}
-			mpol = append(mpol, pol)
+
+			tmpoly = append(tmpoly, tpoly)
 		}
-		geom = mpol
+
+		geom = tmpoly
 
 	case strings.Contains(s, "POLYGON"):
 		if s == "POLYGON EMPTY" {
 			return orb.Polygon{}, nil
 		}
-		s = strings.Replace(s, "POLYGON", "", -1)
-		s = trimSpaceBrackets(s)
 
-		rs := splitByRegexp(s, singleParen)
-		pol := make(orb.Polygon, 0, len(rs))
-		for _, r := range rs {
-			ps := splitByRegexp(trimSpaceBrackets(r), noParen)
-			ring := orb.Ring{}
+		s, err := trimSpaceBrackets(strings.ReplaceAll(s, "POLYGON", ""))
+		if err != nil {
+			return nil, err
+		}
+
+		rings := splitByRegexp(s, singleParen)
+		tpoly := make(orb.Polygon, 0, len(rings))
+		for _, r := range rings {
+			r, err := trimSpaceBrackets(r)
+			if err != nil {
+				return nil, err
+			}
+
+			ps := splitByRegexp(r, noParen)
+			tring := orb.Ring{}
 			for _, p := range ps {
-				tp, err := parsePoint(trimSpaceBrackets(p))
+				tp, err := parsePoint(p)
 				if err != nil {
 					return nil, err
 				}
-				ring = append(ring, tp)
+				tring = append(tring, tp)
 			}
-			pol = append(pol, ring)
+			tpoly = append(tpoly, tring)
 		}
-		geom = pol
+		geom = tpoly
 	default:
 		return nil, ErrUnsupportedGeometry
 	}
@@ -329,12 +400,12 @@ func Unmarshal(s string) (geom orb.Geometry, err error) {
 }
 
 func splitByRegexp(s string, re *regexp.Regexp) []string {
-	indexes := re.FindAllStringIndex(s, -1)
+	indexes := re.FindAllStringSubmatchIndex(s, -1)
 	start := 0
 	result := make([]string, len(indexes)+1)
 	for i, element := range indexes {
-		result[i] = s[start:element[0]]
-		start = element[1]
+		result[i] = s[start:element[2]]
+		start = element[3]
 	}
 	result[len(indexes)] = s[start:]
 	return result
