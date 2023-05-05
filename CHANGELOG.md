@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.9.2](https://github.com/paulmach/orb/compare/v0.9.1...v0.9.2) - 2023-05-04
+
+### Fixed
+
+-   encoding/wkt: better handling/validation of missing parens by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/131
+
 ## [v0.9.1](https://github.com/paulmach/orb/compare/v0.9.0...v0.9.1) - 2023-04-26
 
 ### Fixed
