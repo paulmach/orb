@@ -3,6 +3,7 @@ package maptile
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"testing"
 
 	"github.com/paulmach/orb"
@@ -157,6 +158,80 @@ func TestContains(t *testing.T) {
 	// it should not contain parent
 	if tile.Contains(tile.Parent()) {
 		t.Errorf("should not contain parent")
+	}
+}
+
+func TestChildrenTilesSubRange(t *testing.T) {
+	type args struct {
+		tile      Tile
+		zoomStart Zoom
+		zoomEnd   Zoom
+	}
+	tests := []struct {
+		name string
+		args args
+		want Tiles
+	}{
+		{
+			name: "self zoom",
+			args: args{
+				tile:      New(0, 0, 0),
+				zoomStart: 0,
+				zoomEnd:   0,
+			},
+			want: Tiles{New(0, 0, 0)},
+		},
+		{
+			name: "1 level zooming including zoom 0",
+			args: args{
+				tile:      New(0, 0, 0),
+				zoomStart: 0,
+				zoomEnd:   1,
+			},
+			want: Tiles{New(0, 0, 0), New(0, 0, 1), New(0, 1, 1), New(1, 0, 1), New(1, 1, 1)},
+		},
+		{
+			name: "1 level zooming excluding zoom 0",
+			args: args{
+				tile:      New(0, 0, 0),
+				zoomStart: 1,
+				zoomEnd:   1,
+			},
+			want: Tiles{New(0, 0, 1), New(0, 1, 1), New(1, 0, 1), New(1, 1, 1)},
+		},
+		{
+			name: "2 level zooming",
+			args: args{
+				tile:      New(0, 0, 0),
+				zoomStart: 2,
+				zoomEnd:   2,
+			},
+			want: Tiles{
+				New(0, 0, 2),
+				New(0, 1, 2),
+				New(0, 2, 2),
+				New(0, 3, 2),
+				New(1, 0, 2),
+				New(1, 1, 2),
+				New(1, 2, 2),
+				New(1, 3, 2),
+				New(2, 0, 2),
+				New(2, 1, 2),
+				New(2, 2, 2),
+				New(2, 3, 2),
+				New(3, 0, 2),
+				New(3, 1, 2),
+				New(3, 2, 2),
+				New(3, 3, 2),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if !reflect.DeepEqual(tt.want, ChildrenInZoomRange(tt.args.tile, tt.args.zoomStart, tt.args.zoomEnd)) {
+				t.Errorf("tiles not equal")
+			}
+		})
 	}
 }
 
