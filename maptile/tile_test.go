@@ -235,6 +235,24 @@ func TestChildrenTilesSubRange(t *testing.T) {
 	}
 }
 
+func TestChildrenTilesSubRangeInvalidParams_ZoomStart_Larger_Than_ZoomEnd(t *testing.T) {
+	// No need to check whether `recover()` is nil. Just turn off the panic.
+	defer func() { _ = recover() }()
+	tile := New(0, 0, 0)
+	ChildrenInZoomRange(tile, 10, 8)
+	// Never reaches here if `ChildrenInZoomRange` panics.
+	t.Errorf("did not panic")
+}
+
+func TestChildrenTilesSubRangeInvalidParams_TileZ_Larger_Than_ZoomStart(t *testing.T) {
+	// No need to check whether `recover()` is nil. Just turn off the panic.
+	defer func() { _ = recover() }()
+	tile := New(0, 0, 10)
+	ChildrenInZoomRange(tile, 9, 12)
+	// Never reaches here if `ChildrenInZoomRange` panics.
+	t.Errorf("did not panic")
+}
+
 func TestRange(t *testing.T) {
 	tile := New(4, 4, 5)
 	min, max := tile.Range(3)
