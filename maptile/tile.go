@@ -226,6 +226,34 @@ func (t Tile) Children() Tiles {
 	}
 }
 
+// ChildrenInZoomRange returns all the children tiles of tile from ranges [zoomStart, zoomEnd], both ends inclusive.
+func ChildrenInZoomRange(tile Tile, zoomStart, zoomEnd Zoom) Tiles {
+	if !(zoomStart <= zoomEnd) {
+		panic("zoomStart must be <= zoomEnd")
+	}
+	if !(tile.Z <= zoomStart) {
+		panic("tile.Z is must be <= zoomStart")
+	}
+
+	zDeltaStart := zoomStart - tile.Z
+	zDeltaEnd := zoomEnd - tile.Z
+
+	res := make([]Tile, 0)
+
+	for d := zDeltaStart; d <= zDeltaEnd; d++ {
+		xStart := tile.X << d
+		yStart := tile.Y << d
+		dim := uint32(1 << d)
+		for x := xStart; x < xStart+dim; x++ {
+			for y := yStart; y < yStart+dim; y++ {
+				res = append(res, New(x, y, tile.Z+d))
+			}
+		}
+	}
+
+	return res
+}
+
 // Siblings returns the 4 tiles that share this tile's parent.
 func (t Tile) Siblings() Tiles {
 	return t.Parent().Children()
