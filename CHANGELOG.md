@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.10.0](https://github.com/paulmach/orb/compare/v0.9.2...v0.10.0) - 2023-07-16
+
+### Added
+
+-   add ChildrenInZoomRange method to maptile.Tile by [@peitili](https://github.com/peitili) in https://github.com/paulmach/orb/pull/133
+
 ## [v0.9.2](https://github.com/paulmach/orb/compare/v0.9.1...v0.9.2) - 2023-05-04
 
 ### Fixed
