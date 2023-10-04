@@ -87,12 +87,12 @@ func addSingleGeometryFeature(layer *vectortile.Tile_Layer, kve *keyValueEncoder
 		return err
 	}
 	if err != nil {
-		return fmt.Errorf("error encoding geometry: %v", g)
+		return fmt.Errorf("error encoding geometry: %v : %s", g, err.Error())
 	}
 
 	tags, err := encodeProperties(kve, p)
 	if err != nil {
-		return fmt.Errorf("error encoding geometry: %v", g)
+		return fmt.Errorf("error encoding geometry: %v : %s", g, err.Error())
 	}
 
 	layer.Features = append(layer.Features, &vectortile.Tile_Feature{
