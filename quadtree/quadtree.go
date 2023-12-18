@@ -299,7 +299,7 @@ func (q *Quadtree) InBoundMatching(buf []orb.Pointer, b orb.Bound, f FilterFunc)
 	}
 
 	var p []orb.Pointer
-	if len(buf) > 0 {
+	if buf != nil {
 		p = buf[:0]
 	}
 	v := &inBoundVisitor{
