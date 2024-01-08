@@ -33,11 +33,50 @@ func TestVisvalingamThreshold(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			v, im := VisvalingamThreshold(tc.threshold).simplify(tc.ls, true)
+			v, im := VisvalingamThreshold(tc.threshold).simplify(tc.ls, false, true)
 			if !v.Equal(tc.expected) {
 				t.Log(v)
 				t.Log(tc.expected)
 				t.Errorf("incorrect line")
+			}
+
+			if !reflect.DeepEqual(im, tc.indexMap) {
+				t.Log(im)
+				t.Log(tc.indexMap)
+				t.Errorf("incorrect index map")
+			}
+		})
+	}
+}
+
+func TestVisvalingamThreshold_area(t *testing.T) {
+	cases := []struct {
+		name     string
+		r        orb.Ring
+		expected orb.Ring
+		indexMap []int
+	}{
+		{
+			name:     "reduction",
+			r:        orb.Ring{{0, 0}, {1, 0}, {1, 0.5}, {1, 1}, {0.5, 1}, {0, 1}},
+			expected: orb.Ring{{0, 0}, {1, 0}, {0, 1}},
+			indexMap: []int{0, 1, 5},
+		},
+		{
+			name:     "reduction closed",
+			r:        orb.Ring{{0, 0}, {1, 0}, {1, 0.5}, {1, 1}, {0.5, 1}, {0, 1}, {0, 0}},
+			expected: orb.Ring{{0, 0}, {1, 0}, {1, 1}, {0, 0}},
+			indexMap: []int{0, 1, 3, 6},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			v, im := VisvalingamThreshold(10).simplify(orb.LineString(tc.r), true, true)
+			if !v.Equal(orb.LineString(tc.expected)) {
+				t.Log(v)
+				t.Log(tc.expected)
+				t.Errorf("incorrect ring")
 			}
 
 			if !reflect.DeepEqual(im, tc.indexMap) {
@@ -96,7 +135,7 @@ func TestVisvalingamKeep(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			v, im := VisvalingamKeep(tc.keep).simplify(tc.ls, true)
+			v, im := VisvalingamKeep(tc.keep).simplify(tc.ls, false, true)
 			if !v.Equal(tc.expected) {
 				t.Log(v)
 				t.Log(tc.expected)
@@ -181,7 +220,7 @@ func TestVisvalingam(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			v, im := Visvalingam(tc.threshold, tc.keep).simplify(tc.ls, true)
+			v, im := Visvalingam(tc.threshold, tc.keep).simplify(tc.ls, false, true)
 			if !v.Equal(tc.expected) {
 				t.Log(v)
 				t.Log(tc.expected)

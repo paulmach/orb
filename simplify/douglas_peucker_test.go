@@ -40,7 +40,7 @@ func TestDouglasPeucker(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			v, im := DouglasPeucker(tc.threshold).simplify(tc.ls, true)
+			v, im := DouglasPeucker(tc.threshold).simplify(tc.ls, false, true)
 			if !v.Equal(tc.expected) {
 				t.Log(v)
 				t.Log(tc.expected)

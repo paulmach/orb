@@ -19,7 +19,7 @@ func DouglasPeucker(threshold float64) *DouglasPeuckerSimplifier {
 	}
 }
 
-func (s *DouglasPeuckerSimplifier) simplify(ls orb.LineString, wim bool) (orb.LineString, []int) {
+func (s *DouglasPeuckerSimplifier) simplify(ls orb.LineString, area, wim bool) (orb.LineString, []int) {
 	mask := make([]byte, len(ls))
 	mask[0] = 1
 	mask[len(mask)-1] = 1

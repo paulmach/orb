@@ -20,7 +20,7 @@ func Radial(df orb.DistanceFunc, threshold float64) *RadialSimplifier {
 	}
 }
 
-func (s *RadialSimplifier) simplify(ls orb.LineString, wim bool) (orb.LineString, []int) {
+func (s *RadialSimplifier) simplify(ls orb.LineString, area, wim bool) (orb.LineString, []int) {
 	var indexMap []int
 	if wim {
 		indexMap = append(indexMap, 0)
