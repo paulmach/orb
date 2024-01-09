@@ -138,6 +138,39 @@ func TestMarshalUnmarshalForGeometryCollection(t *testing.T) {
 	}
 }
 
+func TestMarshal_nilGeometry(t *testing.T) {
+	// should handle nil geometry, possibly caused by clipping
+	// or other issues.
+
+	fc := geojson.NewFeatureCollection()
+	fc.Append(geojson.NewFeature(nil))
+
+	layers := Layers{NewLayer("roads", fc)}
+
+	// project to the tile coords
+	tile := maptile.New(0, 0, 15)
+	layers.ProjectToTile(tile)
+
+	// marshal
+	encoded, err := MarshalGzipped(layers)
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+
+	// unmarshal
+	decoded, err := UnmarshalGzipped(encoded)
+	if err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+
+	// project back
+	decoded.ProjectToWGS84(tile)
+
+	if v := len(decoded[0].Features); v != 0 {
+		t.Errorf("should have have any features, has %v", v)
+	}
+}
+
 func TestMarshalUnmarshal(t *testing.T) {
 	cases := []struct {
 		name string
