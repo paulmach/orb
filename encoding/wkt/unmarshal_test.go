@@ -1,6 +1,9 @@
 package wkt
 
 import (
+	"encoding/json"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/paulmach/orb"
@@ -118,13 +121,40 @@ func TestUnmarshalPoint(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			geom, err := UnmarshalPoint(tc.s)
+			// you know it's a point
+			p, err := UnmarshalPoint(tc.s)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if !geom.Equal(tc.expected) {
-				t.Log(geom)
+			if !p.Equal(tc.expected) {
+				t.Log(p)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// lower case
+			p, err = UnmarshalPoint("  " + strings.ToLower(tc.s))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !p.Equal(tc.expected) {
+				t.Log(p)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// via generic unmarshal
+			geom, err := Unmarshal(tc.s)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			p = geom.(orb.Point)
+
+			if !p.Equal(tc.expected) {
+				t.Log(p)
 				t.Log(tc.expected)
 				t.Errorf("incorrect wkt unmarshalling")
 			}
@@ -195,13 +225,40 @@ func TestUnmarshalMultiPoint(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			geom, err := UnmarshalMultiPoint(tc.s)
+			// you know it's multipoint
+			mp, err := UnmarshalMultiPoint(tc.s)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if !geom.Equal(tc.expected) {
-				t.Log(geom)
+			if !mp.Equal(tc.expected) {
+				t.Log(mp)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// lower case
+			mp, err = UnmarshalMultiPoint("  " + strings.ToLower(tc.s))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !mp.Equal(tc.expected) {
+				t.Log(mp)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// via generic unmarshall
+			geom, err := Unmarshal(tc.s)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			mp = geom.(orb.MultiPoint)
+
+			if !mp.Equal(tc.expected) {
+				t.Log(mp)
 				t.Log(tc.expected)
 				t.Errorf("incorrect wkt unmarshalling")
 			}
@@ -267,13 +324,40 @@ func TestUnmarshalLineString(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			geom, err := UnmarshalLineString(tc.s)
+			// you know it's a linestring
+			ls, err := UnmarshalLineString(tc.s)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if !geom.Equal(tc.expected) {
-				t.Log(geom)
+			if !ls.Equal(tc.expected) {
+				t.Log(ls)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// lower case
+			ls, err = UnmarshalLineString("  " + strings.ToLower(tc.s))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !ls.Equal(tc.expected) {
+				t.Log(ls)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// via generic unmarshal
+			geom, err := Unmarshal(tc.s)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ls = geom.(orb.LineString)
+
+			if !ls.Equal(tc.expected) {
+				t.Log(ls)
 				t.Log(tc.expected)
 				t.Errorf("incorrect wkt unmarshalling")
 			}
@@ -334,13 +418,40 @@ func TestUnmarshalMultiLineString(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			geom, err := UnmarshalMultiLineString(tc.s)
+			// you know it's a linestring
+			mls, err := UnmarshalMultiLineString(tc.s)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if !geom.Equal(tc.expected) {
-				t.Log(geom)
+			if !mls.Equal(tc.expected) {
+				t.Log(mls)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// lower case
+			mls, err = UnmarshalMultiLineString("  " + strings.ToLower(tc.s))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !mls.Equal(tc.expected) {
+				t.Log(mls)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// via generic unmarshal
+			geom, err := Unmarshal(tc.s)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			mls = geom.(orb.MultiLineString)
+
+			if !mls.Equal(tc.expected) {
+				t.Log(mls)
 				t.Log(tc.expected)
 				t.Errorf("incorrect wkt unmarshalling")
 			}
@@ -411,13 +522,40 @@ func TestUnmarshalPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			geom, err := UnmarshalPolygon(tc.s)
+			// you know it's a polygon
+			p, err := UnmarshalPolygon(tc.s)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if !geom.Equal(tc.expected) {
-				t.Log(geom)
+			if !p.Equal(tc.expected) {
+				t.Log(p)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// lower case
+			p, err = UnmarshalPolygon(strings.ToLower(tc.s))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !p.Equal(tc.expected) {
+				t.Log(p)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// via generic unmarshal
+			geom, err := Unmarshal(tc.s)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			p = geom.(orb.Polygon)
+
+			if !p.Equal(tc.expected) {
+				t.Log(p)
 				t.Log(tc.expected)
 				t.Errorf("incorrect wkt unmarshalling")
 			}
@@ -483,12 +621,38 @@ func TestUnmarshalMutilPolygon(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			geom, err := UnmarshalMultiPolygon(tc.s)
+			// you know it's a multipolygon
+			mp, err := UnmarshalMultiPolygon(tc.s)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !geom.Equal(tc.expected) {
-				t.Log(geom)
+			if !mp.Equal(tc.expected) {
+				t.Log(mp)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// lower case
+			mp, err = UnmarshalMultiPolygon("   " + strings.ToLower(tc.s))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !mp.Equal(tc.expected) {
+				t.Log(mp)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// via generic unmarshal
+			geom, err := Unmarshal(tc.s)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			mp = geom.(orb.MultiPolygon)
+
+			if !mp.Equal(tc.expected) {
+				t.Log(mp)
 				t.Log(tc.expected)
 				t.Errorf("incorrect wkt unmarshalling")
 			}
@@ -566,12 +730,40 @@ func TestUnmarshalCollection(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			geom, err := UnmarshalCollection(tc.s)
+			// you know it's a collection
+			c, err := UnmarshalCollection(tc.s)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !geom.Equal(tc.expected) {
-				t.Log(geom)
+
+			if !c.Equal(tc.expected) {
+				t.Log(c)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// lower case
+			c, err = UnmarshalCollection("  " + strings.ToLower(tc.s))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !c.Equal(tc.expected) {
+				t.Log(c)
+				t.Log(tc.expected)
+				t.Errorf("incorrect wkt unmarshalling")
+			}
+
+			// via generic unmarshal
+			geom, err := Unmarshal(tc.s)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			c = geom.(orb.Collection)
+
+			if !c.Equal(tc.expected) {
+				t.Log(c)
 				t.Log(tc.expected)
 				t.Errorf("incorrect wkt unmarshalling")
 			}
@@ -613,6 +805,45 @@ func TestUnmarshalCollection_errors(t *testing.T) {
 			if err != tc.err {
 				t.Fatalf("incorrect error: %v != %v", err, tc.err)
 			}
+		})
+	}
+}
+
+func TestSplitOnComma(t *testing.T) {
+	cases := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name:     "comma",
+			input:    "0 1,3 0,4 3,0 4,0 1",
+			expected: []string{"0 1", "3 0", "4 3", "0 4", "0 1"},
+		},
+		{
+			name:     "comma spaces",
+			input:    "0 1 ,3 0, 4 3 , 0 4  ,   0 1",
+			expected: []string{"0 1", "3 0", "4 3", "0 4", "0 1"},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var results []string
+			splitOnComma(tc.input, func(s string) error {
+				results = append(results, s)
+				return nil
+			})
+			if !reflect.DeepEqual(tc.expected, results) {
+				t.Log(tc.input)
+
+				data, _ := json.Marshal(results)
+				t.Log(string(data))
+
+				t.Log(tc.expected)
+				t.Errorf("incorrect results")
+			}
+
 		})
 	}
 }
