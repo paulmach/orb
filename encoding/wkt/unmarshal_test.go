@@ -830,10 +830,14 @@ func TestSplitOnComma(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			var results []string
-			splitOnComma(tc.input, func(s string) error {
+			err := splitOnComma(tc.input, func(s string) error {
 				results = append(results, s)
 				return nil
 			})
+			if err != nil {
+				t.Fatalf("impossible error: %v", err)
+			}
+
 			if !reflect.DeepEqual(tc.expected, results) {
 				t.Log(tc.input)
 
