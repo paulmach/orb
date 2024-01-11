@@ -41,7 +41,7 @@ func TestRadial(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			v, im := Radial(planar.Distance, tc.threshold).simplify(tc.ls, true)
+			v, im := Radial(planar.Distance, tc.threshold).simplify(tc.ls, false, true)
 			if !v.Equal(tc.expected) {
 				t.Log(v)
 				t.Log(tc.expected)

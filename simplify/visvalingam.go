@@ -12,10 +12,17 @@ var _ orb.Simplifier = &VisvalingamSimplifier{}
 // performs the vivalingham algorithm.
 type VisvalingamSimplifier struct {
 	Threshold float64
-	ToKeep    int
+
+	// If 0 defaults to 2 for line, 3 for non-closed rings and 4 for closed rings.
+	// The intent is to maintain valid geometry after simplification, however it
+	// is still possible for the simplification to create self-intersections.
+	ToKeep int
 }
 
 // Visvalingam creates a new VisvalingamSimplifier.
+// If minPointsToKeep is 0 the algorithm will keep at least 2 points for lines,
+// 3 for non-closed rings and 4 for closed rings. However it is still possible
+// for the simplification to create self-intersections.
 func Visvalingam(threshold float64, minPointsToKeep int) *VisvalingamSimplifier {
 	return &VisvalingamSimplifier{
 		Threshold: threshold,
@@ -25,19 +32,42 @@ func Visvalingam(threshold float64, minPointsToKeep int) *VisvalingamSimplifier 
 
 // VisvalingamThreshold runs the Visvalingam-Whyatt algorithm removing
 // triangles whose area is below the threshold.
+// Will keep at least 2 points for lines, 3 for non-closed rings and 4 for closed rings.
+// The intent is to maintain valid geometry after simplification, however it
+// is still possible for the simplification to create self-intersections.
 func VisvalingamThreshold(threshold float64) *VisvalingamSimplifier {
 	return Visvalingam(threshold, 0)
 }
 
 // VisvalingamKeep runs the Visvalingam-Whyatt algorithm removing
-// triangles of minimum area until we're down to `toKeep` number of points.
-func VisvalingamKeep(toKeep int) *VisvalingamSimplifier {
-	return Visvalingam(math.MaxFloat64, toKeep)
+// triangles of minimum area until we're down to `minPointsToKeep` number of points.
+// If minPointsToKeep is 0 the algorithm will keep at least 2 points for lines,
+// 3 for non-closed rings and 4 for closed rings. However it is still possible
+// for the simplification to create self-intersections.
+func VisvalingamKeep(minPointsToKeep int) *VisvalingamSimplifier {
+	return Visvalingam(math.MaxFloat64, minPointsToKeep)
 }
 
-func (s *VisvalingamSimplifier) simplify(ls orb.LineString, wim bool) (orb.LineString, []int) {
+func (s *VisvalingamSimplifier) simplify(ls orb.LineString, area, wim bool) (orb.LineString, []int) {
+	if len(ls) <= 1 {
+		return ls, nil
+	}
+
+	toKeep := s.ToKeep
+	if toKeep == 0 {
+		if area {
+			if ls[0] == ls[len(ls)-1] {
+				toKeep = 4
+			} else {
+				toKeep = 3
+			}
+		} else {
+			toKeep = 2
+		}
+	}
+
 	var indexMap []int
-	if len(ls) <= s.ToKeep {
+	if len(ls) <= toKeep {
 		if wim {
 			// create identify map
 			indexMap = make([]int, len(ls))
@@ -89,7 +119,7 @@ func (s *VisvalingamSimplifier) simplify(ls orb.LineString, wim bool) (orb.LineS
 	// run through the reduction process
 	for len(heap) > 0 {
 		current := heap.Pop()
-		if current.area > threshold || len(ls)-removed <= s.ToKeep {
+		if current.area > threshold || len(ls)-removed <= toKeep {
 			break
 		}
 
@@ -153,7 +183,7 @@ type visItem struct {
 	next     *visItem
 	previous *visItem
 
-	index int // interal index in heap, for removal and update
+	index int // internal index in heap, for removal and update
 }
 
 func (h *minHeap) Push(item *visItem) {

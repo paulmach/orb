@@ -4,7 +4,7 @@ package simplify
 import "github.com/paulmach/orb"
 
 type simplifier interface {
-	simplify(orb.LineString, bool) (orb.LineString, []int)
+	simplify(l orb.LineString, area bool, withIndexMap bool) (orb.LineString, []int)
 }
 
 func simplify(s simplifier, geom orb.Geometry) orb.Geometry {
@@ -64,24 +64,24 @@ func simplify(s simplifier, geom orb.Geometry) orb.Geometry {
 }
 
 func lineString(s simplifier, ls orb.LineString) orb.LineString {
-	return runSimplify(s, ls)
+	return runSimplify(s, ls, false)
 }
 
 func multiLineString(s simplifier, mls orb.MultiLineString) orb.MultiLineString {
 	for i := range mls {
-		mls[i] = runSimplify(s, mls[i])
+		mls[i] = runSimplify(s, mls[i], false)
 	}
 	return mls
 }
 
 func ring(s simplifier, r orb.Ring) orb.Ring {
-	return orb.Ring(runSimplify(s, orb.LineString(r)))
+	return orb.Ring(runSimplify(s, orb.LineString(r), true))
 }
 
 func polygon(s simplifier, p orb.Polygon) orb.Polygon {
 	count := 0
 	for i := range p {
-		r := orb.Ring(runSimplify(s, orb.LineString(p[i])))
+		r := orb.Ring(runSimplify(s, orb.LineString(p[i]), true))
 		if i != 0 && len(r) <= 2 {
 			continue
 		}
@@ -113,10 +113,10 @@ func collection(s simplifier, c orb.Collection) orb.Collection {
 	return c
 }
 
-func runSimplify(s simplifier, ls orb.LineString) orb.LineString {
+func runSimplify(s simplifier, ls orb.LineString, area bool) orb.LineString {
 	if len(ls) <= 2 {
 		return ls
 	}
-	ls, _ = s.simplify(ls, false)
+	ls, _ = s.simplify(ls, area, false)
 	return ls
 }
