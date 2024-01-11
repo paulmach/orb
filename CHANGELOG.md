@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.11.0](https://github.com/paulmach/orb/compare/v0.10.0...v0.11.0) - 2024-01-11
+
+### Fixed
+
+-   quadtree: InBoundMatching does not properly accept passed-in buffer by [@nirmal-vuppuluri](https://github.com/nirmal-vuppuluri) in https://github.com/paulmach/orb/pull/139
+-   mvt: Do not swallow error cause by [@m-pavel](https://github.com/m-pavel) in https://github.com/paulmach/orb/pull/137
+
+### Changed
+
+-   simplify: Visvalingam, by default, keeps 3 points for "areas" by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/140
+-   encoding/mvt: skip encoding of features will nil geometry by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/141
+-   encoding/wkt: improve unmarshalling performance by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/142
+
 ## [v0.10.0](https://github.com/paulmach/orb/compare/v0.9.2...v0.10.0) - 2023-07-16
 
 ### Added
