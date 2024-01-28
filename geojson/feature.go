@@ -1,6 +1,7 @@
 package geojson
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/paulmach/orb"
@@ -79,6 +80,11 @@ func UnmarshalFeature(data []byte) (*Feature, error) {
 // UnmarshalJSON handles the correct unmarshalling of the data
 // into the orb.Geometry types.
 func (f *Feature) UnmarshalJSON(data []byte) error {
+	if bytes.Equal(data, []byte(`null`)) {
+		*f = Feature{}
+		return nil
+	}
+
 	doc := &featureDoc{}
 	err := unmarshalJSON(data, &doc)
 	if err != nil {
