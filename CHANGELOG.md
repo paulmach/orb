@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.11.1](https://github.com/paulmach/orb/compare/v0.11.0...v0.11.1) - 2024-01-29
+
+### Fixed
+
+-   geojson: `null` json into non-pointer Feature/FeatureCollection will set them to empty by [@paulmach](https://github.com/paulmach)in https://github.com/paulmach/orb/pull/145
+
 ## [v0.11.0](https://github.com/paulmach/orb/compare/v0.10.0...v0.11.0) - 2024-01-11
 
 ### Fixed
