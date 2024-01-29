@@ -7,6 +7,7 @@ json.Unmarshaler interfaces as well as helper functions such as
 package geojson
 
 import (
+	"bytes"
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -85,6 +86,11 @@ func newFeatureCollectionDoc(fc FeatureCollection) map[string]interface{} {
 // UnmarshalJSON decodes the data into a GeoJSON feature collection.
 // Extra/foreign members will be put into the `ExtraMembers` attribute.
 func (fc *FeatureCollection) UnmarshalJSON(data []byte) error {
+	if bytes.Equal(data, []byte(`null`)) {
+		*fc = FeatureCollection{}
+		return nil
+	}
+
 	tmp := make(map[string]nocopyRawMessage, 4)
 
 	err := unmarshalJSON(data, &tmp)

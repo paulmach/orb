@@ -237,6 +237,40 @@ func TestGeometryUnmarshal_errors(t *testing.T) {
 	}
 }
 
+func TestGeometryMarshalJSON_null(t *testing.T) {
+	t.Run("pointer", func(t *testing.T) {
+		type S struct {
+			GeoJSON *Geometry `json:"geojson"`
+		}
+
+		var s S
+		err := json.Unmarshal([]byte(`{"geojson": null}`), &s)
+		if err != nil {
+			t.Fatalf("unmarshal error: %v", err)
+		}
+
+		if s.GeoJSON != nil {
+			t.Errorf("should be nil, got: %v", s)
+		}
+	})
+
+	t.Run("feature with null geometry", func(t *testing.T) {
+		type S struct {
+			GeoJSON *Feature `json:"geojson"`
+		}
+
+		var s S
+		err := json.Unmarshal([]byte(`{"geojson": {"type":"Feature","geometry":null,"properties":null}}`), &s)
+		if err != nil {
+			t.Fatalf("unmarshal error: %v", err)
+		}
+
+		if s.GeoJSON.Geometry != nil {
+			t.Errorf("should be nil, got: %v", s)
+		}
+	})
+}
+
 func TestHelperTypes(t *testing.T) {
 	// This test makes sure the marshal-unmarshal loop does the same thing.
 	// The code and types here are complicated to avoid duplicate code.

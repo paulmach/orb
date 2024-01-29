@@ -185,6 +185,40 @@ func TestFeatureCollectionMarshalJSON(t *testing.T) {
 	}
 }
 
+func TestFeatureCollectionMarshalJSON_null(t *testing.T) {
+	t.Run("pointer", func(t *testing.T) {
+		type S struct {
+			GeoJSON *FeatureCollection `json:"geojson"`
+		}
+
+		var s S
+		err := json.Unmarshal([]byte(`{"geojson": null}`), &s)
+		if err != nil {
+			t.Fatalf("unmarshal error: %v", err)
+		}
+
+		if s.GeoJSON != nil {
+			t.Errorf("should be nil, got: %v", s)
+		}
+	})
+
+	t.Run("non-pointer", func(t *testing.T) {
+		type S struct {
+			GeoJSON FeatureCollection `json:"geojson"`
+		}
+
+		var s S
+		err := json.Unmarshal([]byte(`{"geojson": null}`), &s)
+		if err != nil {
+			t.Fatalf("unmarshal error: %v", err)
+		}
+
+		if !reflect.DeepEqual(s.GeoJSON, FeatureCollection{}) {
+			t.Errorf("should be empty, got: %v", s)
+		}
+	})
+}
+
 func TestFeatureCollectionMarshal(t *testing.T) {
 	fc := NewFeatureCollection()
 	fc.Features = nil
