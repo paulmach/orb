@@ -19,7 +19,7 @@ type Geometry struct {
 }
 
 // NewGeometry will create a Geometry object but will convert
-// the input into a GoeJSON geometry. For example, it will convert
+// the input into a GeoJSON geometry. For example, it will convert
 // Rings and Bounds into Polygons.
 func NewGeometry(g orb.Geometry) *Geometry {
 	jg := &Geometry{}
