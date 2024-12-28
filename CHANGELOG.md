@@ -73,7 +73,7 @@ This tag is broken, please use v0.7.1 instead.
 
 ### Breaking Changes
 
--   tilecover now returns an error (vs. panicing) on non-closed 2d geometry by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/87
+-   tilecover now returns an error (vs. panicking) on non-closed 2d geometry by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/87
 
     This changes the signature of many of the methods in the [maptile/tilecover](https://github.com/paulmach/orb/tree/master/maptile/tilecover) package.
     To emulate the old behavior replace:
