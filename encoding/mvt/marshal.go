@@ -39,7 +39,7 @@ func MarshalGzipped(layers Layers) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// Marshal will take a set of layers and encode them into a Mapbox Vector Tile format.
+// MarshalToVectorTile will take a set of layers and encode them into a Mapbox Vector Tile proto structure.
 // Features that have a nil geometry, for some reason, will be skipped and not included.
 func MarshalToVectorTile(layers Layers) (*vectortile.Tile, error) {
 	vt := &vectortile.Tile{
@@ -70,7 +70,7 @@ func MarshalToVectorTile(layers Layers) (*vectortile.Tile, error) {
 		vt.Layers = append(vt.Layers, layer)
 	}
 
-	return vt
+	return vt, nil
 }
 
 // Marshal will take a set of layers and encode them into a Mapbox Vector Tile format.
