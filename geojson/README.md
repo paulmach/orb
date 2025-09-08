@@ -47,7 +47,7 @@ rawJSON, _ := fc.MarshalJSON()
 blob, _ := json.Marshal(fc)
 ```
 
-## Foreign/extra members in a feature collection
+## Foreign/extra members in feature and feature collection
 
 ```go
 rawJSON := []byte(`
