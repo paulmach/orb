@@ -2,11 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.12.0](https://github.com/paulmach/orb/compare/v0.11.1...v0.12.0) - 2025-09-17
+
+### Fixed
+
+-   Fix typos by [@NathanBaulch](https://github.com/NathanBaulch) in https://github.com/paulmach/orb/pull/157
+-   Fix panic on reverse of empty linestrings by [@jo-me](https://github.com/jo-me) in https://github.com/paulmach/orb/pull/163
+-   fix: return precisely 0.0 from mercator.ToGeo on arm64 by [@davidjb](https://github.com/davidjb) in https://github.com/paulmach/orb/pull/165
+
+### Added
+
+-   geojson: handle extra/foreign members in feature by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/164
+-   encoding/mvt: Support for Marshalling to Proto Objects by [@kevinkreiser](https://github.com/kevinkreiser) in https://github.com/paulmach/orb/pull/154
+
 ## [v0.11.1](https://github.com/paulmach/orb/compare/v0.11.0...v0.11.1) - 2024-01-29
 
 ### Fixed
 
--   geojson: `null` json into non-pointer Feature/FeatureCollection will set them to empty by [@paulmach](https://github.com/paulmach)in https://github.com/paulmach/orb/pull/145
+-   geojson: `null` json into non-pointer Feature/FeatureCollection will set them to empty by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/145
 
 ## [v0.11.0](https://github.com/paulmach/orb/compare/v0.10.0...v0.11.0) - 2024-01-11
 
