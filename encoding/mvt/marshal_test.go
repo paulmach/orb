@@ -69,6 +69,61 @@ func TestMarshalUnmarshalGzipped_Full(t *testing.T) {
 	compareOrbGeometry(t, result.Geometry, expected, xe, ye)
 }
 
+func TestMarshalUnmarshalBrotli_Full(t *testing.T) {
+	tile := maptile.New(8956, 12223, 15)
+	ls := orb.LineString{
+		{-81.60346275, 41.50998572},
+		{-81.6033669, 41.50991259},
+		{-81.60355599, 41.50976036},
+		{-81.6040648, 41.50936811},
+		{-81.60404411, 41.50935405},
+	}
+	expected := ls.Clone()
+
+	f := geojson.NewFeature(ls)
+	f.Properties = geojson.Properties{
+		"source":       "openstreetmap.org",
+		"kind":         "path",
+		"name":         "Uptown Alley",
+		"landuse_kind": "retail",
+		"sort_rank":    float64(354),
+		"kind_detail":  "pedestrian",
+		"min_zoom":     float64(13),
+		"id":           float64(246698394),
+	}
+
+	fc := geojson.NewFeatureCollection()
+	fc.Append(f)
+
+	layers := Layers{NewLayer("roads", fc)}
+
+	// project to the tile coords
+	layers.ProjectToTile(tile)
+
+	// marshal
+	encoded, err := MarshalBrotli(layers)
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+
+	// unmarshal
+	decoded, err := UnmarshalBrotli(encoded)
+	if err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+
+	// project back
+	decoded.ProjectToWGS84(tile)
+
+	// compare the results
+	result := decoded[0].Features[0]
+	compareProperties(t, result.Properties, f.Properties)
+
+	// compare geometry
+	xe, ye := tileEpsilon(tile)
+	compareOrbGeometry(t, result.Geometry, expected, xe, ye)
+}
+
 func TestMarshalUnmarshalForGeometryCollection(t *testing.T) {
 	tile := maptile.New(8956, 12223, 15)
 	outerRing := orb.Ring{
@@ -109,23 +164,39 @@ func TestMarshalUnmarshalForGeometryCollection(t *testing.T) {
 	// project to the tile coords
 	layers.ProjectToTile(tile)
 
-	// marshal
-	encoded, err := MarshalGzipped(layers)
+	// marshal gzip
+	encodedGzip, err := MarshalGzipped(layers)
 	if err != nil {
-		t.Fatalf("marshal error: %v", err)
+		t.Fatalf("marshal gzip error: %v", err)
 	}
 
-	// unmarshal
-	decoded, err := UnmarshalGzipped(encoded)
+	// unmarshal gzip
+	decodedGzip, err := UnmarshalGzipped(encodedGzip)
 	if err != nil {
-		t.Fatalf("unmarshal error: %v", err)
+		t.Fatalf("unmarshal gzip error: %v", err)
+	}
+
+	// compare the results
+	results := decodedGzip[0].Features
+	compareProperties(t, results[0].Properties, f.Properties)
+
+	// marshal brotli
+	encodedBrotli, err := MarshalBrotli(layers)
+	if err != nil {
+		t.Fatalf("marshal brotli error: %v", err)
+	}
+
+	// unmarshal brotli
+	decodedBrotli, err := UnmarshalBrotli(encodedBrotli)
+	if err != nil {
+		t.Fatalf("unmarshal brotli error: %v", err)
 	}
 
 	// project back
-	decoded.ProjectToWGS84(tile)
+	decodedBrotli.ProjectToWGS84(tile)
 
 	// compare the results
-	results := decoded[0].Features
+	results = decodedBrotli[0].Features
 	compareProperties(t, results[0].Properties, f.Properties)
 
 	// compare geometry

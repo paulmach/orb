@@ -13,9 +13,11 @@ type Layer struct {
 }
 
 func MarshalGzipped(layers Layers) ([]byte, error)
+func MarshalBrotli(layers Layers) ([]byte, error)
 func Marshal(layers Layers) ([]byte, error)
 
 func UnmarshalGzipped(data []byte) (Layers, error)
+func UnmarshalBrotli(data []byte) (Layers, error)
 func Unmarshal(data []byte) (Layers, error)
 ```
 

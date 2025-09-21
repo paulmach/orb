@@ -5,8 +5,10 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 
+	"github.com/andybalholm/brotli"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
 	"github.com/paulmach/orb/geojson"
@@ -24,6 +26,19 @@ func UnmarshalGzipped(data []byte) (Layers, error) {
 	}
 
 	decoded, err := ioutil.ReadAll(gzreader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unzip: %v", err)
+	}
+
+	return Unmarshal(decoded)
+}
+
+// UnmarshalBrotli takes brotli compressed Mapbox Vector Tile (MVT) data and uncompresses it
+// before decoding it into a set of layers, It does not project the coordinates.
+func UnmarshalBrotli(data []byte) (Layers, error) {
+	brreader := brotli.NewReader(bytes.NewBuffer(data))
+
+	decoded, err := io.ReadAll(brreader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unzip: %v", err)
 	}
