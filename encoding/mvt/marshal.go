@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/andybalholm/brotli"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
 	"github.com/paulmach/orb/geojson"
@@ -33,6 +34,28 @@ func MarshalGzipped(layers Layers) ([]byte, error) {
 
 	err = gzwriter.Close()
 	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+// MarshalBrotli will marshal the layers into Mapbox Vector Tile format
+// and brotli compress the result.
+func MarshalBrotli(layers Layers) ([]byte, error) {
+	data, err := Marshal(layers)
+	if err != nil {
+		return nil, err
+	}
+
+	buf := bytes.NewBuffer(nil)
+	brwriter := brotli.NewWriter(buf)
+
+	if _, err = brwriter.Write(data); err != nil {
+		return nil, err
+	}
+
+	if err := brwriter.Close(); err != nil {
 		return nil, err
 	}
 
