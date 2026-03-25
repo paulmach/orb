@@ -2,8 +2,8 @@ package tilecover
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"math"
+	"os"
 	"sort"
 	"strings"
 	"testing"
@@ -92,7 +92,7 @@ func TestTestdata(t *testing.T) {
 
 			// ts := Geometry(f.Geometry, tc.max)
 			// blob, _ := json.MarshalIndent(MergeUp(ts, tc.min).ToFeatureCollection(), "", "  ")
-			// ioutil.WriteFile("./testdata/"+tc.name+"_out.geojson", blob, 0644)
+			// os.WriteFile("./testdata/"+tc.name+"_out.geojson", blob, 0644)
 
 			expected := loadFeatureCollection(t, "./testdata/"+tc.name+"_out.geojson")
 
@@ -108,7 +108,7 @@ func TestTestdata(t *testing.T) {
 }
 
 func TestCountries(t *testing.T) {
-	files, err := ioutil.ReadDir("./testdata/world")
+	files, err := os.ReadDir("./testdata/world")
 	if err != nil {
 		t.Errorf("could not read directory: %v", err)
 	}
@@ -182,7 +182,7 @@ func sortFC(fc *geojson.FeatureCollection) {
 
 func loadFeature(t testing.TB, path string) *geojson.Feature {
 	t.Helper()
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("unable to read file: %v", err)
 	}
@@ -210,7 +210,7 @@ func loadFeature(t testing.TB, path string) *geojson.Feature {
 
 func loadFeatureCollection(t testing.TB, path string) *geojson.FeatureCollection {
 	t.Helper()
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("unable to read file: %v", err)
 	}
@@ -250,7 +250,7 @@ func output(t testing.TB, name string, r *geojson.FeatureCollection) {
 		t.Fatalf("error marshalling json: %v", err)
 	}
 
-	err = ioutil.WriteFile("failure_"+name+".geojson", data, 0644)
+	err = os.WriteFile("failure_"+name+".geojson", data, 0644)
 	if err != nil {
 		t.Fatalf("write file failure: %v", err)
 	}

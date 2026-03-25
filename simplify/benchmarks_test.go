@@ -164,7 +164,11 @@ func benchmarkData() orb.LineString {
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	var points []float64
 	err = json.NewDecoder(f).Decode(&points)

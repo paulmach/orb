@@ -91,10 +91,7 @@ func ring(box orb.Bound, in orb.Ring) orb.Ring {
 	f := in[0]
 	l := in[len(in)-1]
 
-	initClosed := false
-	if f == l {
-		initClosed = true
-	}
+	initClosed := f == l
 
 	for edge := 1; edge <= 8; edge <<= 1 {
 		out = out[:0]
@@ -150,9 +147,11 @@ func ring(box orb.Bound, in orb.Ring) orb.Ring {
 }
 
 // bitCode returns the point position relative to the bbox:
-//         left  mid  right
-//    top  1001  1000  1010
-//    mid  0001  0000  0010
+//
+//	     left  mid  right
+//	top  1001  1000  1010
+//	mid  0001  0000  0010
+//
 // bottom  0101  0100  0110
 func bitCode(b orb.Bound, p orb.Point) int {
 	code := 0

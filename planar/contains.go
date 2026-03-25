@@ -66,7 +66,8 @@ func rayIntersect(p, s, e orb.Point) (intersects, on bool) {
 		s, e = e, s
 	}
 
-	if p[0] == s[0] {
+	switch p[0] {
+	case s[0]:
 		if p[1] == s[1] {
 			// p == start
 			return false, true
@@ -84,7 +85,7 @@ func rayIntersect(p, s, e orb.Point) (intersects, on bool) {
 
 		// Move the y coordinate to deal with degenerate case
 		p[0] = math.Nextafter(p[0], math.Inf(1))
-	} else if p[0] == e[0] {
+	case e[0]:
 		if p[1] == e[1] {
 			// matching the end point
 			return false, true

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
+	"os"
 	"reflect"
 	"testing"
 
@@ -388,7 +388,7 @@ func comparePoints(t testing.TB, e, r []orb.Point, xEpsilon, yEpsilon float64) {
 }
 
 func loadMVT(t testing.TB, tile maptile.Tile) []byte {
-	data, err := ioutil.ReadFile(fmt.Sprintf("testdata/%d-%d-%d.mvt", tile.Z, tile.X, tile.Y))
+	data, err := os.ReadFile(fmt.Sprintf("testdata/%d-%d-%d.mvt", tile.Z, tile.X, tile.Y))
 	if err != nil {
 		t.Fatalf("failed to load mvt file: %v", err)
 	}
@@ -397,7 +397,7 @@ func loadMVT(t testing.TB, tile maptile.Tile) []byte {
 }
 
 func loadGeoJSON(t testing.TB, tile maptile.Tile) map[string]*geojson.FeatureCollection {
-	data, err := ioutil.ReadFile(fmt.Sprintf("testdata/%d-%d-%d.json", tile.Z, tile.X, tile.Y))
+	data, err := os.ReadFile(fmt.Sprintf("testdata/%d-%d-%d.json", tile.Z, tile.X, tile.Y))
 	if err != nil {
 		t.Fatalf("failed to load mvt file: %v", err)
 	}

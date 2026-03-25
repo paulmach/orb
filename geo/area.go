@@ -56,19 +56,20 @@ func ringArea(r orb.Ring) float64 {
 
 	area := 0.0
 	for i := 0; i < l; i++ {
-		if i == l-3 { // i = N-3
+		switch i {
+		case l - 3: // i = N-3
 			lo = l - 3
 			mi = l - 2
 			hi = 0
-		} else if i == l-2 { // i = N-2
+		case l - 2: // i = N-2
 			lo = l - 2
 			mi = 0
 			hi = 0
-		} else if i == l-1 { // i = N-1
+		case l - 1: // i = N-1
 			lo = 0
 			mi = 0
 			hi = 1
-		} else { // i = 0 to N-3
+		default: // i = 0 to N-3
 			lo = i
 			mi = i + 1
 			hi = i + 2

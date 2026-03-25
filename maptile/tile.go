@@ -228,9 +228,12 @@ func (t Tile) Children() Tiles {
 
 // ChildrenInZoomRange returns all the children tiles of tile from ranges [zoomStart, zoomEnd], both ends inclusive.
 func ChildrenInZoomRange(tile Tile, zoomStart, zoomEnd Zoom) Tiles {
+	//nolint:staticcheck // clearer this way
 	if !(zoomStart <= zoomEnd) {
 		panic("zoomStart must be <= zoomEnd")
 	}
+
+	//nolint:staticcheck // clearer this way
 	if !(tile.Z <= zoomStart) {
 		panic("tile.Z is must be <= zoomStart")
 	}

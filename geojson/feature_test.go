@@ -3,7 +3,7 @@ package geojson
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -424,7 +424,7 @@ func TestFeature_MarshalBSON_extraMembers(t *testing.T) {
 // }
 
 func BenchmarkFeatureMarshalJSON(b *testing.B) {
-	data, err := ioutil.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
+	data, err := os.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
 	if err != nil {
 		b.Fatalf("could not open file: %v", err)
 	}
@@ -446,7 +446,7 @@ func BenchmarkFeatureMarshalJSON(b *testing.B) {
 }
 
 func BenchmarkFeatureUnmarshalJSON(b *testing.B) {
-	data, err := ioutil.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
+	data, err := os.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
 	if err != nil {
 		b.Fatalf("could not open file: %v", err)
 	}
@@ -463,7 +463,7 @@ func BenchmarkFeatureUnmarshalJSON(b *testing.B) {
 }
 
 func BenchmarkFeatureMarshalBSON(b *testing.B) {
-	data, err := ioutil.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
+	data, err := os.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
 	if err != nil {
 		b.Fatalf("could not open file: %v", err)
 	}
@@ -485,7 +485,7 @@ func BenchmarkFeatureMarshalBSON(b *testing.B) {
 }
 
 func BenchmarkFeatureUnmarshalBSON(b *testing.B) {
-	data, err := ioutil.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
+	data, err := os.ReadFile("../encoding/mvt/testdata/16-17896-24449.json")
 	if err != nil {
 		b.Fatalf("could not open file: %v", err)
 	}

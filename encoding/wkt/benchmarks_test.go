@@ -2,7 +2,7 @@ package wkt
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/paulmach/orb"
@@ -103,7 +103,7 @@ func BenchmarkUnmarshalMultiPolygon(b *testing.B) {
 }
 
 func loadJSON(tb testing.TB, filename string, obj interface{}) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		tb.Fatalf("failed to load mvt file: %v", err)
 	}

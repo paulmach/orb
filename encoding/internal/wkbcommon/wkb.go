@@ -284,11 +284,12 @@ func readByteOrderType(r io.Reader, buf []byte) (byteOrder, uint32, int, error) 
 	}
 
 	var order byteOrder
-	if buf[0] == 0 {
+	switch buf[0] {
+	case 0:
 		order = bigEndian
-	} else if buf[0] == 1 {
+	case 1:
 		order = littleEndian
-	} else {
+	default:
 		return 0, 0, 0, ErrNotWKB
 	}
 

@@ -5,7 +5,7 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/mvt/vectortile"
@@ -23,7 +23,7 @@ func UnmarshalGzipped(data []byte) (Layers, error) {
 		return nil, fmt.Errorf("failed to create gzreader: %v", err)
 	}
 
-	decoded, err := ioutil.ReadAll(gzreader)
+	decoded, err := io.ReadAll(gzreader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unzip: %v", err)
 	}

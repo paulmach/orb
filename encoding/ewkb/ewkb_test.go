@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"github.com/paulmach/orb"
@@ -37,7 +37,7 @@ func MustDecodeHex(s string) []byte {
 
 func BenchmarkEncode_Point(b *testing.B) {
 	g := orb.Point{1, 2}
-	e := NewEncoder(ioutil.Discard)
+	e := NewEncoder(io.Discard)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -54,7 +54,7 @@ func BenchmarkEncode_LineString(b *testing.B) {
 		{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5},
 		{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5},
 	}
-	e := NewEncoder(ioutil.Discard)
+	e := NewEncoder(io.Discard)
 
 	b.ReportAllocs()
 	b.ResetTimer()
