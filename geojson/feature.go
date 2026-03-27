@@ -2,19 +2,24 @@ package geojson
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 
 	"github.com/paulmach/orb"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// A Feature corresponds to GeoJSON feature object
-type Feature struct {
+// A FeatureOf corresponds to GeoJSON feature object but allows for a generic type for the properties.
+// This allows users to unmarshal into a struct instead of a map if they choose.
+//
+// The code assumes type of P is a struct, or map as the GeoJSON spec requires it
+// marshal into the a json object.
+type FeatureOf[P any] struct {
 	ID         any          `json:"id,omitempty"`
 	Type       string       `json:"type"`
 	BBox       BBox         `json:"bbox,omitempty"`
 	Geometry   orb.Geometry `json:"geometry"`
-	Properties Properties   `json:"properties"`
+	Properties P            `json:"properties"`
 
 	// ExtraMembers can be used to encoded/decode extra key/members in
 	// the base of the feature object. Note that keys of "id", "type", "bbox"
@@ -22,6 +27,9 @@ type Feature struct {
 	// GeoJSON spec.
 	ExtraMembers Properties `json:"-"`
 }
+
+// A Feature corresponds to GeoJSON feature object.
+type Feature = FeatureOf[Properties]
 
 // NewFeature creates and initializes a GeoJSON feature given the required attributes.
 func NewFeature(geometry orb.Geometry) *Feature {
@@ -35,19 +43,23 @@ func NewFeature(geometry orb.Geometry) *Feature {
 // Point implements the orb.Pointer interface so that Features can be used
 // with quadtrees. The point returned is the center of the Bound of the geometry.
 // To represent the geometry with another point you must create a wrapper type.
-func (f *Feature) Point() orb.Point {
+func (f *FeatureOf[P]) Point() orb.Point {
 	return f.Geometry.Bound().Center()
 }
 
-var _ orb.Pointer = &Feature{}
+var _ orb.Pointer = &FeatureOf[any]{}
 
 // MarshalJSON converts the feature object into the proper JSON.
 // It will handle the encoding of all the child geometries.
 // Alternately one can call json.Marshal(f) directly for the same result.
 // Items in the ExtraMembers map will be included in the base of the
 // feature object.
-func (f Feature) MarshalJSON() ([]byte, error) {
-	return marshalJSON(newFeatureDoc(&f))
+func (f FeatureOf[P]) MarshalJSON() ([]byte, error) {
+	jProperties, err := f.jsonProperties()
+	if err != nil {
+		return nil, err
+	}
+	return marshalJSON(f.newFeatureDoc(jProperties))
 }
 
 // MarshalBSON converts the feature object into the proper JSON.
@@ -55,25 +67,51 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 // Alternately one can call json.Marshal(f) directly for the same result.
 // Items in the ExtraMembers map will be included in the base of the
 // feature object.
-func (f Feature) MarshalBSON() ([]byte, error) {
-	return bson.Marshal(newFeatureDoc(&f))
+func (f FeatureOf[P]) MarshalBSON() ([]byte, error) {
+	properties, err := f.bsonProperties()
+	if err != nil {
+		return nil, err
+	}
+	return bson.Marshal(f.newFeatureDoc(properties))
 }
 
-func newFeatureDoc(f *Feature) any {
+func (f FeatureOf[P]) jsonProperties() (json.RawMessage, error) {
+	jProperties, err := json.Marshal(f.Properties)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(jProperties) <= 2 { // empty
+		// we assume it's an object so an empty {} is 2 bytes
+		// in that case the properties should be nil according to the geojson spec
+		jProperties = nil
+	}
+
+	return jProperties, nil
+}
+
+func (f FeatureOf[P]) bsonProperties() (any, error) {
+	t, value, err := bson.MarshalValue(f.Properties)
+	if err != nil {
+		return nil, err
+	}
+
+	if t == bson.TypeEmbeddedDocument && bytes.Equal(value, []byte{5, 0, 0, 0, 0}) {
+		return nil, nil
+	}
+
+	return bson.RawValue{Type: t, Value: value}, nil
+}
+
+func (f FeatureOf[P]) newFeatureDoc(properties any) any {
 	if len(f.ExtraMembers) == 0 {
-		doc := &featureDoc{
+		return &featureDoc[any]{
 			ID:         f.ID,
 			Type:       "Feature",
-			Properties: f.Properties,
 			BBox:       f.BBox,
 			Geometry:   NewGeometry(f.Geometry),
+			Properties: properties,
 		}
-
-		if len(doc.Properties) == 0 {
-			doc.Properties = nil
-		}
-
-		return doc
 	}
 
 	var tmp map[string]any
@@ -95,12 +133,7 @@ func newFeatureDoc(f *Feature) any {
 	}
 
 	tmp["geometry"] = NewGeometry(f.Geometry)
-
-	if len(f.Properties) == 0 {
-		tmp["properties"] = nil
-	} else {
-		tmp["properties"] = f.Properties
-	}
+	tmp["properties"] = properties
 
 	return tmp
 }
@@ -119,9 +152,9 @@ func UnmarshalFeature(data []byte) (*Feature, error) {
 
 // UnmarshalJSON handles the correct unmarshalling of the data
 // into the orb.Geometry types.
-func (f *Feature) UnmarshalJSON(data []byte) error {
+func (f *FeatureOf[P]) UnmarshalJSON(data []byte) error {
 	if bytes.Equal(data, []byte(`null`)) {
-		*f = Feature{}
+		*f = FeatureOf[P]{}
 		return nil
 	}
 
@@ -132,7 +165,7 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	*f = Feature{}
+	*f = FeatureOf[P]{}
 	for key, value := range tmp {
 		switch key {
 		case "id":
@@ -187,7 +220,7 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 }
 
 // UnmarshalBSON will unmarshal a BSON document created with bson.Marshal.
-func (f *Feature) UnmarshalBSON(data []byte) error {
+func (f *FeatureOf[P]) UnmarshalBSON(data []byte) error {
 	tmp := make(map[string]bson.RawValue, 4)
 
 	err := bson.Unmarshal(data, &tmp)
@@ -195,7 +228,7 @@ func (f *Feature) UnmarshalBSON(data []byte) error {
 		return err
 	}
 
-	*f = Feature{}
+	*f = FeatureOf[P]{}
 	for key, value := range tmp {
 		switch key {
 		case "id":
@@ -246,10 +279,10 @@ func (f *Feature) UnmarshalBSON(data []byte) error {
 	return nil
 }
 
-type featureDoc struct {
-	ID         any        `json:"id,omitempty" bson:"id"`
-	Type       string     `json:"type" bson:"type"`
-	BBox       BBox       `json:"bbox,omitempty" bson:"bbox,omitempty"`
-	Geometry   *Geometry  `json:"geometry" bson:"geometry"`
-	Properties Properties `json:"properties" bson:"properties"`
+type featureDoc[P any] struct {
+	ID         any       `json:"id,omitempty" bson:"id"`
+	Type       string    `json:"type" bson:"type"`
+	BBox       BBox      `json:"bbox,omitempty" bson:"bbox,omitempty"`
+	Geometry   *Geometry `json:"geometry" bson:"geometry"`
+	Properties P         `json:"properties" bson:"properties"`
 }

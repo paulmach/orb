@@ -19,6 +19,54 @@ func TestNewFeatureCollection(t *testing.T) {
 	}
 }
 
+func TestFeatureCollectionOf_json(t *testing.T) {
+	type S struct {
+		Int    int
+		String string
+	}
+
+	fc := FeatureCollectionOf[S]{}
+	fc.Append(&FeatureOf[S]{
+		Geometry: orb.Point{1, 2},
+		Properties: S{
+			Int:    42,
+			String: "foo",
+		},
+	})
+
+	blob, err := json.Marshal(fc)
+	if err != nil {
+		t.Fatalf("error marshalling to json: %v", err)
+	}
+
+	expected := `{"features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]},"properties":{"Int":42,"String":"foo"}}],"type":"FeatureCollection"}`
+	if !bytes.Equal(blob, []byte(expected)) {
+		t.Errorf("json should marshal correctly, got: %s", string(blob))
+	}
+
+	var fc2 FeatureCollectionOf[S]
+	err = json.Unmarshal(blob, &fc2)
+	if err != nil {
+		t.Fatalf("error unmarshalling from json: %v", err)
+	}
+
+	if fc2.Type != "FeatureCollection" {
+		t.Errorf("should have type of FeatureCollection, got %v", fc2.Type)
+	}
+
+	if len(fc2.Features) != 1 {
+		t.Errorf("should have 1 feature but got %d", len(fc2.Features))
+	}
+
+	if fc2.Features[0].Properties.Int != 42 {
+		t.Errorf("incorrect int property: %v != 42", fc2.Features[0].Properties.Int)
+	}
+
+	if fc2.Features[0].Properties.String != "foo" {
+		t.Errorf("incorrect string property: %v != foo", fc2.Features[0].Properties.String)
+	}
+}
+
 func TestUnmarshalFeatureCollection(t *testing.T) {
 	rawJSON := `
 	  { "type": "FeatureCollection",

@@ -33,6 +33,107 @@ func TestFeatureMarshalJSON(t *testing.T) {
 	}
 }
 
+func TestFeatureOf_json(t *testing.T) {
+	type S struct {
+		Int    int
+		String string
+	}
+	f := FeatureOf[S]{
+		Geometry: orb.Point{1, 2},
+		Properties: S{
+			Int:    1,
+			String: "foo",
+		},
+	}
+	blob, err := f.MarshalJSON()
+	if err != nil {
+		t.Fatalf("error marshalling to json: %v", err)
+	}
+
+	expected := `{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]},"properties":{"Int":1,"String":"foo"}}`
+	if !bytes.Equal(blob, []byte(expected)) {
+		t.Errorf("json should marshal correctly, got: %s", string(blob))
+	}
+
+	// unmarshal back to struct
+	var f2 FeatureOf[S]
+	err = json.Unmarshal(blob, &f2)
+	if err != nil {
+		t.Fatalf("error unmarshalling from json: %v", err)
+	}
+
+	if f2.Type != "Feature" {
+		t.Errorf("incorrect feature: %v != Feature", f2.Type)
+	}
+
+	if f2.Properties.Int != 1 {
+		t.Errorf("incorrect int property: %v != 1", f2.Properties.Int)
+	}
+
+	if f2.Properties.String != "foo" {
+		t.Errorf("incorrect string property: %v != foo", f2.Properties.String)
+	}
+}
+
+func TestFeatureT_bson(t *testing.T) {
+	type S struct {
+		Int    int    `bson:"int"`
+		String string `bson:"string"`
+	}
+
+	f := FeatureOf[S]{
+		Geometry: orb.Point{1, 2},
+		Properties: S{
+			Int:    1,
+			String: "foo",
+		},
+	}
+
+	blob, err := f.MarshalBSON()
+	if err != nil {
+		t.Fatalf("error marshalling to bson: %v", err)
+	}
+
+	var raw bson.M
+	dec := bson.NewDecoder(bson.NewDocumentReader(bytes.NewReader(blob)))
+	dec.DefaultDocumentM()
+	err = dec.Decode(&raw)
+	if err != nil {
+		t.Fatalf("error unmarshalling raw bson: %v", err)
+	}
+
+	properties, ok := raw["properties"].(bson.M)
+	if !ok {
+		t.Fatalf("properties should be a bson document, got %T", raw["properties"])
+	}
+
+	if properties["int"] != int32(1) {
+		t.Errorf("incorrect int property in bson: %v != 1", properties["int"])
+	}
+
+	if properties["string"] != "foo" {
+		t.Errorf("incorrect string property in bson: %v != foo", properties["string"])
+	}
+
+	var f2 FeatureOf[S]
+	err = bson.Unmarshal(blob, &f2)
+	if err != nil {
+		t.Fatalf("error unmarshalling from bson: %v", err)
+	}
+
+	if f2.Type != "Feature" {
+		t.Errorf("incorrect feature: %v != Feature", f2.Type)
+	}
+
+	if f2.Properties.Int != 1 {
+		t.Errorf("incorrect int property: %v != 1", f2.Properties.Int)
+	}
+
+	if f2.Properties.String != "foo" {
+		t.Errorf("incorrect string property: %v != foo", f2.Properties.String)
+	}
+}
+
 func TestFeatureMarshalJSON_BBox(t *testing.T) {
 	f := NewFeature(orb.Bound{Min: orb.Point{1, 1}, Max: orb.Point{2, 2}})
 
