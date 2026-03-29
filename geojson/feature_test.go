@@ -9,8 +9,7 @@ import (
 	"testing"
 
 	"github.com/paulmach/orb"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsontype"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func TestNewFeature(t *testing.T) {
@@ -112,7 +111,7 @@ func TestFeature_marshalValue(t *testing.T) {
 		t.Fatalf("should marshal to bson just fine but got %v", err)
 	}
 
-	if !bytes.Contains(blob, append([]byte{byte(bsontype.Null)}, []byte("properties")...)) {
+	if !bytes.Contains(blob, append([]byte{byte(bson.TypeNull)}, []byte("properties")...)) {
 		t.Errorf("json should set properties to null if there are none")
 	}
 }

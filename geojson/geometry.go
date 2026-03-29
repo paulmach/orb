@@ -4,8 +4,7 @@ import (
 	"errors"
 
 	"github.com/paulmach/orb"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsontype"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // ErrInvalidGeometry will be returned if the json of the geometry is invalid.
@@ -77,16 +76,17 @@ func (g *Geometry) MarshalBSON() ([]byte, error) {
 
 // MarshalBSONValue will marshal the geometry into a BSON value
 // with the structure of a GeoJSON Geometry.
-func (g *Geometry) MarshalBSONValue() (bsontype.Type, []byte, error) {
+func (g *Geometry) MarshalBSONValue() (byte, []byte, error) {
 	// implementing MarshalBSONValue allows us to marshal into a null value
 	// needed to match behavior with the JSON marshalling.
 
 	if g.Coordinates == nil && len(g.Geometries) == 0 {
-		return bsontype.Null, nil, nil
+		return byte(bson.TypeNull), nil, nil
 	}
 
 	ng := newGeometryMarshallDoc(g)
-	return bson.MarshalValue(ng)
+	t, data, err := bson.MarshalValue(ng)
+	return byte(t), data, err
 }
 
 func newGeometryMarshallDoc(g *Geometry) *geometryMarshallDoc {

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/paulmach/orb"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func TestGeometry(t *testing.T) {

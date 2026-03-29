@@ -7,8 +7,8 @@ Supports both the [json.Marshaler](https://pkg.go.dev/encoding/json#Marshaler) a
 [json.Unmarshaler](https://pkg.go.dev/encoding/json#Unmarshaler) interfaces.
 The package also provides helper functions such as `UnmarshalFeatureCollection` and `UnmarshalFeature`.
 
-The types also support BSON via the [bson.Marshaler](https://pkg.go.dev/go.mongodb.org/mongo-driver/bson#Marshaler) and
-[bson.Unmarshaler](https://pkg.go.dev/go.mongodb.org/mongo-driver/bson#Unmarshaler) interfaces.
+The types also support BSON via the [bson.Marshaler](https://pkg.go.dev/go.mongodb.org/mongo-driver/v2/bson#Marshaler) and
+[bson.Unmarshaler](https://pkg.go.dev/go.mongodb.org/mongo-driver/v2/bson#Unmarshaler) interfaces.
 These types can be used directly when working with MongoDB.
 
 ## Unmarshalling (JSON -> Go)
