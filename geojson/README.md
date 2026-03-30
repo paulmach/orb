@@ -3,6 +3,9 @@
 This package **encodes and decodes** [GeoJSON](http://geojson.org/) into Go structs
 using the geometries in the [orb](https://github.com/paulmach/orb) package.
 
+Generics are supported for Feature Properties, but the default is `map[string]any`.
+See the [Generic Properties](#generic-properties) section below for more information.
+
 Supports both the [json.Marshaler](https://pkg.go.dev/encoding/json#Marshaler) and
 [json.Unmarshaler](https://pkg.go.dev/encoding/json#Unmarshaler) interfaces.
 The package also provides helper functions such as `UnmarshalFeatureCollection` and `UnmarshalFeature`.
@@ -130,4 +133,29 @@ f.Properties.MustBool(key string, def ...bool) bool
 f.Properties.MustFloat64(key string, def ...float64) float64
 f.Properties.MustInt(key string, def ...int) int
 f.Properties.MustString(key string, def ...string) string
+```
+
+## Generic Properties
+
+Go 1.18 introduced generics, and with it the ability to have a custom type for feature properties.
+
+```go
+type MyProperties struct {
+  Name string `json:"name"`
+  Age  int    `json:"age"`
+}
+
+fc := geojson.FeatureCollectionOf[MyProperties]{}
+fc.Append(
+  &geojson.FeatureOf[MyProperties]{
+    Geometry: orb.Point{1, 2},
+    Properties: MyProperties{Name: "Alice", Age: 30},
+  },
+)
+
+// unmarshalling can be even easier
+fc2 := geojson.FeatureCollectionOf[MyProperties]{}
+err := json.Unmarshal(rawJSON, &fc2)
+
+fc2.Features[0].Properties.Name // == "Alice"
 ```
