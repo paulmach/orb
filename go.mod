@@ -1,6 +1,6 @@
 module github.com/paulmach/orb
 
-go 1.25
+go 1.18
 
 require (
 	github.com/gogo/protobuf v1.3.2
