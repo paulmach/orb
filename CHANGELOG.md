@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.13.0](https://github.com/paulmach/orb/compare/v0.12.0...v0.13.0) - 2026-03-30
+
+### Fixed
+
+-   utilize go.mod for go version for ci by [@franzramadhan](https://github.com/franzramadhan) in https://github.com/paulmach/orb/pull/159
+-   adding subdirs so it can be found from the docs by [@OlafFlebbeBosch](https://github.com/OlafFlebbeBosch) in https://github.com/paulmach/orb/pull/172
+
+### Changed
+
+-   Update bson encoding library to mongo-driver/v2 by [@lukasbindreiter](https://github.com/lukasbindreiter) in https://github.com/paulmach/orb/pull/174
+-   iterface{} -> any and go.mod to 1.18 by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/177
+
+### Added
+
+-   geojson: add generic property support to features and collections by [@paulmach](https://github.com/paulmach) in https://github.com/paulmach/orb/pull/176
+
 ## [v0.12.0](https://github.com/paulmach/orb/compare/v0.11.1...v0.12.0) - 2025-09-17
 
 ### Fixed
