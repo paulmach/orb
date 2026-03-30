@@ -284,11 +284,11 @@ func compareProperties(t testing.TB, result, expected geojson.Properties) {
 	t.Helper()
 
 	// properties
-	fr := map[string]interface{}(result)
-	fe := map[string]interface{}(expected)
+	fr := map[string]any(result)
+	fe := map[string]any(expected)
 
 	for k, v := range fe {
-		if _, ok := v.([]interface{}); ok {
+		if _, ok := v.([]any); ok {
 			// arrays are not included
 			delete(fr, k)
 			delete(fe, k)
@@ -414,7 +414,7 @@ func loadGeoJSON(t testing.TB, tile maptile.Tile) map[string]*geojson.FeatureCol
 func TestMarshal_ID(t *testing.T) {
 	cases := []struct {
 		name string
-		id   interface{}
+		id   any
 		val  float64
 	}{
 		{

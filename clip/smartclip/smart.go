@@ -338,11 +338,11 @@ func smartWrap(box orb.Bound, input []orb.LineString, o orb.Orientation) orb.Mul
 
 const notOnSide = 0xFF
 
-//    4
-//   +-+
-// 1 | | 3
-//   +-+
-//    2
+// :    4
+// :   +-+
+// : 1 | | 3
+// :   +-+
+// :    2
 func pointSide(b orb.Bound, p orb.Point) uint8 {
 	if p[1] == b.Max[1] {
 		return 4

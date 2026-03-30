@@ -25,7 +25,7 @@ var (
 //	  // NULL value
 //	}
 type GeometryScanner struct {
-	g        interface{}
+	g        any
 	Geometry orb.Geometry
 	Valid    bool // Valid is true if the geometry is not NULL
 }
@@ -59,14 +59,14 @@ type GeometryScanner struct {
 // first 4 bytes and try again. This works for most use cases.
 //
 // For supported behavior see `ewkb.ScannerPrefixSRID`
-func Scanner(g interface{}) *GeometryScanner {
+func Scanner(g any) *GeometryScanner {
 	return &GeometryScanner{g: g}
 }
 
 // Scan will scan the input []byte data into a geometry.
 // This could be into the orb geometry type pointer or, if nil,
 // the scanner.Geometry attribute.
-func (s *GeometryScanner) Scan(d interface{}) error {
+func (s *GeometryScanner) Scan(d any) error {
 	if d == nil {
 		return nil
 	}

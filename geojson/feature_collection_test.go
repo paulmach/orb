@@ -84,7 +84,7 @@ func TestUnmarshalFeatureCollection(t *testing.T) {
 	}
 
 	// check unmarshal/marshal loop
-	var expected interface{}
+	var expected any
 	err = unmarshalJSON([]byte(rawJSON), &expected)
 	if err != nil {
 		t.Fatalf("unmarshal error: %v", err)
@@ -95,7 +95,7 @@ func TestUnmarshalFeatureCollection(t *testing.T) {
 		t.Fatalf("unmarshal error: %v", err)
 	}
 
-	var raw interface{}
+	var raw any
 	err = unmarshalJSON(data, &raw)
 	if err != nil {
 		t.Fatalf("unmarshal error: %v", err)
@@ -487,7 +487,7 @@ func TestFeatureCollection_MarshalBSON_extraMembers(t *testing.T) {
 	fc := NewFeatureCollection()
 	fc.Append(NewFeature(orb.Point{1, 2}))
 
-	fc.ExtraMembers = map[string]interface{}{
+	fc.ExtraMembers = map[string]any{
 		"a": 1.0,
 		"b": 2.0,
 	}

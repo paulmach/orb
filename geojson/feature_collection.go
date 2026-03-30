@@ -61,12 +61,12 @@ func (fc FeatureCollection) MarshalBSON() ([]byte, error) {
 	return bson.Marshal(m)
 }
 
-func newFeatureCollectionDoc(fc FeatureCollection) map[string]interface{} {
-	var tmp map[string]interface{}
+func newFeatureCollectionDoc(fc FeatureCollection) map[string]any {
+	var tmp map[string]any
 	if fc.ExtraMembers != nil {
 		tmp = fc.ExtraMembers.Clone()
 	} else {
-		tmp = make(map[string]interface{}, 3)
+		tmp = make(map[string]any, 3)
 	}
 
 	tmp["type"] = featureCollection
@@ -121,7 +121,7 @@ func (fc *FeatureCollection) UnmarshalJSON(data []byte) error {
 				fc.ExtraMembers = Properties{}
 			}
 
-			var val interface{}
+			var val any
 			err := unmarshalJSON(value, &val)
 			if err != nil {
 				return err
@@ -167,7 +167,7 @@ func (fc *FeatureCollection) UnmarshalBSON(data []byte) error {
 				fc.ExtraMembers = Properties{}
 			}
 
-			var val interface{}
+			var val any
 			err := value.Unmarshal(&val)
 			if err != nil {
 				return err

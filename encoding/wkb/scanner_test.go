@@ -191,7 +191,7 @@ func TestScanPoint_errors(t *testing.T) {
 	// error conditions
 	cases := []struct {
 		name string
-		data interface{}
+		data any
 		err  error
 	}{
 		{
@@ -293,7 +293,7 @@ func TestScanMultiPoint(t *testing.T) {
 func TestScanMultiPoint_errors(t *testing.T) {
 	cases := []struct {
 		name string
-		data interface{}
+		data any
 		err  error
 	}{
 		{
@@ -385,7 +385,7 @@ func TestScanLineString(t *testing.T) {
 func TestScanLineString_errors(t *testing.T) {
 	cases := []struct {
 		name string
-		data interface{}
+		data any
 		err  error
 	}{
 		{
@@ -482,7 +482,7 @@ func TestScanMultiLineString(t *testing.T) {
 func TestScanMultiLineString_errors(t *testing.T) {
 	cases := []struct {
 		name string
-		data interface{}
+		data any
 		err  error
 	}{
 		{
@@ -564,7 +564,7 @@ func TestScanRing(t *testing.T) {
 func TestScanRing_errors(t *testing.T) {
 	cases := []struct {
 		name string
-		data interface{}
+		data any
 		err  error
 	}{
 		{
@@ -656,7 +656,7 @@ func TestScanPolygon(t *testing.T) {
 func TestScanPolygon_errors(t *testing.T) {
 	cases := []struct {
 		name string
-		data interface{}
+		data any
 		err  error
 	}{
 		{
@@ -753,7 +753,7 @@ func TestScanMultiPolygon(t *testing.T) {
 func TestScanMultiPolygon_errors(t *testing.T) {
 	cases := []struct {
 		name string
-		data interface{}
+		data any
 		err  error
 	}{
 		{
@@ -835,7 +835,7 @@ func TestScanCollection(t *testing.T) {
 func TestScanCollection_errors(t *testing.T) {
 	cases := []struct {
 		name string
-		data interface{}
+		data any
 		err  error
 	}{
 		{
@@ -957,7 +957,7 @@ func TestScanBound(t *testing.T) {
 func TestScanBound_errors(t *testing.T) {
 	cases := []struct {
 		name string
-		data interface{}
+		data any
 		err  error
 	}{
 		{

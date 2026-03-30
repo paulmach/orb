@@ -137,7 +137,7 @@ type keyValueEncoder struct {
 	keyMap map[string]uint32
 
 	Values   []*vectortile.Tile_Value
-	valueMap map[interface{}]uint32
+	valueMap map[any]uint32
 
 	keySortBuffer []string
 }
@@ -145,7 +145,7 @@ type keyValueEncoder struct {
 func newKeyValueEncoder() *keyValueEncoder {
 	return &keyValueEncoder{
 		keyMap:   make(map[string]uint32),
-		valueMap: make(map[interface{}]uint32),
+		valueMap: make(map[any]uint32),
 	}
 }
 
@@ -161,7 +161,7 @@ func (kve *keyValueEncoder) Key(s string) uint32 {
 	return i
 }
 
-func (kve *keyValueEncoder) Value(v interface{}) (uint32, error) {
+func (kve *keyValueEncoder) Value(v any) (uint32, error) {
 	// If a type is not comparable we can't figure out uniqueness in the hash,
 	// we also can't encode it into a vectortile.Tile_Value.
 	// So we encoded it as a json string, which is what other encoders
@@ -191,7 +191,7 @@ func (kve *keyValueEncoder) Value(v interface{}) (uint32, error) {
 	return i, nil
 }
 
-func encodeValue(v interface{}) (*vectortile.Tile_Value, error) {
+func encodeValue(v any) (*vectortile.Tile_Value, error) {
 	tv := &vectortile.Tile_Value{}
 	switch t := v.(type) {
 	case string:
@@ -242,7 +242,7 @@ func encodeValue(v interface{}) (*vectortile.Tile_Value, error) {
 	return tv, nil
 }
 
-func decodeValue(v *vectortile.Tile_Value) interface{} {
+func decodeValue(v *vectortile.Tile_Value) any {
 	if v == nil {
 		return nil
 	}

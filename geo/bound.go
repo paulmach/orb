@@ -76,16 +76,16 @@ func BoundWidth(b orb.Bound) float64 {
 	return Distance(s1, s2)
 }
 
-//MinLatitude is the minimum possible latitude
+// MinLatitude is the minimum possible latitude
 var minLatitude = deg2rad(-90)
 
-//MaxLatitude is the maximum possible latitude
+// MaxLatitude is the maximum possible latitude
 var maxLatitude = deg2rad(90)
 
-//MinLongitude is the minimum possible longitude
+// MinLongitude is the minimum possible longitude
 var minLongitude = deg2rad(-180)
 
-//MaxLongitude is the maximum possible longitude
+// MaxLongitude is the maximum possible longitude
 var maxLongitude = deg2rad(180)
 
 func deg2rad(d float64) float64 {

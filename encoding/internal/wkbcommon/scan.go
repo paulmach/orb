@@ -34,7 +34,7 @@ var (
 // Scan will scan the input []byte data into a geometry.
 // This could be into the orb geometry type pointer or, if nil,
 // the scanner.Geometry attribute.
-func Scan(g, d interface{}) (orb.Geometry, int, bool, error) {
+func Scan(g, d any) (orb.Geometry, int, bool, error) {
 	if d == nil {
 		return nil, 0, false, nil
 	}
