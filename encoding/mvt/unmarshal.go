@@ -45,7 +45,7 @@ func Unmarshal(data []byte) (Layers, error) {
 // decoder is here to reuse objects to save allocations/memory.
 type decoder struct {
 	keys     []string
-	values   []interface{}
+	values   []any
 	features [][]byte
 
 	valMsg *protoscan.Message
@@ -429,7 +429,7 @@ func (gd *geomDecoder) done() bool {
 	return !gd.iter.HasNext()
 }
 
-func decodeValueMsg(msg *protoscan.Message) (interface{}, error) {
+func decodeValueMsg(msg *protoscan.Message) (any, error) {
 	for msg.Next() {
 		switch msg.FieldNumber() {
 		case 1:

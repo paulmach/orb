@@ -277,8 +277,8 @@ func TestHelperTypes(t *testing.T) {
 	cases := []struct {
 		name   string
 		geom   orb.Geometry
-		helper interface{}
-		output interface{}
+		helper any
+		output any
 	}{
 		{
 			name:   "point",

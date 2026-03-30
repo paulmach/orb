@@ -28,7 +28,7 @@ var (
 //	}
 type GeometryScanner struct {
 	sridInPrefix bool
-	g            interface{}
+	g            any
 	SRID         int
 	Geometry     orb.Geometry
 	Valid        bool // Valid is true if the geometry is not NULL
@@ -56,7 +56,7 @@ type GeometryScanner struct {
 //	} else {
 //	  // NULL value
 //	}
-func Scanner(g interface{}) *GeometryScanner {
+func Scanner(g any) *GeometryScanner {
 	return &GeometryScanner{g: g}
 }
 
@@ -75,20 +75,20 @@ func Scanner(g interface{}) *GeometryScanner {
 //		Scan(&srid, wkb.Scanner(&p))
 //
 // https://dev.mysql.com/doc/refman/5.7/en/gis-data-formats.html
-func ScannerPrefixSRID(g interface{}) *GeometryScanner {
+func ScannerPrefixSRID(g any) *GeometryScanner {
 	return &GeometryScanner{sridInPrefix: true, g: g}
 }
 
 // Scan will scan the input []byte data into a geometry.
 // This could be into the orb geometry type pointer or, if nil,
 // the scanner.Geometry attribute.
-func (s *GeometryScanner) Scan(d interface{}) error {
+func (s *GeometryScanner) Scan(d any) error {
 	s.Geometry = nil
 	s.Valid = false
 
 	var (
 		srid int
-		data interface{}
+		data any
 	)
 
 	data = d

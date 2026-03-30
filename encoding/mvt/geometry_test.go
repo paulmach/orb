@@ -208,8 +208,8 @@ func (s stringer) String() string {
 func TestEncodeValue(t *testing.T) {
 	cases := []struct {
 		name   string
-		input  interface{}
-		output interface{}
+		input  any
+		output any
 	}{
 		{
 			name:   "string",
@@ -303,7 +303,7 @@ func TestEncodeValue(t *testing.T) {
 	}
 
 	// error if a weird type, but typical json decode result
-	input := map[string]interface{}{
+	input := map[string]any{
 		"a": 1,
 		"b": 2,
 	}

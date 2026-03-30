@@ -102,7 +102,7 @@ func BenchmarkUnmarshalMultiPolygon(b *testing.B) {
 	}
 }
 
-func loadJSON(tb testing.TB, filename string, obj interface{}) {
+func loadJSON(tb testing.TB, filename string, obj any) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		tb.Fatalf("failed to load mvt file: %v", err)

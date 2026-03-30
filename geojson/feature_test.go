@@ -384,7 +384,7 @@ func TestMarshalRing(t *testing.T) {
 func TestFeature_MarshalBSON_extraMembers(t *testing.T) {
 	f := NewFeature(orb.Point{1, 2})
 
-	f.ExtraMembers = map[string]interface{}{
+	f.ExtraMembers = map[string]any{
 		"a": 1.0,
 		"b": 2.0,
 	}

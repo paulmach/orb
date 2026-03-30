@@ -96,7 +96,7 @@ func addFeature(layer *vectortile.Tile_Layer, kve *keyValueEncoder, f *geojson.F
 	return addSingleGeometryFeature(layer, kve, f.Geometry, f.Properties, f.ID)
 }
 
-func addSingleGeometryFeature(layer *vectortile.Tile_Layer, kve *keyValueEncoder, g orb.Geometry, p geojson.Properties, id interface{}) error {
+func addSingleGeometryFeature(layer *vectortile.Tile_Layer, kve *keyValueEncoder, g orb.Geometry, p geojson.Properties, id any) error {
 	geomType, encodedGeometry, err := encodeGeometry(g)
 	if err != nil {
 		return err
@@ -141,7 +141,7 @@ func encodeProperties(kve *keyValueEncoder, properties geojson.Properties) ([]ui
 	return tags, nil
 }
 
-func convertID(id interface{}) *uint64 {
+func convertID(id any) *uint64 {
 	if id == nil {
 		return nil
 	}

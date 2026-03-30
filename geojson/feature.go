@@ -10,7 +10,7 @@ import (
 
 // A Feature corresponds to GeoJSON feature object
 type Feature struct {
-	ID         interface{}  `json:"id,omitempty"`
+	ID         any          `json:"id,omitempty"`
 	Type       string       `json:"type"`
 	BBox       BBox         `json:"bbox,omitempty"`
 	Geometry   orb.Geometry `json:"geometry"`
@@ -28,7 +28,7 @@ func NewFeature(geometry orb.Geometry) *Feature {
 	return &Feature{
 		Type:       "Feature",
 		Geometry:   geometry,
-		Properties: make(map[string]interface{}),
+		Properties: make(map[string]any),
 	}
 }
 
@@ -59,7 +59,7 @@ func (f Feature) MarshalBSON() ([]byte, error) {
 	return bson.Marshal(newFeatureDoc(&f))
 }
 
-func newFeatureDoc(f *Feature) interface{} {
+func newFeatureDoc(f *Feature) any {
 	if len(f.ExtraMembers) == 0 {
 		doc := &featureDoc{
 			ID:         f.ID,
@@ -76,11 +76,11 @@ func newFeatureDoc(f *Feature) interface{} {
 		return doc
 	}
 
-	var tmp map[string]interface{}
+	var tmp map[string]any
 	if f.ExtraMembers != nil {
 		tmp = f.ExtraMembers.Clone()
 	} else {
-		tmp = make(map[string]interface{}, 3)
+		tmp = make(map[string]any, 3)
 	}
 
 	delete(tmp, "id")
@@ -170,7 +170,7 @@ func (f *Feature) UnmarshalJSON(data []byte) error {
 				f.ExtraMembers = Properties{}
 			}
 
-			var val interface{}
+			var val any
 			err := unmarshalJSON(value, &val)
 			if err != nil {
 				return err
@@ -230,7 +230,7 @@ func (f *Feature) UnmarshalBSON(data []byte) error {
 				f.ExtraMembers = Properties{}
 			}
 
-			var val interface{}
+			var val any
 			err := value.Unmarshal(&val)
 			if err != nil {
 				return err
@@ -247,9 +247,9 @@ func (f *Feature) UnmarshalBSON(data []byte) error {
 }
 
 type featureDoc struct {
-	ID         interface{} `json:"id,omitempty" bson:"id"`
-	Type       string      `json:"type" bson:"type"`
-	BBox       BBox        `json:"bbox,omitempty" bson:"bbox,omitempty"`
-	Geometry   *Geometry   `json:"geometry" bson:"geometry"`
-	Properties Properties  `json:"properties" bson:"properties"`
+	ID         any        `json:"id,omitempty" bson:"id"`
+	Type       string     `json:"type" bson:"type"`
+	BBox       BBox       `json:"bbox,omitempty" bson:"bbox,omitempty"`
+	Geometry   *Geometry  `json:"geometry" bson:"geometry"`
+	Properties Properties `json:"properties" bson:"properties"`
 }
