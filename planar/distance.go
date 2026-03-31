@@ -19,3 +19,4 @@ func DistanceSquared(p1, p2 orb.Point) float64 {
 	d1 := (p1[1] - p2[1])
 	return d0*d0 + d1*d1
 }
+
