@@ -385,17 +385,13 @@ func unmarshalCollection(s string) (orb.Collection, error) {
 		return nil, ErrNotWKT
 	}
 
-	geometries := splitGeometryCollection(s[18:])
-	if len(geometries) == 0 {
-		return orb.Collection{}, nil
+	geometries, err := splitGeometryCollection(s[18:])
+	if err != nil {
+		return nil, err
 	}
 
 	c := make(orb.Collection, 0, len(geometries))
 	for _, g := range geometries {
-		if len(g) == 0 {
-			continue
-		}
-
 		tg, err := Unmarshal(g)
 		if err != nil {
 			return nil, err
@@ -407,30 +403,35 @@ func unmarshalCollection(s string) (orb.Collection, error) {
 	return c, nil
 }
 
-// splitGeometryCollection split GEOMETRYCOLLECTION to more geometry
-func splitGeometryCollection(s string) (r []string) {
-	r = make([]string, 0)
-	stack := make([]rune, 0)
-	l := len(s)
-	for i, v := range s {
-		if !strings.Contains(string(stack), "(") {
-			stack = append(stack, v)
-			continue
-		}
-		if ('A' <= v && v < 'Z') || ('a' <= v && v < 'z') {
-			t := string(stack)
-			r = append(r, t[:len(t)-1])
-			stack = make([]rune, 0)
-			stack = append(stack, v)
-			continue
-		}
-		if i == l-1 {
-			r = append(r, string(stack))
-			continue
-		}
-		stack = append(stack, v)
+// splitGeometryCollection splits the body of a GEOMETRYCOLLECTION into its
+// member WKT strings. Members are separated by top-level commas, and a member
+// may be an EMPTY geometry with no parentheses, so the split tracks bracket
+// depth rather than assuming every member contains a bracket.
+func splitGeometryCollection(s string) ([]string, error) {
+	s, err := trimSpaceBrackets(s)
+	if err != nil {
+		return nil, err
 	}
-	return
+
+	r := make([]string, 0)
+	depth := 0
+	start := 0
+	for i := 0; i < len(s); i++ {
+		switch s[i] {
+		case '(':
+			depth++
+		case ')':
+			depth--
+		case ',':
+			if depth == 0 {
+				r = append(r, trimSpace(s[start:i]))
+				start = i + 1
+			}
+		}
+	}
+	r = append(r, trimSpace(s[start:]))
+
+	return r, nil
 }
 
 // Unmarshal return a geometry by parsing the WKT string.
