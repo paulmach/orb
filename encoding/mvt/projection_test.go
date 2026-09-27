@@ -4,6 +4,7 @@ import (
 	"math"
 	"testing"
 
+	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/maptile"
 	"github.com/paulmach/orb/project"
 )
@@ -33,6 +34,15 @@ func TestPowerOfTwoProjection(t *testing.T) {
 
 	if math.Abs(geo[1]-center[1]) > epsilon {
 		t.Errorf("lat miss match: %f != %f", geo[1], center[1])
+	}
+}
+
+func TestProjectPoleToTile(t *testing.T) {
+	proj := newProjection(maptile.New(0, 0, 0), 4096)
+	north := proj.ToTile(orb.Point{0, 85})
+	pole := proj.ToTile(orb.Point{0, 89.9})
+	if pole[1] > north[1] {
+		t.Errorf("latitude 89.9 projected south of latitude 85: %v > %v", pole[1], north[1])
 	}
 }
 

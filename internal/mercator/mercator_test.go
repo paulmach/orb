@@ -49,12 +49,25 @@ func TestScalarMercator(t *testing.T) {
 
 	}
 
-	// test polar regions
-	if _, y := ToPlanar(0, 89.9, 32); y != (1<<32)-1 {
+	// Latitudes past the projection limit stay on the same edge as latitude 85.
+	// The north edge is y = 0. The south edge is the last tile row.
+	_, north := ToPlanar(0, 85, 10)
+	_, tooFarNorth := ToPlanar(0, 89.9, 10)
+	if tooFarNorth > north {
+		t.Errorf("Scalar Mercator, latitude 89.9 was south of latitude 85: %v > %v", tooFarNorth, north)
+	}
+
+	_, south := ToPlanar(0, -85, 10)
+	_, tooFarSouth := ToPlanar(0, -89.9, 10)
+	if tooFarSouth < south {
+		t.Errorf("Scalar Mercator, latitude -89.9 was north of latitude -85: %v < %v", tooFarSouth, south)
+	}
+
+	if _, y := ToPlanar(0, 89.9, 32); y != 0 {
 		t.Errorf("Scalar Mercator, top of the world error, got %v", y)
 	}
 
-	if _, y := ToPlanar(0, -89.9, 32); y != 0 {
+	if _, y := ToPlanar(0, -89.9, 32); y != (1<<32)-1 {
 		t.Errorf("Scalar Mercator, bottom of the world error, got %v", y)
 	}
 }
