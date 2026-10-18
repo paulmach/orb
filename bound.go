@@ -43,6 +43,10 @@ func (b Bound) ToRing() Ring {
 
 // Extend grows the bound to include the new point.
 func (b Bound) Extend(point Point) Bound {
+	if b.IsEmpty() {
+		return point.Bound()
+	}
+
 	// already included, no big deal
 	if b.Contains(point) {
 		return b
@@ -91,6 +95,10 @@ func (b Bound) Contains(point Point) bool {
 // Intersects determines if two bounds intersect.
 // Returns true if they are touching.
 func (b Bound) Intersects(bound Bound) bool {
+	if b.IsEmpty() || bound.IsEmpty() {
+		return false
+	}
+
 	if (b.Max[0] < bound.Min[0]) ||
 		(b.Min[0] > bound.Max[0]) ||
 		(b.Max[1] < bound.Min[1]) ||
