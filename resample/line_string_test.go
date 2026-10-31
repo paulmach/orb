@@ -114,6 +114,23 @@ func TestToInterval(t *testing.T) {
 	}
 }
 
+func TestToIntervalEmpty(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		line orb.LineString
+	}{
+		{name: "nil"},
+		{name: "empty", line: orb.LineString{}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got := ToInterval(tc.line, planar.Distance, 5)
+			if len(got) != 0 || (got == nil) != (tc.line == nil) {
+				t.Errorf("expected unchanged empty line: got %#v, want %#v", got, tc.line)
+			}
+		})
+	}
+}
+
 func TestLineStringResampleEdgeCases(t *testing.T) {
 	ls := orb.LineString{{0, 0}}
 
