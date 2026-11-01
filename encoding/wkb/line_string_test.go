@@ -128,3 +128,20 @@ func TestMultiLineString(t *testing.T) {
 		})
 	}
 }
+
+func TestLineString_pointCountOverflow(t *testing.T) {
+	// A crafted little-endian linestring header claims a point count whose
+	// byte size (count * 16) overflows a uint32 and wraps to a small value.
+	// Before the length check was done in 64-bit space this slipped past the
+	// bounds guard and read past the end of the buffer.
+	data := []byte{
+		0x01,                   // little endian
+		0x02, 0x00, 0x00, 0x00, // type: linestring
+		0x01, 0x00, 0x00, 0x10, // point count 0x10000001; *16 wraps to 16 in uint32
+	}
+	data = append(data, make([]byte, 16)...) // only one point's worth of data
+
+	if _, err := Unmarshal(data); err != ErrNotWKB {
+		t.Fatalf("expected ErrNotWKB, got %v", err)
+	}
+}

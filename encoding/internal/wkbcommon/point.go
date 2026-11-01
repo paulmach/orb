@@ -16,7 +16,11 @@ func unmarshalPoints(order byteOrder, data []byte) ([]orb.Point, error) {
 	num := unmarshalUint32(order, data)
 	data = data[4:]
 
-	if len(data) < int(num*16) {
+	// Compute the required byte count in 64-bit space. num is a uint32 read
+	// directly from the input, so num*16 can overflow a uint32 (or a 32-bit
+	// int) and wrap to a small value, letting an undersized buffer slip past
+	// this guard and panic in the read loop below.
+	if uint64(len(data)) < uint64(num)*16 {
 		return nil, ErrNotWKB
 	}
 
