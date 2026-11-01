@@ -34,9 +34,10 @@ func ToPlanar(lng, lat float64, level uint32) (x, y float64) {
 	// bound it because we have a top of the world problem
 	siny := math.Sin(lat * math.Pi / 180.0)
 
-	if siny < -0.9999 {
+	// y = 0 is the north edge, matching the formula below.
+	if siny > 0.9999 {
 		y = 0
-	} else if siny > 0.9999 {
+	} else if siny < -0.9999 {
 		y = maxtiles - 1
 	} else {
 		lat = 0.5 + 0.5*math.Log((1.0+siny)/(1.0-siny))/(-2*math.Pi)
