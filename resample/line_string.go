@@ -30,6 +30,9 @@ func ToInterval(ls orb.LineString, df orb.DistanceFunc, dist float64) orb.LineSt
 	if dist <= 0 {
 		return nil
 	}
+	if len(ls) <= 1 {
+		return ls
+	}
 
 	// precomputes the total distance and intermediate distances
 	total, dists := precomputeDistances(ls, df)
