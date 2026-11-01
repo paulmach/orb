@@ -182,9 +182,14 @@ func (g *Geometry) UnmarshalJSON(data []byte) error {
 		}
 		g.Coordinates = mp
 	case "GeometryCollection":
+		g.Coordinates = nil
 		g.Geometries = jg.Geometries
 	default:
 		return ErrInvalidGeometry
+	}
+
+	if jg.Type != "GeometryCollection" {
+		g.Geometries = nil
 	}
 
 	g.Type = g.Geometry().GeoJSONType()
@@ -245,9 +250,14 @@ func (g *Geometry) UnmarshalBSON(data []byte) error {
 		}
 		g.Coordinates = mp
 	case "GeometryCollection":
+		g.Coordinates = nil
 		g.Geometries = bg.Geometries
 	default:
 		return ErrInvalidGeometry
+	}
+
+	if bg.Type != "GeometryCollection" {
+		g.Geometries = nil
 	}
 
 	g.Type = g.Geometry().GeoJSONType()
