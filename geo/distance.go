@@ -30,6 +30,8 @@ func DistanceHaversine(p1, p2 orb.Point) float64 {
 	dLat2Sin := math.Sin(dLat / 2)
 	dLon2Sin := math.Sin(dLon / 2)
 	a := dLat2Sin*dLat2Sin + math.Cos(deg2rad(p2[1]))*math.Cos(deg2rad(p1[1]))*dLon2Sin*dLon2Sin
+	// Rounding can put a just above 1 for antipodal points.
+	a = math.Min(1, a)
 
 	return 2.0 * orb.EarthRadius * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 }

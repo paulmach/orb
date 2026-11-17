@@ -50,6 +50,47 @@ func TestDistanceHaversine(t *testing.T) {
 	}
 }
 
+func TestDistanceHaversineAntipodal(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		from orb.Point
+		to   orb.Point
+	}{
+		{"south to north", orb.Point{0, -88.5}, orb.Point{180, 88.5}},
+		{"north to south", orb.Point{180, 88.5}, orb.Point{0, -88.5}},
+		{"shifted longitude", orb.Point{17.25, -88.5}, orb.Point{-162.75, 88.5}},
+		{"equator", orb.Point{0, 0}, orb.Point{180, 0}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			want := math.Pi * orb.EarthRadius
+			got := DistanceHaversine(tc.from, tc.to)
+			// Antipodes are half a circumference apart. Allow for rounding
+			// near the maximum distance, but never accept NaN or infinity.
+			if math.IsNaN(got) || math.IsInf(got, 0) || math.Abs(got-want) > 0.5 {
+				t.Errorf("distance = %v, want %v within 0.5 meters", got, want)
+			}
+
+			line := orb.LineString{tc.from, tc.to, tc.from}
+			if got := LengthHaversine(line); math.IsNaN(got) || math.IsInf(got, 0) || math.Abs(got-2*want) > 1 {
+				t.Errorf("line length = %v, want %v within 1 meter", got, 2*want)
+			}
+		})
+	}
+}
+
+func TestDistanceHaversineLimits(t *testing.T) {
+	p := orb.Point{0, 0}
+	if got := DistanceHaversine(p, p); got != 0 {
+		t.Errorf("distance to self = %v, want 0", got)
+	}
+	if got, want := DistanceHaversine(p, orb.Point{90, 0}), math.Pi*orb.EarthRadius/2; math.IsNaN(got) || math.Abs(got-want) > epsilon {
+		t.Errorf("quarter circumference = %v, want %v", got, want)
+	}
+	if got := DistanceHaversine(p, orb.Point{math.NaN(), 0}); !math.IsNaN(got) {
+		t.Errorf("distance to NaN coordinate = %v, want NaN", got)
+	}
+}
+
 func TestBearing(t *testing.T) {
 	p1 := orb.Point{0, 0}
 	p2 := orb.Point{0, 1}
