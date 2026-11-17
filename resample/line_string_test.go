@@ -1,9 +1,12 @@
 package resample
 
 import (
+	"math"
+	"strconv"
 	"testing"
 
 	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/geo"
 	"github.com/paulmach/orb/planar"
 )
 
@@ -153,5 +156,84 @@ func TestLineStringResampleEdgeCases(t *testing.T) {
 	ls, _ = resampleEdgeCases(ls, 5)
 	if l := len(ls); l != 5 {
 		t.Errorf("should shorten if necessary: %v != 5", l)
+	}
+}
+
+func TestResampleZeroDistance(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		line orb.LineString
+		df   orb.DistanceFunc
+	}{
+		{"antimeridian", orb.LineString{{-180, 0}, {180, 0}}, geo.Distance},
+		{"reversed", orb.LineString{{180, 0}, {-180, 0}}, geo.Distance},
+		{"latitude", orb.LineString{{-180, 45}, {180, 45}}, geo.Distance},
+		{"multiple segments", orb.LineString{{-180, 0}, {180, 0}, {-180, 0}}, geo.Distance},
+		{"duplicate vertices", orb.LineString{{-180, 0}, {-180, 0}, {180, 0}, {180, 0}}, geo.Distance},
+		{"planar underflow", orb.LineString{{0, 0}, {1e-200, 0}}, planar.Distance},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if total, _ := precomputeDistances(tc.line, tc.df); total != 0 {
+				t.Fatalf("regression requires zero total distance, got %v", total)
+			}
+			for _, count := range []int{0, 1, 2, 3, 8} {
+				t.Run(strconv.Itoa(count), func(t *testing.T) {
+					got := Resample(tc.line.Clone(), tc.df, count)
+					if len(got) != count {
+						t.Fatalf("got %d points, want %d", len(got), count)
+					}
+					for i, p := range got {
+						want := tc.line[0]
+						if count > 1 && i == count-1 {
+							want = tc.line[len(tc.line)-1]
+						}
+						if !p.Equal(want) {
+							t.Errorf("point %d = %v, want %v", i, p, want)
+						}
+						for _, coordinate := range p {
+							if math.IsNaN(coordinate) || math.IsInf(coordinate, 0) {
+								t.Errorf("point %d is not finite: %v", i, p)
+							}
+						}
+					}
+				})
+			}
+			// Zero total distance implies one sample at any positive interval.
+			got := ToInterval(tc.line.Clone(), tc.df, 1)
+			if !got.Equal(orb.LineString{tc.line[0]}) {
+				t.Errorf("ToInterval = %v, want first point", got)
+			}
+		})
+	}
+}
+
+func TestResamplePositiveDistance(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		line orb.LineString
+		df   orb.DistanceFunc
+	}{
+		{"planar", orb.LineString{{0, 0}, {0, 1}, {0, 4}}, planar.Distance},
+		{"duplicate start", orb.LineString{{0, 0}, {0, 0}, {0, 4}}, planar.Distance},
+		{"duplicate middle", orb.LineString{{0, 0}, {0, 2}, {0, 2}, {0, 4}}, planar.Distance},
+		{"geo", orb.LineString{{0, 0}, {0, 1}, {0, 4}}, geo.Distance},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, count := range []int{1, 2, 3, 5, 9} {
+				got := Resample(tc.line.Clone(), tc.df, count)
+				if len(got) != count {
+					t.Fatalf("got %d points, want %d", len(got), count)
+				}
+				for i, p := range got {
+					want := 0.0
+					if count > 1 {
+						want = 4 * float64(i) / float64(count-1)
+					}
+					if p[0] != 0 || math.IsNaN(p[1]) || math.Abs(p[1]-want) > 1e-12 {
+						t.Errorf("sample %d of %d = %v, want [0 %v]", i, count, p, want)
+					}
+				}
+			}
+		})
 	}
 }
