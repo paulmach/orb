@@ -7,6 +7,8 @@ import (
 )
 
 // Resample converts the line string into totalPoints-1 evenly spaced segments.
+// If the total distance is zero, it repeats the first point, preserving the
+// last point when totalPoints is greater than one.
 // This function will modify the linestring input.
 func Resample(ls orb.LineString, df orb.DistanceFunc, totalPoints int) orb.LineString {
 	if totalPoints <= 0 {
@@ -49,6 +51,18 @@ func ToInterval(ls orb.LineString, df orb.DistanceFunc, dist float64) orb.LineSt
 func resample(ls orb.LineString, dists []float64, totalDistance float64, totalPoints int) orb.LineString {
 	points := make([]orb.Point, 1, totalPoints)
 	points[0] = ls[0] // start stays the same
+
+	// Distinct coordinates can have zero distance, for example -180 and 180
+	// degrees longitude. Avoid interpolating over a zero-length path.
+	if totalDistance == 0 {
+		for len(points) < totalPoints {
+			points = append(points, ls[0])
+		}
+		if totalPoints > 1 {
+			points[totalPoints-1] = ls[len(ls)-1]
+		}
+		return orb.LineString(points)
+	}
 
 	step := 1
 	dist := 0.0
