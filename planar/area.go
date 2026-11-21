@@ -66,6 +66,7 @@ func multiPointCentroid(mp orb.MultiPoint) orb.Point {
 
 func multiLineStringCentroid(mls orb.MultiLineString) orb.Point {
 	point := orb.Point{}
+	collapsed := orb.Point{}
 	dist := 0.0
 
 	if len(mls) == 0 {
@@ -83,7 +84,10 @@ func multiLineStringCentroid(mls orb.MultiLineString) orb.Point {
 		validCount++
 
 		if d == 0 {
-			d = 1.0
+			// Collapsed lines contribute only when all lines have zero length.
+			collapsed[0] += c[0]
+			collapsed[1] += c[1]
+			continue
 		}
 
 		point[0] += c[0] * d
@@ -94,7 +98,10 @@ func multiLineStringCentroid(mls orb.MultiLineString) orb.Point {
 		return orb.Point{}
 	}
 
-	if dist == math.Inf(1) || dist == 0.0 {
+	if dist == 0 {
+		return orb.Point{collapsed[0] / float64(validCount), collapsed[1] / float64(validCount)}
+	}
+	if dist == math.Inf(1) {
 		point[0] /= float64(validCount)
 		point[1] /= float64(validCount)
 		return point
