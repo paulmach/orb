@@ -53,10 +53,12 @@ func unmarshalPoint(s string) (orb.Point, error) {
 
 // parsePoint parse point by (x y)
 func parsePoint(s string) (p orb.Point, err error) {
-	one, two, ok := cut(s, " ")
-	if !ok {
+	// the coordinates can be separated by any amount of whitespace
+	i := strings.IndexAny(s, " \t\n")
+	if i == -1 {
 		return orb.Point{}, ErrNotWKT
 	}
+	one, two := s[:i], trimSpace(s[i+1:])
 
 	x, err := strconv.ParseFloat(one, 64)
 	if err != nil {
@@ -97,9 +99,13 @@ func unmarshalMultiPoint(s string) (orb.MultiPoint, error) {
 	mp := make(orb.MultiPoint, 0, count+1)
 
 	err = splitOnComma(s, func(p string) error {
-		p, err := trimSpaceBrackets(p)
-		if err != nil {
-			return err
+		// the points can be written as (x y) or as x y
+		if len(p) > 0 && p[0] == '(' {
+			var err error
+			p, err = trimSpaceBrackets(p)
+			if err != nil {
+				return err
+			}
 		}
 
 		tp, err := parsePoint(p)
@@ -580,7 +586,7 @@ func trimSpace(s string) string {
 		}
 	}
 
-	if start >= end {
+	if start > end {
 		return ""
 	}
 

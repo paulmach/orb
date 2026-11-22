@@ -117,6 +117,21 @@ func TestUnmarshalPoint(t *testing.T) {
 			s:        "POINT(1.34 2.35)",
 			expected: orb.Point{1.34, 2.35},
 		},
+		{
+			name:     "several spaces between coordinates",
+			s:        "POINT(1.34   2.35)",
+			expected: orb.Point{1.34, 2.35},
+		},
+		{
+			name:     "tab between coordinates",
+			s:        "POINT (1.34\t2.35)",
+			expected: orb.Point{1.34, 2.35},
+		},
+		{
+			name:     "newline between coordinates",
+			s:        "POINT (1.34\n  2.35)",
+			expected: orb.Point{1.34, 2.35},
+		},
 	}
 
 	for _, tc := range cases {
@@ -221,6 +236,21 @@ func TestUnmarshalMultiPoint(t *testing.T) {
 			s:        "MULTIPOINT((1 2)  ,	(0.5 1.5))",
 			expected: orb.MultiPoint{{1, 2}, {0.5, 1.5}},
 		},
+		{
+			name:     "points without parentheses",
+			s:        "MULTIPOINT(1 2,0.5 1.5)",
+			expected: orb.MultiPoint{{1, 2}, {0.5, 1.5}},
+		},
+		{
+			name:     "1 point without parentheses",
+			s:        "MULTIPOINT (1 2)",
+			expected: orb.MultiPoint{{1, 2}},
+		},
+		{
+			name:     "points with and without parentheses",
+			s:        "MULTIPOINT (1 2, (0.5 1.5),  3   4)",
+			expected: orb.MultiPoint{{1, 2}, {0.5, 1.5}, {3, 4}},
+		},
 	}
 
 	for _, tc := range cases {
@@ -280,6 +310,16 @@ func TestUnmarshalMultiPoint_errors(t *testing.T) {
 		{
 			name: "too many points",
 			s:    "MULTIPOINT((1 2),(3 4 5))",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "too many points without parentheses",
+			s:    "MULTIPOINT(1 2,3 4 5)",
+			err:  ErrNotWKT,
+		},
+		{
+			name: "unbalanced parentheses",
+			s:    "MULTIPOINT((1 2,3 4)",
 			err:  ErrNotWKT,
 		},
 		{
