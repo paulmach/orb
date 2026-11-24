@@ -56,9 +56,13 @@ func (g *Geometry) Geometry() orb.Geometry {
 	return c
 }
 
+func (g *Geometry) isNull() bool {
+	return g.Coordinates == nil && g.Geometries == nil && g.Type != "GeometryCollection"
+}
+
 // MarshalJSON will marshal the geometry into the correct JSON structure.
 func (g *Geometry) MarshalJSON() ([]byte, error) {
-	if g.Coordinates == nil && len(g.Geometries) == 0 {
+	if g.isNull() {
 		return []byte(`null`), nil
 	}
 
@@ -80,7 +84,7 @@ func (g *Geometry) MarshalBSONValue() (byte, []byte, error) {
 	// implementing MarshalBSONValue allows us to marshal into a null value
 	// needed to match behavior with the JSON marshalling.
 
-	if g.Coordinates == nil && len(g.Geometries) == 0 {
+	if g.isNull() {
 		return byte(bson.TypeNull), nil, nil
 	}
 
@@ -97,10 +101,11 @@ func newGeometryMarshallDoc(g *Geometry) *geometryMarshallDoc {
 	case orb.Bound:
 		ng.Coordinates = g.ToPolygon()
 	case orb.Collection:
-		ng.Geometries = make([]*Geometry, 0, len(g))
+		geometries := make([]*Geometry, 0, len(g))
 		for _, c := range g {
-			ng.Geometries = append(ng.Geometries, NewGeometry(c))
+			geometries = append(geometries, NewGeometry(c))
 		}
+		ng.Geometries = &geometries
 		ng.Type = g.GeoJSONType()
 	default:
 		ng.Coordinates = g
@@ -110,8 +115,12 @@ func newGeometryMarshallDoc(g *Geometry) *geometryMarshallDoc {
 		ng.Type = ng.Coordinates.GeoJSONType()
 	}
 
-	if len(g.Geometries) > 0 {
-		ng.Geometries = g.Geometries
+	if len(g.Geometries) > 0 || (g.Coordinates == nil && !g.isNull()) {
+		geometries := g.Geometries
+		if geometries == nil {
+			geometries = []*Geometry{}
+		}
+		ng.Geometries = &geometries
 		ng.Type = orb.Collection{}.GeoJSONType()
 	}
 
@@ -592,5 +601,6 @@ type jsonGeometry struct {
 type geometryMarshallDoc struct {
 	Type        string       `json:"type" bson:"type"`
 	Coordinates orb.Geometry `json:"coordinates,omitempty" bson:"coordinates,omitempty"`
-	Geometries  []*Geometry  `json:"geometries,omitempty" bson:"geometries,omitempty"`
+	// A pointer keeps empty collection arrays from being omitted.
+	Geometries *[]*Geometry `json:"geometries,omitempty" bson:"geometries,omitempty"`
 }
