@@ -773,3 +773,29 @@ func countNodes(n *node) int {
 
 	return c
 }
+
+func TestQuadtreeKNearestNonPositive(t *testing.T) {
+	point := orb.Point{1, 1}
+	tree := New(orb.Bound{Max: orb.Point{10, 10}})
+	if err := tree.Add(point); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, k := range []int{0, -1} {
+		t.Run(fmt.Sprintf("k=%d", k), func(t *testing.T) {
+			if got := tree.KNearest(nil, point, k); got != nil {
+				t.Errorf("KNearest returned %v, want nil", got)
+			}
+
+			sentinel := orb.Point{9, 9}
+			buf := []orb.Pointer{sentinel}
+			got := tree.KNearestMatching(buf, point, k, func(orb.Pointer) bool {
+				t.Error("unexpected filter call")
+				return true
+			})
+			if got != nil || buf[0] != sentinel {
+				t.Errorf("KNearestMatching returned %v with buffer %v, want nil and an unchanged buffer", got, buf)
+			}
+		})
+	}
+}
