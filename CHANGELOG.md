@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Fixed
+
+-   geojson: preserve empty GeometryCollections when marshalling JSON and BSON.
+
 ## [v0.14.0](https://github.com/paulmach/orb/compare/v0.13.0...v0.14.0) - 2026-11-01
 
 ### Fixed
