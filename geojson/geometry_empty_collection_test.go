@@ -31,11 +31,12 @@ func TestGeometryCollectionMarshal(t *testing.T) {
 		{"collection coordinates win", &Geometry{Coordinates: orb.Collection{orb.Point{1, 2}}, Geometries: []*Geometry{}}, `{"type":"GeometryCollection","geometries":[{"type":"Point","coordinates":[1,2]}]}`},
 	}
 	codecs := []struct {
-		name    string
-		marshal func(*Geometry) ([]byte, error)
+		name      string
+		marshal   func(*Geometry) ([]byte, error)
+		unmarshal func([]byte, any) error
 	}{
-		{"JSON", func(g *Geometry) ([]byte, error) { return json.Marshal(g) }},
-		{"BSON document", func(g *Geometry) ([]byte, error) { return geometryBSONJSON(bson.Marshal(g)) }},
+		{"JSON", func(g *Geometry) ([]byte, error) { return json.Marshal(g) }, json.Unmarshal},
+		{"BSON document", func(g *Geometry) ([]byte, error) { return bson.Marshal(g) }, bson.Unmarshal},
 		{"BSON value", func(g *Geometry) ([]byte, error) {
 			kind, data, err := g.MarshalBSONValue()
 			if err != nil {
@@ -44,15 +45,22 @@ func TestGeometryCollectionMarshal(t *testing.T) {
 			if bson.Type(kind) != bson.TypeEmbeddedDocument {
 				return nil, fmt.Errorf("geometry value type = %v, want embedded document", bson.Type(kind))
 			}
-			return geometryBSONJSON(data, nil)
-		}},
+			return data, nil
+		}, bson.Unmarshal},
 	}
 	for _, codec := range codecs {
 		for _, tc := range cases {
 			t.Run(codec.name+"/"+tc.name, func(t *testing.T) {
-				data, err := codec.marshal(tc.geom)
+				wire, err := codec.marshal(tc.geom)
 				if err != nil {
 					t.Fatal(err)
+				}
+				data := wire
+				if codec.name != "JSON" {
+					data, err = geometryBSONJSON(wire)
+					if err != nil {
+						t.Fatal(err)
+					}
 				}
 				var got, want any
 				if err := json.Unmarshal(data, &got); err != nil {
@@ -65,18 +73,19 @@ func TestGeometryCollectionMarshal(t *testing.T) {
 					t.Fatalf("marshal = %s, want %s", data, tc.want)
 				}
 				// Check the wire shape before decoding nested collections into orb.
-				if _, err := UnmarshalGeometry(data); err != nil {
+				var decoded Geometry
+				if err := codec.unmarshal(wire, &decoded); err != nil {
 					t.Fatal(err)
+				}
+				if got, want := decoded.Geometry(), tc.geom.Geometry(); !reflect.DeepEqual(got, want) {
+					t.Fatalf("round trip = %#v; want %#v", got, want)
 				}
 			})
 		}
 	}
 }
 
-func geometryBSONJSON(data []byte, err error) ([]byte, error) {
-	if err != nil {
-		return nil, err
-	}
+func geometryBSONJSON(data []byte) ([]byte, error) {
 	var document bson.D
 	if err := bson.Unmarshal(data, &document); err != nil {
 		return nil, err
