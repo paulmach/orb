@@ -226,6 +226,7 @@ func (q *Quadtree) Matching(p orb.Point, f FilterFunc) orb.Pointer {
 }
 
 // KNearest returns k closest Value/Pointer in the quadtree.
+// If k is non-positive, it returns nil.
 // This function is thread safe. Multiple goroutines can read from a pre-created tree.
 // An optional buffer parameter is provided to allow for the reuse of result slice memory.
 // The points are returned in a sorted order, nearest first.
@@ -235,13 +236,14 @@ func (q *Quadtree) KNearest(buf []orb.Pointer, p orb.Point, k int, maxDistance .
 }
 
 // KNearestMatching returns k closest Value/Pointer in the quadtree for which
-// the given filter function returns true. This function is thread safe.
+// the given filter function returns true. If k is non-positive, it returns nil.
+// This function is thread safe.
 // Multiple goroutines can read from a pre-created tree. An optional buffer
 // parameter is provided to allow for the reuse of result slice memory.
 // The points are returned in a sorted order, nearest first.
 // This function allows defining a maximum distance in order to reduce search iterations.
 func (q *Quadtree) KNearestMatching(buf []orb.Pointer, p orb.Point, k int, f FilterFunc, maxDistance ...float64) []orb.Pointer {
-	if q.root == nil {
+	if q.root == nil || k <= 0 {
 		return nil
 	}
 
