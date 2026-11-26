@@ -139,6 +139,31 @@ func TestPolygonContains(t *testing.T) {
 	}
 }
 
+func TestEmptyContains(t *testing.T) {
+	point := orb.Point{0.5, 0.5}
+
+	if RingContains(orb.Ring{}, point) {
+		t.Errorf("empty ring should not contain point")
+	}
+
+	if RingContains(nil, point) {
+		t.Errorf("nil ring should not contain point")
+	}
+
+	if PolygonContains(orb.Polygon{}, point) {
+		t.Errorf("empty polygon should not contain point")
+	}
+
+	if PolygonContains(nil, point) {
+		t.Errorf("nil polygon should not contain point")
+	}
+
+	mp := orb.MultiPolygon{orb.Polygon{}}
+	if MultiPolygonContains(mp, point) {
+		t.Errorf("multi-polygon with an empty polygon should not contain point")
+	}
+}
+
 func TestMultiPolygonContains(t *testing.T) {
 	// should exclude holes
 	mp := orb.MultiPolygon{
