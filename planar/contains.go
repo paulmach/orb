@@ -35,6 +35,10 @@ func RingContains(r orb.Ring, point orb.Point) bool {
 // PolygonContains checks if the point is within the polygon.
 // Points on the boundary are considered in.
 func PolygonContains(p orb.Polygon, point orb.Point) bool {
+	if len(p) == 0 {
+		return false
+	}
+
 	if !RingContains(p[0], point) {
 		return false
 	}
