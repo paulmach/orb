@@ -132,6 +132,48 @@ func TestPointAtBearingAndDistance(t *testing.T) {
 	})
 }
 
+func TestMidpointAntimeridian(t *testing.T) {
+	cases := []struct {
+		name string
+		a, b orb.Point
+	}{
+		{"180_to_neg90", orb.Point{180, 0}, orb.Point{-90, 0}},
+		{"179.9_45_to_neg90_0", orb.Point{179.9, 45}, orb.Point{-90, 0}},
+		{"neg179_to_179", orb.Point{-179, 10}, orb.Point{179, 10}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			m := Midpoint(tc.a, tc.b)
+			if m[0] < -180 || m[0] > 180 {
+				t.Fatalf("midpoint longitude out of [-180, 180]: got %v", m)
+			}
+			da := DistanceHaversine(tc.a, m)
+			db := DistanceHaversine(m, tc.b)
+			if math.Abs(da-db) > 1.0 {
+				t.Errorf("midpoint %v not equidistant: d(a,m)=%f, d(m,b)=%f", m, da, db)
+			}
+		})
+	}
+}
+
+func TestPointAtBearingAndDistanceAntimeridian(t *testing.T) {
+	east := PointAtBearingAndDistance(orb.Point{179.5, 0}, 90, 100000)
+	if east[0] < -180 || east[0] > 180 {
+		t.Fatalf("eastbound crossing produced unnormalized lon: %v", east)
+	}
+	if east[0] >= -179 || east[0] < -180 {
+		t.Errorf("expected eastbound lon in [-180, -179), got %v", east)
+	}
+
+	west := PointAtBearingAndDistance(orb.Point{-179.5, 0}, -90, 100000)
+	if west[0] < -180 || west[0] > 180 {
+		t.Fatalf("westbound crossing produced unnormalized lon: %v", west)
+	}
+	if west[0] <= 179 || west[0] > 180 {
+		t.Errorf("expected westbound lon in (179, 180], got %v", west)
+	}
+}
+
 func TestPointAtDistanceAlongLineWithSinglePoint(t *testing.T) {
 	cases := []struct {
 		name            string

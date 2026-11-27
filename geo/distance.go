@@ -64,10 +64,21 @@ func Midpoint(p, p2 orb.Point) orb.Point {
 	}
 
 	// convert back to degrees
-	r[0] = rad2deg(r[0])
+	r[0] = normalizeLon(rad2deg(r[0]))
 	r[1] = rad2deg(r[1])
 
 	return r
+}
+
+func normalizeLon(lon float64) float64 {
+	if lon >= -180 && lon <= 180 {
+		return lon
+	}
+	lon = math.Mod(lon+180, 360)
+	if lon < 0 {
+		lon += 360
+	}
+	return lon - 180
 }
 
 // PointAtBearingAndDistance returns the point at the given bearing and distance in meters from the point
@@ -85,7 +96,7 @@ func PointAtBearingAndDistance(p orb.Point, bearing, distance float64) orb.Point
 			math.Cos(distanceRatio)-math.Sin(aLat)*math.Sin(bLat),
 		)
 
-	return orb.Point{rad2deg(bLon), rad2deg(bLat)}
+	return orb.Point{normalizeLon(rad2deg(bLon)), rad2deg(bLat)}
 }
 
 func PointAtDistanceAlongLine(ls orb.LineString, distance float64) (orb.Point, float64) {
