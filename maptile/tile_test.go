@@ -383,3 +383,14 @@ func BenchmarkSharedParent_DifferentZoom(b *testing.B) {
 		one.SharedParent(two)
 	}
 }
+
+func TestAtAntimeridian(t *testing.T) {
+	for _, zoom := range []Zoom{0, 1, 12, 31} {
+		east := At(orb.Point{180, 0}, zoom)
+		west := At(orb.Point{-180, 0}, zoom)
+		last := (uint32(1) << zoom) - 1
+		if !east.Valid() || east.X != last || !west.Valid() || west.X != 0 {
+			t.Errorf("zoom %d: west %v, east %v, want columns 0 and %d", zoom, west, east, last)
+		}
+	}
+}

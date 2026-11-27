@@ -43,11 +43,13 @@ func New(x, y uint32, z Zoom) Tile {
 // At creates a tile for the point at the given zoom.
 // Will create a valid tile for the zoom. Points outside
 // the range lat [-85.0511, 85.0511] will be snapped to the
-// max or min tile as appropriate.
+// max or min tile as appropriate. Longitudes at the eastern edge map
+// to the last column.
 func At(ll orb.Point, z Zoom) Tile {
 	f := Fraction(ll, z)
+	maxColumn := float64((uint64(1) << z) - 1)
 	t := Tile{
-		X: uint32(f[0]),
+		X: uint32(math.Max(0, math.Min(f[0], maxColumn))),
 		Y: uint32(f[1]),
 		Z: z,
 	}
@@ -283,14 +285,14 @@ func (t Tile) Range(z Zoom) (min, max Tile) {
 
 	offset := z - t.Z
 	return Tile{
-			X: t.X << offset,
-			Y: t.Y << offset,
-			Z: z,
-		}, Tile{
-			X: ((t.X + 1) << offset) - 1,
-			Y: ((t.Y + 1) << offset) - 1,
-			Z: z,
-		}
+		X: t.X << offset,
+		Y: t.Y << offset,
+		Z: z,
+	}, Tile{
+		X: ((t.X + 1) << offset) - 1,
+		Y: ((t.Y + 1) << offset) - 1,
+		Z: z,
+	}
 }
 
 func (t Tile) toZoom(z Zoom) Tile {
