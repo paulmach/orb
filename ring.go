@@ -35,6 +35,10 @@ func (r Ring) Bound() Bound {
 // return -1 if the ring is the clockwise order and 0 if the ring is
 // degenerate and had no area.
 func (r Ring) Orientation() Orientation {
+	if len(r) < 3 {
+		return 0
+	}
+
 	area := 0.0
 
 	// This is a fast planar area computation, which is okay for this use.
