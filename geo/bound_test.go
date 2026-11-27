@@ -85,3 +85,25 @@ func TestBoundPad(t *testing.T) {
 		t.Errorf("should be extend bound around fill earth: %v", b2)
 	}
 }
+
+func TestBoundWidthLongitudeSpan(t *testing.T) {
+	for _, tc := range []struct {
+		name                     string
+		west, east, south, north float64
+		span                     float64
+	}{
+		{"world", -180, 180, -90, 90, 360},
+		{"wide", -135, 135, 40, 50, 270},
+		{"crossing the date line", 179, -179, -5, 5, 2},
+		{"one meridian", 12, 12, -5, 5, 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			b := orb.Bound{Min: orb.Point{tc.west, tc.south}, Max: orb.Point{tc.east, tc.north}}
+			parallelLength := 2 * math.Pi * orb.EarthRadius * math.Cos(deg2rad((tc.south+tc.north)/2))
+			want := parallelLength * tc.span / 360
+			if got := BoundWidth(b); math.Abs(got-want) > 1e-6 {
+				t.Errorf("width = %v, want %v", got, want)
+			}
+		})
+	}
+}

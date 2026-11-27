@@ -68,12 +68,13 @@ func BoundHeight(b orb.Bound) float64 {
 // BoundWidth returns the approximate width in meters
 // of the center of the bound.
 func BoundWidth(b orb.Bound) float64 {
-	c := (b.Min[1] + b.Max[1]) / 2.0
-
-	s1 := orb.Point{b.Min[0], c}
-	s2 := orb.Point{b.Max[0], c}
-
-	return Distance(s1, s2)
+	centerLat := deg2rad((b.Min[1] + b.Max[1]) / 2)
+	span := b.Max[0] - b.Min[0]
+	if span < 0 {
+		// Bounds that cross the antimeridian wrap from east to west.
+		span += 360
+	}
+	return deg2rad(span) * orb.EarthRadius * math.Cos(centerLat)
 }
 
 // MinLatitude is the minimum possible latitude
