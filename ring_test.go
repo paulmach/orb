@@ -85,3 +85,11 @@ func TestRing_Orientation(t *testing.T) {
 		})
 	}
 }
+
+func TestDegenerateRingOrientation(t *testing.T) {
+	for _, r := range []Ring{nil, {}, {{1, 2}}, {{1, 2}, {4, 5}}} {
+		if got := r.Orientation(); got != 0 {
+			t.Errorf("Orientation(%v) = %v, want 0", r, got)
+		}
+	}
+}
